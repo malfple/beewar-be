@@ -5,9 +5,9 @@ GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
 default: build
 
 build: clean
-	@go build -o bin/main cmd/main/main.go
-clean:
-	rm -rf bin/main
+	@go build -o cmd/bin/main cmd/main/main.go
+clean: ## clean binaries
+	rm -rf cmd/bin
 run: ## run server for local test
 	@go run cmd/main/main.go
 lint:
