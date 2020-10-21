@@ -18,6 +18,7 @@ func InitLogger() {
 		return
 	}
 
+	defer Logger.Sync()
 	Logger.Info("init logger")
 }
 
