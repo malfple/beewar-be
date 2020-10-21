@@ -2,8 +2,9 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"gitlab.com/otqee/otqee-be/internal/logger"
 	"gitlab.com/otqee/otqee-be/internal/view"
+	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,6 +14,7 @@ import (
 
 func main() {
 	port := int64(3001)
+	logger.InitLogger()
 
 	server := &http.Server{
 		Addr:         ":" + strconv.FormatInt(port, 10),
@@ -23,9 +25,9 @@ func main() {
 	}
 
 	go func() {
-		fmt.Printf("Starting server at port %d\n", port)
+		logger.Logger.Info("starting server", zap.Int64("port", port))
 		if err := server.ListenAndServe(); err != nil {
-			fmt.Println(err)
+			logger.Logger.Info("failed to start http server", zap.Error(err))
 		}
 	}()
 
@@ -41,7 +43,8 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
 	defer cancel()
 	// wait for connections to close or until deadline
-	server.Shutdown(ctx)
-	fmt.Println("shutting down!")
+	_ = server.Shutdown(ctx)
+	logger.Logger.Info("shutting down...")
+	logger.ShutdownLogger()
 	os.Exit(0)
 }

@@ -1,7 +1,8 @@
 package middleware
 
 import (
-	"fmt"
+	"gitlab.com/otqee/otqee-be/internal/logger"
+	"go.uber.org/zap"
 	"net/http"
 )
 
@@ -9,6 +10,9 @@ import (
 func AccessLogMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		next.ServeHTTP(w, r)
-		fmt.Println("accessed")
+		logger.Logger.Info("access",
+			zap.String("from", r.RemoteAddr),
+			zap.String("url", r.URL.Path),
+		)
 	})
 }
