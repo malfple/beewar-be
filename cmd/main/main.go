@@ -3,8 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/rs/cors"
+	"gitlab.com/otqee/otqee-be/internal/view"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,31 +11,15 @@ import (
 	"time"
 )
 
-func Ping(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "pong!")
-}
-
-func AccessLogMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request) {
-		next.ServeHTTP(w, r)
-		fmt.Println("accessed")
-	})
-}
-
 func main() {
 	port := int64(3001)
 
-	router := mux.NewRouter()
-	router.HandleFunc("/", Ping)
-	router.Use(AccessLogMiddleware)
-	router.Use(cors.Default().Handler)
-
 	server := &http.Server{
-		Addr: ":" + strconv.FormatInt(port, 10),
+		Addr:         ":" + strconv.FormatInt(port, 10),
 		WriteTimeout: time.Second * 15,
-		ReadTimeout: time.Second * 15,
-		IdleTimeout: time.Second * 60,
-		Handler: router,
+		ReadTimeout:  time.Second * 15,
+		IdleTimeout:  time.Second * 60,
+		Handler:      view.RootRouter(),
 	}
 
 	go func() {
@@ -55,7 +38,7 @@ func main() {
 	<-c
 
 	// create deadline to wait for
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 15)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
 	defer cancel()
 	// wait for connections to close or until deadline
 	server.Shutdown(ctx)
