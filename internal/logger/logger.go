@@ -5,13 +5,13 @@ import (
 	"go.uber.org/zap"
 )
 
-// Logger is the default production logger
+// Logger is the default logger
 var Logger *zap.Logger
 
 // InitLogger initializes logger
 func InitLogger() {
 	var err error
-	Logger, err = zap.NewProduction()
+	Logger, err = zap.NewDevelopment()
 	if err != nil {
 		fmt.Println("failed to init logger!")
 		fmt.Println(err)
