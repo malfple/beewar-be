@@ -1,4 +1,4 @@
-package view
+package handler
 
 import (
 	"github.com/gorilla/mux"
@@ -12,8 +12,11 @@ import (
 // RootRouter returns the highest level router
 func RootRouter() *mux.Router {
 	router := mux.NewRouter()
-	router.HandleFunc("/", Ping)
+
+	router.HandleFunc("/", Ping).Methods("GET")
+
 	router.Use(middleware.AccessLogMiddleware)
-	router.Use(cors.Default().Handler)
+	router.Use(cors.Default().Handler) // TODO: configure CORS rule
+
 	return router
 }
