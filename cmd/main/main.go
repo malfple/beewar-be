@@ -2,9 +2,8 @@ package main
 
 import (
 	"context"
-	"gitlab.com/otqee/otqee-be/internal/handler"
-	"gitlab.com/otqee/otqee-be/internal/handler/oauth2"
 	"gitlab.com/otqee/otqee-be/internal/logger"
+	"gitlab.com/otqee/otqee-be/internal/view"
 	"go.uber.org/zap"
 	"net/http"
 	"os"
@@ -22,16 +21,13 @@ func main() {
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
-		Handler:      handler.RootRouter(),
+		Handler:      view.RootRouter(),
 	}
 
-	// TODO: move to its own module (not inside handler)
-	oauth2.InitOAuth2Server()
-
 	go func() {
-		logger.Logger.Info("starting server...", zap.Int64("port", port))
+		logger.Logger.Info("starting server", zap.Int64("port", port))
 		if err := server.ListenAndServe(); err != nil {
-			logger.Logger.Info("server shutting down...", zap.Error(err))
+			logger.Logger.Info("failed to start http server", zap.Error(err))
 		}
 	}()
 
