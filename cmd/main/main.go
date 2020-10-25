@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"gitlab.com/otqee/otqee-be/internal/handler"
-	"gitlab.com/otqee/otqee-be/internal/handler/oauth2"
 	"gitlab.com/otqee/otqee-be/internal/logger"
 	"go.uber.org/zap"
 	"net/http"
@@ -24,9 +23,6 @@ func main() {
 		IdleTimeout:  time.Second * 60,
 		Handler:      handler.RootRouter(),
 	}
-
-	// TODO: move to its own module (not inside handler)
-	oauth2.InitOAuth2Server()
 
 	go func() {
 		logger.Logger.Info("starting server...", zap.Int64("port", port))
