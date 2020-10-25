@@ -10,7 +10,7 @@ import (
 func AccessLogMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		next.ServeHTTP(w, r)
-		logger.Logger.Debug("access",
+		logger.GetLogger().Debug("access",
 			zap.String("from", r.RemoteAddr),
 			zap.String("url", r.URL.Path),
 		)

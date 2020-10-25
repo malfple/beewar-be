@@ -25,9 +25,9 @@ func main() {
 	}
 
 	go func() {
-		logger.Logger.Info("starting server...", zap.Int64("port", port))
+		logger.GetLogger().Info("starting server...", zap.Int64("port", port))
 		if err := server.ListenAndServe(); err != nil {
-			logger.Logger.Info("server shutting down...", zap.Error(err))
+			logger.GetLogger().Info("server shutting down...", zap.Error(err))
 		}
 	}()
 
@@ -44,7 +44,7 @@ func main() {
 	defer cancel()
 	// wait for connections to close or until deadline
 	_ = server.Shutdown(ctx)
-	logger.Logger.Info("shutting down...")
+	logger.GetLogger().Info("shutting down...")
 	logger.ShutdownLogger()
 	os.Exit(0)
 }

@@ -5,25 +5,32 @@ import (
 	"go.uber.org/zap"
 )
 
-// Logger is the default logger
-var Logger *zap.Logger
+// logger is the default logger
+var logger *zap.Logger
 
 // InitLogger initializes logger
 func InitLogger() {
 	var err error
-	Logger, err = zap.NewDevelopment()
+	logger, err = zap.NewDevelopment()
 	if err != nil {
 		fmt.Println("failed to init logger!")
 		fmt.Println(err)
 		return
 	}
 
-	defer Logger.Sync()
-	Logger.Info("init logger")
+	defer func() {
+		_ = logger.Sync()
+	}()
+	logger.Info("init logger")
 }
 
 // ShutdownLogger cleans the logger before exiting
 func ShutdownLogger() {
-	Logger.Info("sync logger to shutdown")
-	_ = Logger.Sync()
+	logger.Info("sync logger to shutdown")
+	_ = logger.Sync()
+}
+
+// GetLogger returns the default logger
+func GetLogger() *zap.Logger {
+	return logger
 }
