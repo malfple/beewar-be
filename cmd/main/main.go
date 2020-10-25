@@ -2,22 +2,21 @@ package main
 
 import (
 	"context"
+	"gitlab.com/otqee/otqee-be/configs"
 	"gitlab.com/otqee/otqee-be/internal/handler"
 	"gitlab.com/otqee/otqee-be/internal/logger"
 	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"time"
 )
 
 func main() {
-	port := int64(3001)
 	logger.InitLogger()
 
 	server := &http.Server{
-		Addr:         ":" + strconv.FormatInt(port, 10),
+		Addr:         ":" + configs.GetServerPort(),
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
@@ -25,7 +24,7 @@ func main() {
 	}
 
 	go func() {
-		logger.GetLogger().Info("starting server...", zap.Int64("port", port))
+		logger.GetLogger().Info("starting server...", zap.String("address", server.Addr))
 		if err := server.ListenAndServe(); err != nil {
 			logger.GetLogger().Info("server shutting down...", zap.Error(err))
 		}
