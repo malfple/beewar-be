@@ -3,7 +3,7 @@ package handler
 import (
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"gitlab.com/otqee/otqee-be/internal/handler/auth"
+	"gitlab.com/otqee/otqee-be/internal/handler/oauth2"
 	"gitlab.com/otqee/otqee-be/internal/middleware"
 )
 
@@ -15,7 +15,7 @@ func RootRouter() *mux.Router {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/", HandlePing).Methods("GET")
-	auth.RegisterAuthRouter(router.PathPrefix("/auth").Subrouter())
+	oauth2.BuildOAuth2Router(router.PathPrefix("/oauth2").Subrouter())
 
 	router.Use(middleware.AccessLogMiddleware)
 	router.Use(cors.Default().Handler)
