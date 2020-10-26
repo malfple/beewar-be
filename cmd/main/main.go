@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"gitlab.com/otqee/otqee-be/configs"
+	"gitlab.com/otqee/otqee-be/internal/access"
 	"gitlab.com/otqee/otqee-be/internal/handler"
 	"gitlab.com/otqee/otqee-be/internal/logger"
 	"go.uber.org/zap"
@@ -14,6 +15,7 @@ import (
 
 func main() {
 	logger.InitLogger()
+	access.InitAccess()
 
 	server := &http.Server{
 		Addr:         ":" + configs.GetServerPort(),
@@ -44,6 +46,9 @@ func main() {
 	// wait for connections to close or until deadline
 	_ = server.Shutdown(ctx)
 	logger.GetLogger().Info("shutting down...")
+
+	access.ShutdownAccess()
 	logger.ShutdownLogger()
+
 	os.Exit(0)
 }
