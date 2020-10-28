@@ -23,6 +23,10 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
+	logger.GetLogger().Debug("login",
+		zap.String("username", username),
+		zap.Int("status_code", statusCode))
+
 	if statusCode == http.StatusOK {
 		resp := &LoginResponse{
 			Token: token,
