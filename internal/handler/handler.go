@@ -12,9 +12,11 @@ import (
 // RootRouter returns the highest level router
 func RootRouter() *mux.Router {
 	router := mux.NewRouter()
+	apiRouter := router.PathPrefix("/api").Subrouter()
 
-	router.HandleFunc("/api", Ping).Methods("GET")
-	auth.RegisterAuthRouter(router.PathPrefix("/api/auth").Subrouter())
+	apiRouter.HandleFunc("/", Ping).Methods("GET")
+	auth.RegisterAuthRouter(apiRouter.PathPrefix("/auth").Subrouter())
+	apiRouter.HandleFunc("/profile", HandleProfile).Methods("GET")
 
 	router.Use(middleware.AccessLogMiddleware)
 
