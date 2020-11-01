@@ -9,10 +9,18 @@ import (
 
 // GetUserByUsername gets a single user by username
 func GetUserByUsername(username string) *model.User {
-	row := db.QueryRow(`SELECT * FROM user_tab WHERE username=?`, username)
+	row := db.QueryRow(`SELECT * FROM user_tab WHERE username=? LIMIT 1`, username)
 
 	user := &model.User{}
-	err := row.Scan(&user.ID, &user.Email, &user.Username, &user.Password, &user.TimeCreated)
+	err := row.Scan(
+		&user.ID,
+		&user.Email,
+		&user.Username,
+		&user.Password,
+		&user.Rating,
+		&user.MovesMade,
+		&user.GamesPlayed,
+		&user.TimeCreated)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			logger.GetLogger().Error("db: query error", zap.Error(err))

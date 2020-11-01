@@ -22,6 +22,9 @@ func HandleProfile(w http.ResponseWriter, r *http.Request) {
 			ID:          user.ID,
 			Email:       user.Email,
 			Username:    user.Username,
+			Rating:      user.Rating,
+			MovesMade:   user.MovesMade,
+			GamesPlayed: user.GamesPlayed,
 			TimeCreated: user.TimeCreated,
 		}
 	}
@@ -41,5 +44,8 @@ type userProfile struct {
 	ID          int64  `json:"id"`
 	Email       string `json:"email"`
 	Username    string `json:"username"`
+	Rating      int16  `json:"rating"`
+	MovesMade   int64  `json:"moves_made"`
+	GamesPlayed int32  `json:"games_played"`
 	TimeCreated int64  `json:"time_created"`
 }
