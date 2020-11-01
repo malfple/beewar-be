@@ -2,13 +2,35 @@ package access
 
 import (
 	"database/sql"
+	"errors"
 	"gitlab.com/otqee/otqee-be/internal/access/model"
 	"gitlab.com/otqee/otqee-be/internal/logger"
 	"go.uber.org/zap"
 )
 
+var (
+	// ErrWidth is returned when width is out of constraint
+	ErrWidth = errors.New("width must be at least 1 and at most 50")
+	// ErrHeight is returned when height is out of constraint
+	ErrHeight = errors.New("height must be at least 1 and at most 50")
+)
+
+const (
+	// MapMaxWidth defines the maximum map width
+	MapMaxWidth = 50
+	// MapMaxHeight defines the maximum map height
+	MapMaxHeight = 50
+)
+
 // CreateEmptyMap creates an empty map with the specified type and size, and returns the id
 func CreateEmptyMap(mapType, width, height int8, authorUserID int64) (int64, error) {
+	if width < 1 || width > MapMaxWidth {
+		return 0, ErrWidth
+	}
+	if height < 1 || height > MapMaxHeight {
+		return 0, ErrHeight
+	}
+
 	terrainInfo := make([]byte, width*height)
 	unitInfo := make([]byte, 1)
 
