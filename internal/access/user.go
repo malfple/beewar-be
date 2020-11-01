@@ -5,6 +5,7 @@ import (
 	"gitlab.com/otqee/otqee-be/internal/access/model"
 	"gitlab.com/otqee/otqee-be/internal/logger"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // GetUserByUsername gets a single user by username
@@ -28,4 +29,22 @@ func GetUserByUsername(username string) *model.User {
 		return nil
 	}
 	return user
+}
+
+// CreateUser creates a new user
+func CreateUser(email, username, password string) error {
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		logger.GetLogger().Error("error bcrypt", zap.Error(err))
+		return err
+	}
+
+	_, err = db.Exec(`INSERT INTO user_tab(email, username, password, time_created) VALUES (?, ?, ?, UNIX_TIMESTAMP())`,
+		email, username, passwordHash)
+	if err != nil {
+		logger.GetLogger().Error("error insert user", zap.Error(err))
+		return err
+	}
+
+	return nil
 }
