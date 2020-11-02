@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gorilla/mux"
 	"gitlab.com/otqee/otqee-be/internal/handler/auth"
+	_map "gitlab.com/otqee/otqee-be/internal/handler/map"
 	"gitlab.com/otqee/otqee-be/internal/middleware"
 )
 
@@ -17,6 +18,8 @@ func RootRouter() *mux.Router {
 	apiRouter.HandleFunc("/", Ping).Methods("GET")
 	auth.RegisterAuthRouter(apiRouter.PathPrefix("/auth").Subrouter())
 	apiRouter.HandleFunc("/profile", HandleProfile).Methods("GET")
+
+	_map.RegisterMapRouter(apiRouter.PathPrefix("/map").Subrouter())
 
 	router.Use(middleware.AccessLogMiddleware)
 
