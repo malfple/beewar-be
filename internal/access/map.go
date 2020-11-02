@@ -9,26 +9,30 @@ import (
 )
 
 var (
-	// ErrWidth is returned when width is out of constraint
-	ErrWidth = errors.New("width must be at least 1 and at most 50")
-	// ErrHeight is returned when height is out of constraint
-	ErrHeight = errors.New("height must be at least 1 and at most 50")
+	// ErrMapWidth is returned when width is out of constraint
+	ErrMapWidth = errors.New("width must be at least 1 and at most 50")
+	// ErrMapHeight is returned when height is out of constraint
+	ErrMapHeight = errors.New("height must be at least 1 and at most 50")
+	// ErrMapNameLength is returned when name exceeds maximum length
+	ErrMapNameLength = errors.New("name must be at most 255")
 )
 
 const (
-	// MapMaxWidth defines the maximum map width
-	MapMaxWidth = 50
-	// MapMaxHeight defines the maximum map height
-	MapMaxHeight = 50
+	mapMaxWidth      = 50
+	mapMaxHeight     = 50
+	mapMaxNameLength = 255
 )
 
 // CreateEmptyMap creates an empty map with the specified type and size, and returns the id
 func CreateEmptyMap(mapType, width, height int8, name string, authorUserID int64) (int64, error) {
-	if width < 1 || width > MapMaxWidth {
-		return 0, ErrWidth
+	if width < 1 || width > mapMaxWidth {
+		return 0, ErrMapWidth
 	}
-	if height < 1 || height > MapMaxHeight {
-		return 0, ErrHeight
+	if height < 1 || height > mapMaxHeight {
+		return 0, ErrMapHeight
+	}
+	if len(name) > mapMaxNameLength {
+		return 0, ErrMapNameLength
 	}
 
 	terrainInfo := make([]byte, width*height)

@@ -2,14 +2,35 @@ package access
 
 import (
 	"database/sql"
+	"errors"
 	"gitlab.com/otqee/otqee-be/internal/access/model"
 	"gitlab.com/otqee/otqee-be/internal/logger"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
+var (
+	// ErrUsernameLength is returned when username length is out of constraint
+	ErrUsernameLength = errors.New("username length must be at least 1 and at most 255")
+	// ErrPasswordLength is returned when password length is out of constraint
+	ErrPasswordLength = errors.New("password length must be at least 8 and at most 255")
+)
+
+const (
+	userMaxUsernameLength = 255
+	userMinPasswordLength = 8
+	userMaxPasswordLength = 255
+)
+
 // CreateUser creates a new user
 func CreateUser(email, username, password string) error {
+	if len(username) < 1 || len(username) > userMaxUsernameLength {
+		return ErrUsernameLength
+	}
+	if len(password) < userMinPasswordLength || len(password) > userMaxPasswordLength {
+		return ErrPasswordLength
+	}
+
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		logger.GetLogger().Error("error bcrypt", zap.Error(err))
