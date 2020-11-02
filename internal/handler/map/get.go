@@ -12,19 +12,16 @@ import (
 
 // HandleMapGet handles single map request
 func HandleMapGet(w http.ResponseWriter, r *http.Request) {
+	resp := &MapGetResponse{}
+
 	mapID, err := strconv.ParseInt(r.URL.Query().Get("id"), 10, 64)
-	if err != nil {
-		logger.GetLogger().Error("parse int error", zap.Error(err))
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+	if err == nil { // id has to be integer
+		mapp := access.GetMapByID(mapID)
+		resp.Map = mapp
 	}
-	mapp := access.GetMapByID(mapID)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-
-	resp := &MapGetResponse{}
-	resp.Map = mapp
 
 	err = json.NewEncoder(w).Encode(resp)
 	if err != nil {
