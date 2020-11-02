@@ -3,14 +3,16 @@ DROP TABLE IF EXISTS map_tab;
 
 CREATE TABLE user_tab(
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    username VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     rating SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     moves_made BIGINT UNSIGNED NOT NULL DEFAULT 0,
     games_played INT UNSIGNED NOT NULL DEFAULT 0,
     time_created BIGINT,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    UNIQUE INDEX unq_email (email),
+    UNIQUE INDEX unq_username (username)
 );
 
 CREATE TABLE map_tab(
@@ -25,5 +27,6 @@ CREATE TABLE map_tab(
     stat_play_count INT UNSIGNED NOT NULL DEFAULT 0,
     time_created BIGINT,
     time_modified BIGINT,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    INDEX idx_author_user_id (author_user_id)
 );
