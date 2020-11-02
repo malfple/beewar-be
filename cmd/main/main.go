@@ -18,7 +18,7 @@ func main() {
 	access.InitAccess()
 
 	server := &http.Server{
-		Addr:         ":" + configs.GetServerPort(),
+		Addr:         configs.GetServerAddress(),
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,

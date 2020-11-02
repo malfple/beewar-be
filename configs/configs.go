@@ -5,19 +5,19 @@ import "os"
 // This file contains default configs
 
 const (
-	defaultServerPort = "3001"
+	defaultServerAddress = ":3001"
 
 	defaultDatabaseUser     = "root"
 	defaultDatabasePassword = "malfplemac"
 	defaultDatabaseName     = "otqee"
 )
 
-// GetServerPort returns server port
-func GetServerPort() string {
-	if port := os.Getenv("SERVER_PORT"); port != "" {
-		return port
+// GetServerAddress returns server address
+func GetServerAddress() string {
+	if addr := os.Getenv("SERVER_ADDR"); addr != "" {
+		return addr
 	}
-	return defaultServerPort
+	return defaultServerAddress
 }
 
 // GetDatabaseConfig returns database config: (user, password, database_name)
