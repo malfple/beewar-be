@@ -20,6 +20,7 @@ CREATE TABLE map_tab(
     type TINYINT UNSIGNED NOT NULL,
     width TINYINT UNSIGNED NOT NULL,
     height TINYINT UNSIGNED NOT NULL,
+    name VARCHAR(255) NOT NULL,
     terrain_info BLOB,
     unit_info BLOB,
     author_user_id BIGINT,
