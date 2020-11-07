@@ -11,7 +11,7 @@ import (
 // HandleProfile handles profile query
 func HandleProfile(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
-	user := access.GetUserByUsername(username)
+	user := access.QueryUserByUsername(username)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

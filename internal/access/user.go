@@ -47,8 +47,8 @@ func CreateUser(email, username, password string) error {
 	return nil
 }
 
-// GetUserByUsername gets a single user by username
-func GetUserByUsername(username string) *model.User {
+// QueryUserByUsername gets a single user by username
+func QueryUserByUsername(username string) *model.User {
 	row := db.QueryRow(`SELECT * FROM user_tab WHERE username=? LIMIT 1`, username)
 
 	user := &model.User{}

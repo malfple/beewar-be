@@ -47,8 +47,8 @@ func CreateEmptyMap(mapType, width, height int8, name string, authorUserID int64
 	return res.LastInsertId()
 }
 
-// GetMapByID gets a single map by id
-func GetMapByID(mapID int64) *model.Map {
+// QueryMapByID gets a single map by id
+func QueryMapByID(mapID int64) *model.Map {
 	row := db.QueryRow(`SELECT * FROM map_tab WHERE id=? LIMIT 1`, mapID)
 
 	mapp := &model.Map{}

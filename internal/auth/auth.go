@@ -8,7 +8,7 @@ import (
 
 // AuthenticateUser checks user credentials and returns the user on success
 func AuthenticateUser(username string) *model.User {
-	user := access.GetUserByUsername(username)
+	user := access.QueryUserByUsername(username)
 	if user == nil {
 		return nil
 	}

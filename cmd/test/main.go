@@ -10,13 +10,13 @@ func main() {
 	logger.InitLogger()
 	access.InitAccess()
 
-	//user := access.GetUserByUsername("malfple")
+	//user := access.QueryUserByUsername("malfple")
 	//fmt.Println(user)
 
 	//mapID, err := access.CreateEmptyMap(0, 2, 3, 1)
 	//fmt.Println(mapID, err)
 
-	mapp := access.GetMapByID(2)
+	mapp := access.QueryMapByID(2)
 	fmt.Println(mapp)
 
 	access.ShutdownAccess()
