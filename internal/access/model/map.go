@@ -7,6 +7,7 @@ type Map struct {
 	Width         int8   `json:"width"`
 	Height        int8   `json:"height"`
 	Name          string `json:"name"`
+	PlayerCount   int8   `json:"player_count"`
 	TerrainInfo   []byte `json:"terrain_info"`
 	UnitInfo      []byte `json:"unit_info"`
 	AuthorUserID  int64  `json:"author_user_id"`

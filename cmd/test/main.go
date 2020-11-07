@@ -16,7 +16,7 @@ func main() {
 	//mapID, err := access.CreateEmptyMap(0, 2, 3, 1)
 	//fmt.Println(mapID, err)
 
-	mapp := access.QueryMapByID(2)
+	mapp := access.QueryMapByID(1)
 	fmt.Println(mapp)
 
 	access.ShutdownAccess()
