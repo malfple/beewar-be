@@ -6,9 +6,12 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"gitlab.com/otqee/otqee-be/internal/logger"
 	"go.uber.org/zap"
+	"time"
 )
 
 var jwtSecret = []byte{184, 208, 147, 205, 37, 218, 186, 230, 51, 67, 100, 192, 190, 207, 108, 26, 136, 235, 173, 57, 198, 159, 15, 75, 166, 148, 108, 239, 12, 77, 164, 9}
+
+const jwtExpiry = time.Hour
 
 // GenerateToken generates a 32-long byte array consisting of crypto random numbers
 func GenerateToken() []byte {
@@ -22,8 +25,9 @@ func GenerateToken() []byte {
 
 // GenerateJWT generates a JWT using username as claim
 func GenerateJWT(username string) string {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"username": username,
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
+		Subject: username,
+		ExpiresAt: time.Now().Add(jwtExpiry).Unix(),
 	})
 
 	tokenString, err := token.SignedString(jwtSecret)
@@ -36,7 +40,7 @@ func GenerateJWT(username string) string {
 
 // ValidateJWT returns the username. If it's not valid, an error is returned
 func ValidateJWT(tokenString string) (string, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -48,9 +52,9 @@ func ValidateJWT(tokenString string) (string, error) {
 		return "", err
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return claims["username"].(string), nil
-	} else {
-		return "", err
+	if claims, ok := token.Claims.(*jwt.StandardClaims); ok && token.Valid {
+		return claims.Subject , nil
 	}
+
+	return "", fmt.Errorf("invalid token")
 }
