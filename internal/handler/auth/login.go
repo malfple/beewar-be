@@ -18,7 +18,8 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	username := r.Form.Get("username")
-	token, statusCode := auth.Login(username)
+	password := r.Form.Get("password")
+	token, statusCode := auth.Login(username, password)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
