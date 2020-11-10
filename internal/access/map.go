@@ -123,7 +123,6 @@ func QueryMapByID(mapID int64) *model.Map {
 		&mapp.TerrainInfo,
 		&mapp.UnitInfo,
 		&mapp.AuthorUserID,
-		&mapp.StatVotes,
 		&mapp.StatPlayCount,
 		&mapp.TimeCreated,
 		&mapp.TimeModified)
