@@ -20,9 +20,9 @@ ordered by row first (H) then column (W)
 --- map info ---
 
 let N = number of units
+size: 5 * N
 format:
-first two bytes = N
-following 5*N bytes are the unit info
+for each unit, there are 5 numbers
 y, x, p, t, f
 y = row number, x = column number
 p = the player who owns this unit (0..number of players)
@@ -41,7 +41,7 @@ var (
 	// ErrMapNameLength is returned when name exceeds maximum length
 	ErrMapNameLength = errors.New("name must be at most 255")
 	// ErrMapInvalidTerrainInfo is returned when terrain info does not match map size
-	ErrMapInvalidTerrainInfo = errors.New("terrain info does not match map size")
+	ErrMapInvalidTerrainInfo = errors.New("invalid terrain info")
 	// ErrMapInvalidUnitInfo is returned when unit info does not follow format
 	ErrMapInvalidUnitInfo = errors.New("invalid unit info")
 )
@@ -61,6 +61,9 @@ func validateTerrainInfo(width, height int8, terrainInfo []byte) error {
 }
 
 func validateUnitInfo(width, height int8, unitInfo []byte) error {
+	if len(unitInfo)%5 != 0 {
+		return ErrMapInvalidUnitInfo
+	}
 	return nil
 }
 
@@ -77,9 +80,13 @@ func CreateEmptyMap(mapType, width, height int8, name string, authorUserID int64
 	}
 
 	terrainInfo := make([]byte, width*height)
-	unitInfo := make([]byte, 2)
+	unitInfo := make([]byte, 0)
 
-	res, err := db.Exec(`INSERT INTO map_tab(type, width, height, name, player_count, terrain_info, unit_info, author_user_id, time_created, time_modified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
+	const stmtCreateEmptyMap = `INSERT INTO map_tab
+(type, width, height, name, player_count, terrain_info, unit_info, author_user_id, time_created, time_modified)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
+
+	res, err := db.Exec(stmtCreateEmptyMap,
 		mapType, width, height, name, 1, terrainInfo, unitInfo, authorUserID)
 	if err != nil {
 		logger.GetLogger().Error("db: insert error", zap.String("table", "map_tab"), zap.Error(err))
@@ -105,6 +112,19 @@ func UpdateMap(id int64, mapType, width, height int8, name string, terrainInfo, 
 	if err := validateUnitInfo(width, height, unitInfo); err != nil {
 		return err
 	}
+
+	const stmtUpdateMap = `UPDATE map_tab
+SET type=?, width=?, height=?, name=?, terrain_info=?, unit_info=?
+WHERE id=?`
+
+	_, err := db.Exec(stmtUpdateMap,
+		mapType, width, height, name, terrainInfo, unitInfo,
+		id)
+	if err != nil {
+		logger.GetLogger().Error("db: update error", zap.String("table", "map_tab"), zap.Error(err))
+		return err
+	}
+
 	return nil
 }
 
