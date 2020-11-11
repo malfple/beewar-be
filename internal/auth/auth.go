@@ -6,15 +6,16 @@ import (
 	"net/http"
 )
 
-// Login authenticates the user and returns token
-func Login(username, password string) (string, int) {
+// Login authenticates the user and returns (refresh token, access token, http status code)
+func Login(username, password string) (string, string, int) {
 	user := access.QueryUserByUsername(username)
 	if user == nil {
-		return "", http.StatusUnauthorized
+		return "", "", http.StatusUnauthorized
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		return "", http.StatusUnauthorized
+		return "", "", http.StatusUnauthorized
 	}
 
-	return user.Username, http.StatusOK
+	// username and password is valid
+	return GenerateRefreshToken(username), GenerateJWT(username), http.StatusOK
 }

@@ -5,14 +5,16 @@ import (
 	"time"
 )
 
+// we use uuid for refresh token
+
+// 7 days expiry time
+const refreshTokenExpiry = 168 * time.Hour
+
 // this struct contains the username bound to the token and its expiry
 type refreshTokenInfo struct {
 	Username string
 	ExpireAt int64
 }
-
-// 7 days expiry time
-const refreshTokenExpiry = 168 * time.Hour
 
 // maps refresh token to username
 var refreshTokenStore = make(map[string]refreshTokenInfo)
@@ -32,10 +34,11 @@ func RemoveRefreshToken(refreshToken string) {
 	delete(refreshTokenStore, refreshToken)
 }
 
-// GetUsernameFromRefreshToken returns username or empty string if token not found / expired
-func GetUsernameFromRefreshToken(refreshToken string) string {
+// ValidateRefreshToken checks refresh token and returns username,
+// or empty string if token not found / expired
+func ValidateRefreshToken(refreshToken string) string {
 	if tokenInfo, ok := refreshTokenStore[refreshToken]; ok {
-		if tokenInfo.ExpireAt <= time.Now().Unix() { // token expired
+		if time.Now().Unix() > tokenInfo.ExpireAt { // token expired
 			delete(refreshTokenStore, refreshToken)
 			return ""
 		}
