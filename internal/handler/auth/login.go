@@ -22,26 +22,38 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	refreshToken, accessToken, statusCode := auth.Login(username, password)
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
 
 	logger.GetLogger().Debug("login",
 		zap.String("username", username),
 		zap.Int("status_code", statusCode))
 
-	if statusCode == http.StatusOK {
-		resp := &LoginResponse{
-			RefreshToken: refreshToken,
-			AccessToken:  accessToken,
-		}
-		err := json.NewEncoder(w).Encode(resp)
-		if err != nil {
-			logger.GetLogger().Error("error encode", zap.Error(err))
-		}
+	if statusCode != http.StatusOK {
+		w.WriteHeader(statusCode)
+		return
+	}
+
+	// refresh token will be returned in the form of cookies,
+	// and access token will be returned directly in the body
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "otqee-rtoken",
+		Value:    refreshToken,
+		MaxAge:   864000, // 10 day cookie expiry. The expiry time for refresh token should be lower
+		Path:     "/api/auth",
+		HttpOnly: true,
+	})
+	w.WriteHeader(http.StatusOK)
+
+	resp := &LoginResponse{
+		Token: accessToken,
+	}
+	err = json.NewEncoder(w).Encode(resp)
+	if err != nil {
+		logger.GetLogger().Error("error encode", zap.Error(err))
 	}
 }
 
 // LoginResponse is a response for login handler
 type LoginResponse struct {
-	RefreshToken string `json:"refresh_token"`
-	AccessToken  string `json:"access_token"`
+	Token string `json:"token"`
 }

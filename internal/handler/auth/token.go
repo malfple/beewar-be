@@ -10,16 +10,13 @@ import (
 
 // HandleToken handles access token request from refresh token
 func HandleToken(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	if err != nil {
-		logger.GetLogger().Error("error parse form", zap.Error(err))
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
 	w.Header().Set("Content-Type", "application/json")
 
-	refreshToken := r.Form.Get("token")
+	// take refresh token from cookie
+	refreshToken := ""
+	if refreshTokenCookie, err := r.Cookie("otqee-rtoken"); err == nil {
+		refreshToken = refreshTokenCookie.Value
+	}
 
 	username := auth.ValidateRefreshToken(refreshToken)
 	if username == "" {
@@ -33,7 +30,7 @@ func HandleToken(w http.ResponseWriter, r *http.Request) {
 	resp := &TokenResponse{
 		Token: accessToken,
 	}
-	err = json.NewEncoder(w).Encode(resp)
+	err := json.NewEncoder(w).Encode(resp)
 	if err != nil {
 		logger.GetLogger().Error("error encode", zap.Error(err))
 	}
