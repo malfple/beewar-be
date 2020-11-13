@@ -10,13 +10,45 @@ func main() {
 	logger.InitLogger()
 	access.InitAccess()
 
+	// users
 	_ = access.CreateUser("malfple@user.com", "malfple", "malfplesecret")
 	_ = access.CreateUser("rapel@user.com", "rapel", "rapelsecret")
 	_ = access.CreateUser("sebas@user.com", "sebas", "sebassecret")
 	_ = access.CreateUser("kyon@user.com", "kyon", "kyonsecret")
 
-	mapID, _ := access.CreateEmptyMap(0, 10, 10, "some seeded map", 1)
-	fmt.Printf("create map with id: %d\n", mapID)
+	// map 1
+	if access.QueryMapByID(1) == nil {
+		mapID, _ := access.CreateEmptyMap(0, 10, 10, "some seeded map", 1)
+		fmt.Printf("create map with id: %d\n", mapID)
+
+		terrainInfo := []byte{
+			0, 0, 1, 1, 1, 1, 1, 1, 0, 0,
+			0, 0, 1, 1, 1, 1, 1, 1, 1, 0,
+			0, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			0, 1, 1, 1, 1, 0, 1, 1, 1, 1,
+			1, 1, 1, 0, 0, 0, 0, 1, 1, 1,
+			1, 1, 1, 0, 0, 0, 0, 1, 1, 1,
+			1, 1, 1, 1, 0, 1, 1, 1, 1, 0,
+			0, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			0, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+			0, 0, 1, 1, 1, 1, 1, 1, 0, 0,
+		}
+		unitInfo := []byte{
+			5, 1, 1, 1, 0,
+			4, 1, 1, 3, 0,
+			3, 1, 1, 3, 0,
+			6, 1, 1, 3, 0,
+			7, 1, 1, 3, 0,
+			4, 8, 2, 1, 0,
+			3, 8, 2, 3, 0,
+			2, 8, 2, 3, 0,
+			5, 8, 2, 3, 0,
+			6, 8, 2, 3, 0,
+		}
+
+		_ = access.UpdateMap(1, 0, 10, 10, "some updated seeded map",
+			terrainInfo, unitInfo)
+	}
 
 	access.ShutdownAccess()
 	logger.ShutdownLogger()
