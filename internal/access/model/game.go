@@ -18,7 +18,9 @@ type Game struct {
 
 // GameUser is a db model
 type GameUser struct {
-	ID     int64
-	GameID int64
-	UserID int64
+	ID          int64
+	GameID      int64
+	UserID      int64
+	RankOrder   int8
+	TurnsLasted int32
 }

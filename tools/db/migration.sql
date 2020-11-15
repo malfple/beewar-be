@@ -54,6 +54,8 @@ CREATE TABLE game_user_tab(
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     game_id BIGINT UNSIGNED NOT NULL,
     user_id BIGINT UNSIGNED NOT NULL,
+    rank_order TINYINT UNSIGNED DEFAULT 0,
+    turns_lasted INT DEFAULT 0,
     PRIMARY KEY (id),
     INDEX idx_game_id (game_id),
     INDEX idx_user_id (user_id)

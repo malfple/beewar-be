@@ -86,6 +86,8 @@ func QueryGameByID(gameID int64) *model.Game {
 		&game.TerrainInfo,
 		&game.UnitInfo,
 		&game.MapID,
+		&game.TurnCount,
+		&game.TurnPlayer,
 		&game.TimeCreated,
 		&game.TimeModified)
 	if err != nil {
