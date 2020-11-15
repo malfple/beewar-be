@@ -29,6 +29,12 @@ func main() {
 	token := auth.GenerateJWT("some_username")
 	fmt.Println(token)
 
+	//gameID, err := access.CreateGameFromMap(1, []int64{1, 2})
+	//fmt.Printf("game id: %d, err: %v\n", gameID, err)
+
+	game := access.QueryGameByID(1)
+	fmt.Println(game)
+
 	access.ShutdownAccess()
 	logger.ShutdownLogger()
 }

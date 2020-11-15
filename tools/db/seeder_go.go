@@ -46,7 +46,7 @@ func main() {
 			6, 8, 2, 3, 0,
 		}
 
-		_ = access.UpdateMap(1, 0, 10, 10, "some updated seeded map",
+		_ = access.UpdateMap(1, 0, 10, 10, "some updated seeded map", 2,
 			terrainInfo, unitInfo)
 	}
 

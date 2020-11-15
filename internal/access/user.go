@@ -69,3 +69,18 @@ func QueryUserByUsername(username string) *model.User {
 	}
 	return user
 }
+
+// IsExistUserByID checks for userID existence
+func IsExistUserByID(userID int64) bool {
+	row := db.QueryRow(`SELECT 1 FROM user_tab WHERE id=? LIMIT 1`, userID)
+
+	var temp int
+	err := row.Scan(&temp)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			logger.GetLogger().Error("db: query error", zap.String("table", "user_tab"), zap.Error(err))
+		}
+		return false
+	}
+	return true
+}

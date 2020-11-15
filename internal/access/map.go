@@ -96,7 +96,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 }
 
 // UpdateMap updates a map
-func UpdateMap(id int64, mapType, width, height int8, name string, terrainInfo, unitInfo []byte) error {
+func UpdateMap(id int64, mapType, width, height int8, name string, playerCount int8, terrainInfo, unitInfo []byte) error {
 	if width < 1 || width > mapMaxWidth {
 		return ErrMapWidth
 	}
@@ -114,11 +114,11 @@ func UpdateMap(id int64, mapType, width, height int8, name string, terrainInfo, 
 	}
 
 	const stmtUpdateMap = `UPDATE map_tab
-SET type=?, width=?, height=?, name=?, terrain_info=?, unit_info=?
+SET type=?, width=?, height=?, name=?, player_count=?, terrain_info=?, unit_info=?
 WHERE id=?`
 
 	_, err := db.Exec(stmtUpdateMap,
-		mapType, width, height, name, terrainInfo, unitInfo,
+		mapType, width, height, name, playerCount, terrainInfo, unitInfo,
 		id)
 	if err != nil {
 		logger.GetLogger().Error("db: update error", zap.String("table", "map_tab"), zap.Error(err))
