@@ -3,9 +3,11 @@ package game
 import (
 	"fmt"
 	"github.com/gorilla/websocket"
+	"gitlab.com/otqee/otqee-be/internal/access"
 	"gitlab.com/otqee/otqee-be/internal/logger"
 	"go.uber.org/zap"
 	"net/http"
+	"strconv"
 )
 
 var upgrader = websocket.Upgrader{
@@ -20,6 +22,18 @@ var upgrader = websocket.Upgrader{
 
 // HandleGameWS handles websocket connection for a game
 func HandleGameWS(w http.ResponseWriter, r *http.Request) {
+	gameID, err := strconv.ParseInt(r.URL.Query().Get("id"), 10, 64)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	game := access.QueryGameByID(gameID)
+	if game == nil {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	// game exists. now upgrade to websocket
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		logger.GetLogger().Error("ws: error upgrade", zap.Error(err))
