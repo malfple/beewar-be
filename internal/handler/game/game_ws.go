@@ -1,9 +1,9 @@
 package game
 
 import (
-	"fmt"
 	"github.com/gorilla/websocket"
 	"gitlab.com/otqee/otqee-be/internal/access"
+	"gitlab.com/otqee/otqee-be/internal/gamemanager"
 	"gitlab.com/otqee/otqee-be/internal/logger"
 	"go.uber.org/zap"
 	"net/http"
@@ -41,25 +41,13 @@ func HandleGameWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer func() {
-		fmt.Println("ws closed")
 		_ = c.Close()
 	}()
 
-	fmt.Println("ws opened")
 	err = c.WriteMessage(websocket.TextMessage, []byte("server hello"))
 	if err != nil {
-		fmt.Println("error write: ", err)
+		return
 	}
-	for {
-		mt, message, err := c.ReadMessage()
-		if err != nil {
-			fmt.Println("error read: ", err)
-			break
-		}
-		fmt.Printf("mt %v message %v\n", mt, message)
-		err = c.WriteMessage(mt, message)
-		if err != nil {
-			fmt.Println("error write: ", err)
-		}
-	}
+	client := gamemanager.NewGameClientByID(c, gameID)
+	client.Listen()
 }
