@@ -58,6 +58,6 @@ func GetGameHub(gameID int64) *GameHub {
 }
 
 // NewGameClientByID creates a new client and connects to the hub by game id
-func NewGameClientByID(ws *websocket.Conn, gameID int64) *GameClient {
-	return NewGameClient(ws, GetGameHub(gameID))
+func NewGameClientByID(userID int64, ws *websocket.Conn, gameID int64) *GameClient {
+	return NewGameClient(userID, ws, GetGameHub(gameID))
 }

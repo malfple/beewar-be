@@ -1,17 +1,21 @@
 package gamemanager
 
 import (
+	"errors"
 	"github.com/gorilla/websocket"
 	"gitlab.com/otqee/otqee-be/internal/gamemanager/message"
 	"sync"
 )
+
+// ErrClientDuplicate is returned when a duplicate userID for a hub tries to register
+var ErrClientDuplicate = errors.New("only one user per game hub allowed")
 
 // the hub is responsible for broadcasting messages to the clients
 
 // GameHub is the central broadcasting service for a game
 type GameHub struct {
 	GameID     int64
-	Clients    map[*GameClient]bool
+	Clients    map[int64]*GameClient
 	MessageBus chan *message.GameMessage
 	Mutex      sync.Mutex // this lock is used to make sure broadcast and client register/unreg is synced
 	IsShutdown bool
@@ -19,19 +23,25 @@ type GameHub struct {
 }
 
 // RegisterClient registers the client to this hub
-func (hub *GameHub) RegisterClient(client *GameClient) {
+func (hub *GameHub) RegisterClient(client *GameClient) error {
+	var err error = nil
 	hub.Mutex.Lock()
 	if !hub.IsShutdown {
-		hub.Clients[client] = true
+		if _, ok := hub.Clients[client.UserID]; ok { // client found
+			err = ErrClientDuplicate
+		} else {
+			hub.Clients[client.UserID] = client
+		}
 	}
 	hub.Mutex.Unlock()
+	return err
 }
 
 // UnregisterClient unregisters the client
 func (hub *GameHub) UnregisterClient(client *GameClient) {
 	hub.Mutex.Lock()
 	if !hub.IsShutdown {
-		delete(hub.Clients, client)
+		delete(hub.Clients, client.UserID)
 	}
 	hub.Mutex.Unlock()
 
@@ -53,7 +63,7 @@ func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 		}
 
 		hub.Mutex.Lock()
-		for client := range hub.Clients {
+		for _, client := range hub.Clients {
 			rawMsg, err := message.MarshalGameMessage(msg)
 			if err != nil {
 				panic("shouldn't have errored when marshaling")
@@ -61,7 +71,7 @@ func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 			err = client.WS.WriteMessage(websocket.TextMessage, rawMsg)
 			if err != nil {
 				client.WS.Close()
-				delete(hub.Clients, client)
+				delete(hub.Clients, client.UserID)
 			}
 		}
 		hub.Mutex.Unlock()
@@ -88,9 +98,9 @@ func (hub *GameHub) ForceShutdown() {
 	if !hub.IsShutdown {
 		hub.IsShutdown = true
 		hub.MessageBus <- &message.GameMessage{Cmd: "SHUTDOWN"} // trigger shutdown for the listening goroutine
-		for client := range hub.Clients {
+		for _, client := range hub.Clients {
 			client.WS.Close()
-			delete(hub.Clients, client)
+			delete(hub.Clients, client.UserID)
 		}
 		// no need to call OnShutdown here
 		// if called, it will deadlock anyway
@@ -102,7 +112,7 @@ func (hub *GameHub) ForceShutdown() {
 func NewGameHub(gameID int64, onShutdown func()) *GameHub {
 	return &GameHub{
 		GameID:     gameID,
-		Clients:    make(map[*GameClient]bool),
+		Clients:    make(map[int64]*GameClient),
 		MessageBus: make(chan *message.GameMessage),
 		Mutex:      sync.Mutex{},
 		IsShutdown: false,
