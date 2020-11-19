@@ -14,11 +14,21 @@ var jwtSecret = []byte{184, 208, 147, 205, 37, 218, 186, 230, 51, 67, 100, 192, 
 
 const jwtExpiry = 15 * time.Minute
 
-// GenerateJWT generates a JWT using username as claim
-func GenerateJWT(username string) string {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
-		Subject:   username,
-		ExpiresAt: time.Now().Add(jwtExpiry).Unix(),
+// JWTCustomClaim is a custom jwt claim
+// username will be stored in `sub`
+type JWTCustomClaim struct {
+	UserID int64 `json:"user_id,omitempty"`
+	jwt.StandardClaims
+}
+
+// GenerateJWT generates a JWT using userID and username as claim
+func GenerateJWT(userID int64, username string) string {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, JWTCustomClaim{
+		userID,
+		jwt.StandardClaims{
+			Subject:   username,
+			ExpiresAt: time.Now().Add(jwtExpiry).Unix(),
+		},
 	})
 
 	tokenString, err := token.SignedString(jwtSecret)
@@ -29,9 +39,9 @@ func GenerateJWT(username string) string {
 	return tokenString
 }
 
-// ValidateJWT returns the username. If it's not valid, an error is returned
-func ValidateJWT(tokenString string) (string, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+// ValidateJWT returns the userID and username. If it's not valid, an error is returned
+func ValidateJWT(tokenString string) (int64, string, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &JWTCustomClaim{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -40,12 +50,12 @@ func ValidateJWT(tokenString string) (string, error) {
 	})
 
 	if err != nil {
-		return "", err
+		return 0, "", err
 	}
 
-	if claims, ok := token.Claims.(*jwt.StandardClaims); ok && token.Valid {
-		return claims.Subject, nil
+	if claims, ok := token.Claims.(*JWTCustomClaim); ok && token.Valid {
+		return claims.UserID, claims.Subject, nil
 	}
 
-	return "", fmt.Errorf("invalid token")
+	return 0, "", fmt.Errorf("invalid token")
 }

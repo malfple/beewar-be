@@ -15,7 +15,7 @@ func HandleLogout(w http.ResponseWriter, r *http.Request) {
 		refreshToken = refreshTokenCookie.Value
 	}
 
-	username := auth.ValidateRefreshToken(refreshToken)
+	_, username := auth.ValidateRefreshToken(refreshToken)
 	if username == "" {
 		w.WriteHeader(http.StatusUnauthorized)
 		return

@@ -17,5 +17,5 @@ func Login(username, password string) (string, string, int) {
 	}
 
 	// username and password is valid
-	return GenerateRefreshToken(username), GenerateJWT(username), http.StatusOK
+	return GenerateRefreshToken(user.ID, username), GenerateJWT(user.ID, username), http.StatusOK
 }

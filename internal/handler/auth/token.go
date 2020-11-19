@@ -18,14 +18,14 @@ func HandleToken(w http.ResponseWriter, r *http.Request) {
 		refreshToken = refreshTokenCookie.Value
 	}
 
-	username := auth.ValidateRefreshToken(refreshToken)
+	userID, username := auth.ValidateRefreshToken(refreshToken)
 	if username == "" {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	accessToken := auth.GenerateJWT(username)
+	accessToken := auth.GenerateJWT(userID, username)
 
 	resp := &TokenResponse{
 		Token: accessToken,

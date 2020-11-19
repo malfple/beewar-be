@@ -6,13 +6,16 @@ import (
 )
 
 func TestRefreshToken(t *testing.T) {
+	userID := int64(465)
 	username := "some_other_username"
-	token := GenerateRefreshToken(username)
+	token := GenerateRefreshToken(userID, username)
 
-	username1 := ValidateRefreshToken(token)
+	userID1, username1 := ValidateRefreshToken(token)
 	assert.Equal(t, username, username1)
+	assert.Equal(t, userID, userID1)
 
 	RemoveRefreshToken(token)
-	username2 := ValidateRefreshToken(token)
+	userID2, username2 := ValidateRefreshToken(token)
 	assert.Equal(t, "", username2)
+	assert.Equal(t, int64(0), userID2)
 }
