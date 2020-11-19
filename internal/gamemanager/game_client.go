@@ -34,7 +34,7 @@ func (client *GameClient) Listen() {
 		if err != nil {
 			break
 		}
-		if msg.Cmd == "SHUTDOWN" { // well. lmao
+		if msg.Cmd == message.CmdShutdown { // well. lmao
 			break
 		}
 		client.Hub.MessageBus <- msg

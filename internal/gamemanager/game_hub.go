@@ -58,7 +58,7 @@ func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 
 		msg := <-hub.MessageBus
 
-		if msg.Cmd == "SHUTDOWN" {
+		if msg.Cmd == message.CmdShutdown {
 			break
 		}
 
@@ -85,7 +85,7 @@ func (hub *GameHub) checkClients() {
 		if len(hub.Clients) == 0 {
 			// shutdown, but without lock
 			hub.IsShutdown = true
-			hub.MessageBus <- &message.GameMessage{Cmd: "SHUTDOWN"} // trigger shutdown for the listening goroutine
+			hub.MessageBus <- &message.GameMessage{Cmd: message.CmdShutdown} // trigger shutdown for the listening goroutine
 			hub.OnShutdown()
 		}
 	}
@@ -97,7 +97,7 @@ func (hub *GameHub) ForceShutdown() {
 	hub.Mutex.Lock()
 	if !hub.IsShutdown {
 		hub.IsShutdown = true
-		hub.MessageBus <- &message.GameMessage{Cmd: "SHUTDOWN"} // trigger shutdown for the listening goroutine
+		hub.MessageBus <- &message.GameMessage{Cmd: message.CmdShutdown} // trigger shutdown for the listening goroutine
 		for _, client := range hub.Clients {
 			client.WS.Close()
 			delete(hub.Clients, client.UserID)

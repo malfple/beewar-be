@@ -2,6 +2,11 @@ package message
 
 import "encoding/json"
 
+const (
+	// CmdShutdown is a cmd for shutting down game hub
+	CmdShutdown = "SHUTDOWN"
+)
+
 // GameMessageTemporary is the container struct when unmarshalling from json
 type GameMessageTemporary struct {
 	Cmd  string          `json:"cmd"`
@@ -39,7 +44,7 @@ func UnmarshalGameMessage(rawPayload []byte) (*GameMessage, error) {
 	return message, nil
 }
 
-// MarshalGameMessage
+// MarshalGameMessage marshals game message into byte array
 func MarshalGameMessage(message *GameMessage) ([]byte, error) {
 	rawData, err := json.Marshal(message)
 	if err != nil {
