@@ -2,6 +2,7 @@ package gamemanager
 
 import (
 	"github.com/gorilla/websocket"
+	"gitlab.com/otqee/otqee-be/internal/gamemanager/message"
 	"sync"
 )
 
@@ -11,7 +12,7 @@ import (
 type GameHub struct {
 	GameID     int64
 	Clients    map[*GameClient]bool
-	MessageBus chan string
+	MessageBus chan *message.GameMessage
 	Mutex      sync.Mutex // this lock is used to make sure broadcast and client register/unreg is synced
 	IsShutdown bool
 	OnShutdown func() // called when not forced to shutdown
@@ -47,13 +48,17 @@ func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 
 		msg := <-hub.MessageBus
 
-		if msg == "shutdown" {
+		if msg.Cmd == "SHUTDOWN" {
 			break
 		}
 
 		hub.Mutex.Lock()
 		for client := range hub.Clients {
-			err := client.WS.WriteMessage(websocket.TextMessage, []byte(msg))
+			rawMsg, err := message.MarshalGameMessage(msg)
+			if err != nil {
+				panic("shouldn't have errored when marshaling")
+			}
+			err = client.WS.WriteMessage(websocket.TextMessage, rawMsg)
 			if err != nil {
 				client.WS.Close()
 				delete(hub.Clients, client)
@@ -70,7 +75,7 @@ func (hub *GameHub) checkClients() {
 		if len(hub.Clients) == 0 {
 			// shutdown, but without lock
 			hub.IsShutdown = true
-			hub.MessageBus <- "shutdown" // trigger shutdown for the listening goroutine
+			hub.MessageBus <- &message.GameMessage{Cmd: "SHUTDOWN"} // trigger shutdown for the listening goroutine
 			hub.OnShutdown()
 		}
 	}
@@ -82,7 +87,7 @@ func (hub *GameHub) ForceShutdown() {
 	hub.Mutex.Lock()
 	if !hub.IsShutdown {
 		hub.IsShutdown = true
-		hub.MessageBus <- "shutdown" // trigger shutdown for the listening goroutine
+		hub.MessageBus <- &message.GameMessage{Cmd: "SHUTDOWN"} // trigger shutdown for the listening goroutine
 		for client := range hub.Clients {
 			client.WS.Close()
 			delete(hub.Clients, client)
@@ -98,7 +103,7 @@ func NewGameHub(gameID int64, onShutdown func()) *GameHub {
 	return &GameHub{
 		GameID:     gameID,
 		Clients:    make(map[*GameClient]bool),
-		MessageBus: make(chan string),
+		MessageBus: make(chan *message.GameMessage),
 		Mutex:      sync.Mutex{},
 		IsShutdown: false,
 		OnShutdown: onShutdown,

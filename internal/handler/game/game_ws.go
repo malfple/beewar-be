@@ -44,10 +44,6 @@ func HandleGameWS(w http.ResponseWriter, r *http.Request) {
 		_ = c.Close()
 	}()
 
-	err = c.WriteMessage(websocket.TextMessage, []byte("server hello"))
-	if err != nil {
-		return
-	}
 	client := gamemanager.NewGameClientByID(c, gameID)
 	client.Listen()
 }

@@ -1,6 +1,9 @@
 package gamemanager
 
-import "github.com/gorilla/websocket"
+import (
+	"github.com/gorilla/websocket"
+	"gitlab.com/otqee/otqee-be/internal/gamemanager/message"
+)
 
 // the client is responsible for sending messages to the hub
 // it should not send any messages back (handled by the hub)
@@ -16,11 +19,18 @@ type GameClient struct {
 func (client *GameClient) Listen() {
 	client.Hub.RegisterClient(client)
 	for {
-		_, message, err := client.WS.ReadMessage()
+		_, rawMsg, err := client.WS.ReadMessage()
 		if err != nil {
 			break
 		}
-		client.Hub.MessageBus <- string(message)
+		msg, err := message.UnmarshalGameMessage(rawMsg)
+		if err != nil {
+			break
+		}
+		if msg.Cmd == "SHUTDOWN" { // well. lmao
+			break
+		}
+		client.Hub.MessageBus <- msg
 	}
 	client.Hub.UnregisterClient(client)
 }
