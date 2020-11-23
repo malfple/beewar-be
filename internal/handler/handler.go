@@ -23,6 +23,8 @@ func RootRouter() *mux.Router {
 	_map.RegisterMapRouter(apiRouter.PathPrefix("/map").Subrouter())
 	game.RegisterGameRouter(apiRouter.PathPrefix("/game").Subrouter())
 
+	apiRouter.HandleFunc("/server_stats", HandleServerStats).Methods("GET")
+
 	router.Use(middleware.AccessLogMiddleware)
 
 	return router

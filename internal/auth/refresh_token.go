@@ -48,3 +48,8 @@ func ValidateRefreshToken(refreshToken string) (int64, string) {
 	}
 	return 0, ""
 }
+
+// GetRefreshTokenCount returns the number of active refresh tokens (or in other words, session)
+func GetRefreshTokenCount() int {
+	return len(refreshTokenStore)
+}

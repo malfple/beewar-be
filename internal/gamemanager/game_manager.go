@@ -30,6 +30,11 @@ func ShutdownGameManager() {
 	logger.GetLogger().Info("game manager: shutdown")
 }
 
+// GetHubCount returns the number of active hubs
+func GetHubCount() int {
+	return len(gameHubStore)
+}
+
 // GetGameHub returns the game hub with the corresponding game id
 // it will initialize the hub if it is not yet initialized
 func GetGameHub(gameID int64) *GameHub {
