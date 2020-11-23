@@ -30,11 +30,8 @@ func (client *GameClient) Listen() {
 		if err != nil {
 			break
 		}
-		msg, err := message.UnmarshalGameMessage(rawMsg)
+		msg, err := message.UnmarshalAndValidateGameMessage(rawMsg, client.UserID)
 		if err != nil {
-			break
-		}
-		if msg.Cmd == message.CmdShutdown { // well. lmao
 			break
 		}
 		client.Hub.MessageBus <- msg

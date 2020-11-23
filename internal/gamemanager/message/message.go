@@ -1,10 +1,18 @@
 package message
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"errors"
+)
 
 const (
-	// CmdShutdown is a cmd for shutting down game hub
+	// CmdShutdown is a cmd for shutting down game hub's listener
 	CmdShutdown = "SHUTDOWN"
+)
+
+var (
+	// ErrCmdNotAllowed is returned when client sends a restricted cmd
+	ErrCmdNotAllowed = errors.New("that cmd is not allowed")
 )
 
 // GameMessageTemporary is the container struct when unmarshalling from json
@@ -15,12 +23,14 @@ type GameMessageTemporary struct {
 
 // GameMessage is the main message struct for websocket message exchange
 type GameMessage struct {
-	Cmd  string      `json:"cmd"`
-	Data interface{} `json:"data"`
+	Cmd    string      `json:"cmd"`
+	Sender int64       `json:"sender,omitempty"`
+	Data   interface{} `json:"data"`
 }
 
-// UnmarshalGameMessage unmarshals the raw byte data into message struct
-func UnmarshalGameMessage(rawPayload []byte) (*GameMessage, error) {
+// UnmarshalAndValidateGameMessage unmarshals the raw byte data into message struct
+// also validates the cmd. if it is not allowed, it will return error
+func UnmarshalAndValidateGameMessage(rawPayload []byte, senderID int64) (*GameMessage, error) {
 	temp := &GameMessageTemporary{}
 	err := json.Unmarshal(rawPayload, temp)
 	if err != nil {
@@ -28,10 +38,13 @@ func UnmarshalGameMessage(rawPayload []byte) (*GameMessage, error) {
 	}
 
 	message := &GameMessage{
-		Cmd: temp.Cmd,
+		Cmd:    temp.Cmd,
+		Sender: senderID,
 	}
 
 	switch temp.Cmd {
+	case CmdShutdown:
+		return nil, ErrCmdNotAllowed
 	default:
 		var data string
 		err := json.Unmarshal(temp.Data, &data)

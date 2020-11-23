@@ -7,8 +7,9 @@ import (
 
 func TestUnmarshalGameMessage(t *testing.T) {
 	rawMessage := []byte(`{"cmd":"RANDOM_CMD","data":"hellow"}`)
-	msg, err := UnmarshalGameMessage(rawMessage)
+	msg, err := UnmarshalAndValidateGameMessage(rawMessage, 123)
 	assert.Equal(t, nil, err)
+	assert.Equal(t, int64(123), msg.Sender)
 	assert.Equal(t, "RANDOM_CMD", msg.Cmd)
 	assert.Equal(t, "hellow", msg.Data)
 }
