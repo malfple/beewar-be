@@ -5,9 +5,13 @@ import (
 	"errors"
 )
 
+// some Cmd is restricted to client-sent only or server-sent only
+// let's just simplify these as client-only and server-only
 const (
-	// CmdShutdown is a cmd for shutting down game hub's listener
+	// CmdShutdown is a cmd for shutting down game hub's listener. server-only
 	CmdShutdown = "SHUTDOWN"
+	// CmdChat is a cmd for text chat. no restriction
+	CmdChat = "CHAT"
 )
 
 var (
@@ -29,7 +33,7 @@ type GameMessage struct {
 }
 
 // UnmarshalAndValidateGameMessage unmarshals the raw byte data into message struct
-// also validates the cmd. if it is not allowed, it will return error
+// also validates the cmd. if it is not allowed for client, it will return error
 func UnmarshalAndValidateGameMessage(rawPayload []byte, senderID int64) (*GameMessage, error) {
 	temp := &GameMessageTemporary{}
 	err := json.Unmarshal(rawPayload, temp)
@@ -45,19 +49,23 @@ func UnmarshalAndValidateGameMessage(rawPayload []byte, senderID int64) (*GameMe
 	switch temp.Cmd {
 	case CmdShutdown:
 		return nil, ErrCmdNotAllowed
-	default:
+	case CmdChat:
 		var data string
 		err := json.Unmarshal(temp.Data, &data)
 		if err != nil {
 			return nil, err
 		}
 		message.Data = data
+	default:
+		return nil, ErrCmdNotAllowed
 	}
 
 	return message, nil
 }
 
 // MarshalGameMessage marshals game message into byte array
+// this does not verify whether a cmd is restricted for server
+// we thrust whoever sends the message to client is responsible
 func MarshalGameMessage(message *GameMessage) ([]byte, error) {
 	rawData, err := json.Marshal(message)
 	if err != nil {
