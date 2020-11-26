@@ -84,3 +84,15 @@ func IsExistUserByID(userID int64) bool {
 	}
 	return true
 }
+
+// DeleteUserByUsername is a DANGEROUS function that deletes user
+// returns rows affected
+func DeleteUserByUsername(username string) int64 {
+	res, err := db.Exec(`DELETE FROM user_tab WHERE username=?`, username)
+	if err != nil {
+		logger.GetLogger().Error("db: delete error", zap.String("table", "user_tab"), zap.Error(err))
+		return 0
+	}
+	rowsAffected, _ := res.RowsAffected()
+	return rowsAffected
+}
