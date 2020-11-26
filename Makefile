@@ -16,6 +16,8 @@ fmt:
 	@go fmt ${PKG_LIST}
 tests:
 	@go test -short ${PKG_LIST}
+bench:
+	@go test -bench=. ${PKG_LIST}
 covertests:
 	@go test -short ${PKG_LIST} -coverprofile=coverage.cov
 covershow:
