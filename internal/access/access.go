@@ -36,3 +36,8 @@ func ShutdownAccess() {
 		logger.GetLogger().Error("db: error closing", zap.Error(err))
 	}
 }
+
+// GetDBClient returns the default sql.DB object
+func GetDBClient() *sql.DB {
+	return db
+}

@@ -10,6 +10,8 @@ clean: ## clean binaries
 	rm -rf cmd/bin
 run: ## run server for local test
 	@go run cmd/main/main.go
+runregress: ## run regression test
+	@go run cmd/regression/main.go
 lint:
 	@golint -set_exit_status ${PKG_LIST}
 fmt:
