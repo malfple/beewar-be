@@ -5,16 +5,24 @@ import "os"
 // This file contains default configs
 
 const (
+	// EnvServerAddress defines an env variable name
+	EnvServerAddress     = "SERVER_ADDR"
 	defaultServerAddress = ":3001"
 
-	defaultDatabaseUser     = "root"
+	// EnvDatabaseUser defines an env variable name
+	EnvDatabaseUser     = "DATABASE_USER"
+	defaultDatabaseUser = "root"
+	// EnvDatabasePassword defines an env variable name
+	EnvDatabasePassword     = "DATABASE_PASSWORD"
 	defaultDatabasePassword = "malfplemac"
-	defaultDatabaseName     = "otqee"
+	// EnvDatabaseName defines an env variable name
+	EnvDatabaseName     = "DATABASE_NAME"
+	defaultDatabaseName = "otqee"
 )
 
 // GetServerAddress returns server address
 func GetServerAddress() string {
-	if addr := os.Getenv("SERVER_ADDR"); addr != "" {
+	if addr := os.Getenv(EnvServerAddress); addr != "" {
 		return addr
 	}
 	return defaultServerAddress
@@ -22,9 +30,9 @@ func GetServerAddress() string {
 
 // GetDatabaseConfig returns database config: (user, password, database_name)
 func GetDatabaseConfig() (string, string, string) {
-	user := os.Getenv("DATABASE_USER")
-	pass := os.Getenv("DATABASE_PASSWORD")
-	db := os.Getenv("DATABASE_NAME")
+	user := os.Getenv(EnvDatabaseUser)
+	pass := os.Getenv(EnvDatabasePassword)
+	db := os.Getenv(EnvDatabaseName)
 	if user == "" {
 		user = defaultDatabaseUser
 	}
