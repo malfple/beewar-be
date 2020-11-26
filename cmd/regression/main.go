@@ -40,26 +40,32 @@ func runMigration() bool {
 	return true
 }
 
-func main() {
+func prepareAndRun() int {
 	logger.InitLogger()
 	defer logger.ShutdownLogger()
 
 	if err := os.Setenv(configs.EnvDatabaseName, regressionDatabaseName); err != nil {
 		logger.GetLogger().Error("error set env var", zap.String("env_var_name", configs.EnvDatabaseName))
-		return
+		return 1
 	}
 
 	access.InitAccess()
 	defer access.ShutdownAccess()
 
 	if !runMigration() {
-		return
+		return 1
 	}
 
 	logger.GetLogger().Info("start regression test")
-	if regression.RunRegressionTests() {
-		logger.GetLogger().Info("regression test finished successfully")
-	} else {
+	if !regression.RunRegressionTests() {
 		logger.GetLogger().Info("regression test failed")
+		return 1
 	}
+
+	logger.GetLogger().Info("regression test finished successfully")
+	return 0
+}
+
+func main() {
+	os.Exit(prepareAndRun())
 }

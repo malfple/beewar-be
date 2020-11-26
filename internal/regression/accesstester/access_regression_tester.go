@@ -10,5 +10,8 @@ func RunAccessRegressionTester() bool {
 	if !TestUserAccess() {
 		return false
 	}
+	if !TestMapAccess() {
+		return false
+	}
 	return true
 }

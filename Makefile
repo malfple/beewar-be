@@ -25,3 +25,5 @@ covertests:
 covershow:
 	@go tool cover -func=coverage.cov
 cover: covertests covershow
+
+check: lint fmt tests runregress ## check before push to remote
