@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-var gameHubStore = make(map[int64]*GameHub)
+var gameHubStore = make(map[uint64]*GameHub)
 var gameHubStoreLock sync.RWMutex
 var wg sync.WaitGroup
 
@@ -37,7 +37,7 @@ func GetHubCount() int {
 
 // GetGameHub returns the game hub with the corresponding game id
 // it will initialize the hub if it is not yet initialized
-func GetGameHub(gameID int64) *GameHub {
+func GetGameHub(gameID uint64) *GameHub {
 	gameHubStoreLock.RLock()
 	hub, ok := gameHubStore[gameID]
 	gameHubStoreLock.RUnlock()
@@ -45,9 +45,9 @@ func GetGameHub(gameID int64) *GameHub {
 		return hub
 	}
 
-	logger.GetLogger().Debug("game manager: open new game hub", zap.Int64("game_id", gameID))
+	logger.GetLogger().Debug("game manager: open new game hub", zap.Uint64("game_id", gameID))
 	hub = NewGameHub(gameID, func() {
-		logger.GetLogger().Debug("game manager: close game hub", zap.Int64("game_id", gameID))
+		logger.GetLogger().Debug("game manager: close game hub", zap.Uint64("game_id", gameID))
 		gameHubStoreLock.Lock()
 		delete(gameHubStore, gameID)
 		gameHubStoreLock.Unlock()
@@ -63,6 +63,6 @@ func GetGameHub(gameID int64) *GameHub {
 }
 
 // NewGameClientByID creates a new client and connects to the hub by game id
-func NewGameClientByID(userID int64, ws *websocket.Conn, gameID int64) *GameClient {
+func NewGameClientByID(userID uint64, ws *websocket.Conn, gameID uint64) *GameClient {
 	return NewGameClient(userID, ws, GetGameHub(gameID))
 }

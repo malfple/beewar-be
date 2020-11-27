@@ -12,7 +12,7 @@ const refreshTokenExpiry = 168 * time.Hour
 
 // this struct contains the username bound to the token and its expiry
 type refreshTokenInfo struct {
-	UserID   int64
+	UserID   uint64
 	Username string
 	ExpireAt int64
 }
@@ -21,7 +21,7 @@ type refreshTokenInfo struct {
 var refreshTokenStore = make(map[string]refreshTokenInfo)
 
 // GenerateRefreshToken generates a refresh token using uuid (16-long byte array) and binds it to username/userid
-func GenerateRefreshToken(userID int64, username string) string {
+func GenerateRefreshToken(userID uint64, username string) string {
 	token := uuid.New().String()
 	refreshTokenStore[token] = refreshTokenInfo{
 		UserID:   userID,
@@ -38,7 +38,7 @@ func RemoveRefreshToken(refreshToken string) {
 
 // ValidateRefreshToken checks refresh token and returns username,
 // or empty string if token not found / expired
-func ValidateRefreshToken(refreshToken string) (int64, string) {
+func ValidateRefreshToken(refreshToken string) (uint64, string) {
 	if tokenInfo, ok := refreshTokenStore[refreshToken]; ok {
 		if time.Now().Unix() > tokenInfo.ExpireAt { // token expired
 			delete(refreshTokenStore, refreshToken)

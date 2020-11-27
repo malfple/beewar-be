@@ -2,14 +2,14 @@ package model
 
 // Game is a db model
 type Game struct {
-	ID           int64
-	Type         int8
-	Width        int8
-	Height       int8
-	PlayerCount  int8
+	ID           uint64
+	Type         uint8
+	Width        uint8
+	Height       uint8
+	PlayerCount  uint8
 	TerrainInfo  []byte
 	UnitInfo     []byte
-	MapID        int64
+	MapID        uint64
 	TurnCount    int32
 	TurnPlayer   int8
 	TimeCreated  int64
@@ -18,9 +18,9 @@ type Game struct {
 
 // GameUser is a db model
 type GameUser struct {
-	ID          int64
-	GameID      int64
-	UserID      int64
-	RankOrder   int8
+	ID          uint64
+	GameID      uint64
+	UserID      uint64
+	RankOrder   uint8
 	TurnsLasted int32
 }

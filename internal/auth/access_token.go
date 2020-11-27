@@ -17,12 +17,12 @@ const jwtExpiry = 15 * time.Minute
 // JWTCustomClaim is a custom jwt claim
 // username will be stored in `sub`
 type JWTCustomClaim struct {
-	UserID int64 `json:"user_id,omitempty"`
+	UserID uint64 `json:"user_id,omitempty"`
 	jwt.StandardClaims
 }
 
 // GenerateJWT generates a JWT using userID and username as claim
-func GenerateJWT(userID int64, username string) string {
+func GenerateJWT(userID uint64, username string) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, JWTCustomClaim{
 		userID,
 		jwt.StandardClaims{
@@ -40,7 +40,7 @@ func GenerateJWT(userID int64, username string) string {
 }
 
 // ValidateJWT returns the userID and username. If it's not valid, an error is returned
-func ValidateJWT(tokenString string) (int64, string, error) {
+func ValidateJWT(tokenString string) (uint64, string, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &JWTCustomClaim{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])

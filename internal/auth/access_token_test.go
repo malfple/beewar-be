@@ -6,7 +6,7 @@ import (
 )
 
 func TestJWT(t *testing.T) {
-	userID := int64(69)
+	userID := uint64(69)
 	username := "some_username"
 
 	token := GenerateJWT(userID, username)
@@ -15,5 +15,5 @@ func TestJWT(t *testing.T) {
 
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "some_username", claimedUsername)
-	assert.Equal(t, int64(69), claimedUserID)
+	assert.Equal(t, uint64(69), claimedUserID)
 }

@@ -12,7 +12,7 @@ import (
 
 // GameClient is the client that will connect to game hub to receive broadcasts
 type GameClient struct {
-	UserID int64
+	UserID uint64
 	WS     *websocket.Conn // the websocket connection
 	Hub    *GameHub
 }
@@ -40,7 +40,7 @@ func (client *GameClient) Listen() {
 }
 
 // NewGameClient creates a new client and connects it to the game hub
-func NewGameClient(userID int64, ws *websocket.Conn, hub *GameHub) *GameClient {
+func NewGameClient(userID uint64, ws *websocket.Conn, hub *GameHub) *GameClient {
 	client := &GameClient{
 		UserID: userID,
 		WS:     ws,

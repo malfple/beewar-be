@@ -26,7 +26,7 @@ CREATE TABLE map_tab(
     player_count TINYINT UNSIGNED NOT NULL,
     terrain_info BLOB,
     unit_info BLOB,
-    author_user_id BIGINT,
+    author_user_id BIGINT UNSIGNED,
     stat_play_count INT UNSIGNED NOT NULL DEFAULT 0,
     time_created BIGINT,
     time_modified BIGINT,

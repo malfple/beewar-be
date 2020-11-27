@@ -44,7 +44,7 @@ func HandleGameWS(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	game := access.QueryGameByID(gameID)
+	game := access.QueryGameByID(uint64(gameID))
 	if game == nil {
 		w.WriteHeader(http.StatusNoContent)
 		return
@@ -61,6 +61,6 @@ func HandleGameWS(w http.ResponseWriter, r *http.Request) {
 		_ = c.Close()
 	}()
 
-	client := gamemanager.NewGameClientByID(userID, c, gameID)
+	client := gamemanager.NewGameClientByID(userID, c, uint64(gameID))
 	client.Listen()
 }

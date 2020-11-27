@@ -14,8 +14,8 @@ var ErrClientDuplicate = errors.New("only one user per game hub allowed")
 
 // GameHub is the central broadcasting service for a game
 type GameHub struct {
-	GameID     int64
-	Clients    map[int64]*GameClient
+	GameID     uint64
+	Clients    map[uint64]*GameClient
 	MessageBus chan *message.GameMessage
 	Mutex      sync.Mutex // this lock is used to make sure broadcast and client register/unreg is synced
 	IsShutdown bool
@@ -109,10 +109,10 @@ func (hub *GameHub) ForceShutdown() {
 }
 
 // NewGameHub initializes a new game hub with the correct game id
-func NewGameHub(gameID int64, onShutdown func()) *GameHub {
+func NewGameHub(gameID uint64, onShutdown func()) *GameHub {
 	return &GameHub{
 		GameID:     gameID,
-		Clients:    make(map[int64]*GameClient),
+		Clients:    make(map[uint64]*GameClient),
 		MessageBus: make(chan *message.GameMessage),
 		Mutex:      sync.Mutex{},
 		IsShutdown: false,

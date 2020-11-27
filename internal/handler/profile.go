@@ -41,11 +41,11 @@ type ProfileResponse struct {
 }
 
 type userProfile struct {
-	ID          int64  `json:"id"`
+	ID          uint64 `json:"id"`
 	Email       string `json:"email"`
 	Username    string `json:"username"`
-	Rating      int16  `json:"rating"`
-	MovesMade   int64  `json:"moves_made"`
-	GamesPlayed int32  `json:"games_played"`
+	Rating      uint16 `json:"rating"`
+	MovesMade   uint64 `json:"moves_made"`
+	GamesPlayed uint32 `json:"games_played"`
 	TimeCreated int64  `json:"time_created"`
 }

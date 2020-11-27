@@ -17,7 +17,7 @@ var (
 	ErrUserDoesNotExist = errors.New("user does not exist")
 )
 
-func linkGameToUser(gameID, userID int64) error {
+func linkGameToUser(gameID, userID uint64) error {
 	const stmtLinkGameToUser = `INSERT INTO game_user_tab
 (game_id, user_id)
 VALUES (?, ?)`
@@ -32,7 +32,7 @@ VALUES (?, ?)`
 }
 
 // CreateGameFromMap initializes a game from a map, and returns the id
-func CreateGameFromMap(mapID int64, userIDs []int64) (int64, error) {
+func CreateGameFromMap(mapID uint64, userIDs []uint64) (uint64, error) {
 	mapp := QueryMapByID(mapID)
 	if mapp == nil {
 		return 0, ErrMapDoesNotExist
@@ -56,7 +56,8 @@ VALUES (?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 		logger.GetLogger().Error("db: insert error", zap.String("table", "game_tab"), zap.Error(err))
 		return 0, err
 	}
-	gameID, err := res.LastInsertId()
+	gameIDSigned, err := res.LastInsertId()
+	gameID := uint64(gameIDSigned)
 	if err != nil {
 		return gameID, err
 	}
@@ -94,7 +95,7 @@ WHERE id=?`
 }
 
 // QueryGameByID gets a game from its id
-func QueryGameByID(gameID int64) *model.Game {
+func QueryGameByID(gameID uint64) *model.Game {
 	row := db.QueryRow(`SELECT * FROM game_tab WHERE id=? LIMIT 1`, gameID)
 
 	game := &model.Game{}

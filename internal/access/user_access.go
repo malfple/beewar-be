@@ -71,7 +71,7 @@ func QueryUserByUsername(username string) *model.User {
 }
 
 // IsExistUserByID checks for userID existence
-func IsExistUserByID(userID int64) bool {
+func IsExistUserByID(userID uint64) bool {
 	row := db.QueryRow(`SELECT 1 FROM user_tab WHERE id=? LIMIT 1`, userID)
 
 	var temp int

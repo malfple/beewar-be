@@ -28,13 +28,13 @@ type GameMessageTemporary struct {
 // GameMessage is the main message struct for websocket message exchange
 type GameMessage struct {
 	Cmd    string      `json:"cmd"`
-	Sender int64       `json:"sender,omitempty"`
+	Sender uint64      `json:"sender,omitempty"`
 	Data   interface{} `json:"data"`
 }
 
 // UnmarshalAndValidateGameMessage unmarshals the raw byte data into message struct
 // also validates the cmd. if it is not allowed for client, it will return error
-func UnmarshalAndValidateGameMessage(rawPayload []byte, senderID int64) (*GameMessage, error) {
+func UnmarshalAndValidateGameMessage(rawPayload []byte, senderID uint64) (*GameMessage, error) {
 	temp := &GameMessageTemporary{}
 	err := json.Unmarshal(rawPayload, temp)
 	if err != nil {

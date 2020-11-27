@@ -9,7 +9,7 @@ func TestUnmarshalGameMessage(t *testing.T) {
 	rawMessage := []byte(`{"cmd":"CHAT","data":"hellow"}`)
 	msg, err := UnmarshalAndValidateGameMessage(rawMessage, 123)
 	assert.Equal(t, nil, err)
-	assert.Equal(t, int64(123), msg.Sender)
+	assert.Equal(t, uint64(123), msg.Sender)
 	assert.Equal(t, "CHAT", msg.Cmd)
 	assert.Equal(t, "hellow", msg.Data)
 }

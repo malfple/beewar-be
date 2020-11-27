@@ -15,7 +15,7 @@ type GameLoader struct {
 }
 
 // NewGameLoader loads game by gameID and return the GameLoader object and model.Game db model
-func NewGameLoader(gameID int64) (*GameLoader, *model.Game) {
+func NewGameLoader(gameID uint64) (*GameLoader, *model.Game) {
 	game := access.QueryGameByID(gameID)
 	if game == nil {
 		// the websocket handler should already handle this

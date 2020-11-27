@@ -53,14 +53,14 @@ const (
 )
 
 // TODO: complete validations, move to common file
-func validateTerrainInfo(width, height int8, terrainInfo []byte) error {
+func validateTerrainInfo(width, height uint8, terrainInfo []byte) error {
 	if len(terrainInfo) != int(width)*int(height) {
 		return ErrMapInvalidTerrainInfo
 	}
 	return nil
 }
 
-func validateUnitInfo(width, height int8, unitInfo []byte) error {
+func validateUnitInfo(width, height uint8, unitInfo []byte) error {
 	if len(unitInfo)%5 != 0 {
 		return ErrMapInvalidUnitInfo
 	}
@@ -68,7 +68,7 @@ func validateUnitInfo(width, height int8, unitInfo []byte) error {
 }
 
 // CreateEmptyMap creates an empty map with the specified type and size, and returns the id
-func CreateEmptyMap(mapType, width, height int8, name string, authorUserID int64) (int64, error) {
+func CreateEmptyMap(mapType, width, height uint8, name string, authorUserID uint64) (uint64, error) {
 	if width < 1 || width > mapMaxWidth {
 		return 0, ErrMapWidth
 	}
@@ -92,11 +92,12 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 		logger.GetLogger().Error("db: insert error", zap.String("table", "map_tab"), zap.Error(err))
 		return 0, err
 	}
-	return res.LastInsertId()
+	lastInsertID, err := res.LastInsertId()
+	return uint64(lastInsertID), err
 }
 
 // UpdateMap updates a map
-func UpdateMap(id int64, mapType, width, height int8, name string, playerCount int8, terrainInfo, unitInfo []byte) error {
+func UpdateMap(id uint64, mapType, width, height uint8, name string, playerCount uint8, terrainInfo, unitInfo []byte) error {
 	if width < 1 || width > mapMaxWidth {
 		return ErrMapWidth
 	}
@@ -129,7 +130,7 @@ WHERE id=?`
 }
 
 // QueryMapByID gets a single map by id
-func QueryMapByID(mapID int64) *model.Map {
+func QueryMapByID(mapID uint64) *model.Map {
 	row := db.QueryRow(`SELECT * FROM map_tab WHERE id=? LIMIT 1`, mapID)
 
 	mapp := &model.Map{}

@@ -4,12 +4,12 @@ import "gitlab.com/otqee/otqee-be/internal/access/model"
 
 // Game is the main game object
 type Game struct {
-	ID          int64
-	Type        int8
-	Width       int8
-	Height      int8
-	PlayerCount int8
-	MapID       int64
+	ID          uint64
+	Type        uint8
+	Width       uint8
+	Height      uint8
+	PlayerCount uint8
+	MapID       uint64
 	TurnCount   int32
 	TurnPlayer  int8
 }
