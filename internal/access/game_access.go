@@ -72,6 +72,27 @@ VALUES (?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 	return gameID, nil
 }
 
+// UpdateGame saves a game model to db.
+// only updates updatable fields
+func UpdateGame(game *model.Game) error {
+	if err := validateUnitInfo(game.Width, game.Height, game.UnitInfo); err != nil {
+		return err
+	}
+
+	const stmtUpdateGame = `UPDATE game_tab
+SET unit_info=?, turn_count=?, turn_player=?, time_modified=UNIX_TIMESTAMP()
+WHERE id=?`
+
+	_, err := db.Exec(stmtUpdateGame,
+		game.UnitInfo, game.TurnCount, game.TurnPlayer,
+		game.ID)
+	if err != nil {
+		logger.GetLogger().Error("db: update error", zap.String("table", "game_tab"), zap.Error(err))
+		return err
+	}
+	return nil
+}
+
 // QueryGameByID gets a game from its id
 func QueryGameByID(gameID int64) *model.Game {
 	row := db.QueryRow(`SELECT * FROM game_tab WHERE id=? LIMIT 1`, gameID)

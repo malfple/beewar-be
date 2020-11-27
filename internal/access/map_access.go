@@ -52,7 +52,7 @@ const (
 	mapMaxNameLength = 255
 )
 
-// TODO: complete validations
+// TODO: complete validations, move to common file
 func validateTerrainInfo(width, height int8, terrainInfo []byte) error {
 	if len(terrainInfo) != int(width)*int(height) {
 		return ErrMapInvalidTerrainInfo
@@ -114,7 +114,7 @@ func UpdateMap(id int64, mapType, width, height int8, name string, playerCount i
 	}
 
 	const stmtUpdateMap = `UPDATE map_tab
-SET type=?, width=?, height=?, name=?, player_count=?, terrain_info=?, unit_info=?
+SET type=?, width=?, height=?, name=?, player_count=?, terrain_info=?, unit_info=?, time_modified=UNIX_TIMESTAMP()
 WHERE id=?`
 
 	_, err := db.Exec(stmtUpdateMap,
