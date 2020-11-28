@@ -3,6 +3,7 @@ package access
 import (
 	"database/sql"
 	"errors"
+	"gitlab.com/otqee/otqee-be/internal/access/formatter"
 	"gitlab.com/otqee/otqee-be/internal/access/model"
 	"gitlab.com/otqee/otqee-be/internal/logger"
 	"go.uber.org/zap"
@@ -76,7 +77,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 // UpdateGame saves a game model to db.
 // only updates updatable fields
 func UpdateGame(game *model.Game) error {
-	if err := validateUnitInfo(game.Width, game.Height, game.UnitInfo); err != nil {
+	if err := formatter.ValidateUnitInfo(game.Width, game.Height, game.UnitInfo); err != nil {
 		return err
 	}
 

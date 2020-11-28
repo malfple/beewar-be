@@ -3,35 +3,13 @@ package access
 import (
 	"database/sql"
 	"errors"
+	"gitlab.com/otqee/otqee-be/internal/access/formatter"
 	"gitlab.com/otqee/otqee-be/internal/access/model"
 	"gitlab.com/otqee/otqee-be/internal/logger"
 	"go.uber.org/zap"
 )
 
-/*
-terrain info and map info format
-let W = map width, H = map height
-
---- terrain info ---
-
-size = W * H
-ordered by row first (H) then column (W)
-
---- map info ---
-
-let N = number of units
-size: 5 * N
-format:
-for each unit, there are 5 numbers
-y, x, p, t, f
-y = row number, x = column number
-p = the player who owns this unit (0..number of players)
-t = unit type
-f = flags (unit state)
-
-no two units can share the same position
-
-*/
+// terrain info and unit info description is in formatter package
 
 var (
 	// ErrMapWidth is returned when width is out of constraint
@@ -40,10 +18,6 @@ var (
 	ErrMapHeight = errors.New("height must be at least 1 and at most 50")
 	// ErrMapNameLength is returned when name exceeds maximum length
 	ErrMapNameLength = errors.New("name must be at most 255")
-	// ErrMapInvalidTerrainInfo is returned when terrain info does not match map size
-	ErrMapInvalidTerrainInfo = errors.New("invalid terrain info")
-	// ErrMapInvalidUnitInfo is returned when unit info does not follow format
-	ErrMapInvalidUnitInfo = errors.New("invalid unit info")
 )
 
 const (
@@ -51,21 +25,6 @@ const (
 	mapMaxHeight     = 50
 	mapMaxNameLength = 255
 )
-
-// TODO: complete validations, move to common file
-func validateTerrainInfo(width, height uint8, terrainInfo []byte) error {
-	if len(terrainInfo) != int(width)*int(height) {
-		return ErrMapInvalidTerrainInfo
-	}
-	return nil
-}
-
-func validateUnitInfo(width, height uint8, unitInfo []byte) error {
-	if len(unitInfo)%5 != 0 {
-		return ErrMapInvalidUnitInfo
-	}
-	return nil
-}
 
 // CreateEmptyMap creates an empty map with the specified type and size, and returns the id
 func CreateEmptyMap(mapType, width, height uint8, name string, authorUserID uint64) (uint64, error) {
@@ -107,10 +66,10 @@ func UpdateMap(id uint64, mapType, width, height uint8, name string, playerCount
 	if len(name) > mapMaxNameLength {
 		return ErrMapNameLength
 	}
-	if err := validateTerrainInfo(width, height, terrainInfo); err != nil {
+	if err := formatter.ValidateTerrainInfo(width, height, terrainInfo); err != nil {
 		return err
 	}
-	if err := validateUnitInfo(width, height, unitInfo); err != nil {
+	if err := formatter.ValidateUnitInfo(width, height, unitInfo); err != nil {
 		return err
 	}
 
