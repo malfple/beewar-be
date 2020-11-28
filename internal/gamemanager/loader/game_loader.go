@@ -8,7 +8,6 @@ import (
 
 // GameLoader loads game from db and perform game tasks.
 // also supports saving back to db on demand.
-// by default, GameLoader will save back to db on end of turn.
 // game loader is not concurrent safe, and the caller needs to handle this with locks
 type GameLoader struct {
 	Game *objects.Game
@@ -23,7 +22,7 @@ func NewGameLoader(gameID uint64) (*GameLoader, *model.Game) {
 	}
 
 	return &GameLoader{
-		Game: objects.NewGameFromDBModel(game),
+		Game: objects.NewGameFromModel(game),
 	}, game
 }
 
