@@ -7,7 +7,6 @@ type Unit interface {
 	GetUnitType() int8
 }
 
-// TODO: move this to formatter package
 // these are the unit types
 const (
 	// UnitTypeYou defines a unit type
