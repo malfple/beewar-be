@@ -56,7 +56,7 @@ func TestGameAccess() bool {
 	}
 	game.TurnPlayer = 2
 	game.TurnCount = 1
-	game.UnitInfo = append(game.UnitInfo, []byte{1, 2, 1, 0, 0}...)
+	game.UnitInfo = append(game.UnitInfo, []byte{1, 2, 1, 1, 10, 0}...)
 	err = access.UpdateGame(game)
 	if err != nil {
 		logger.GetLogger().Error("error update game", zap.Error(err))
