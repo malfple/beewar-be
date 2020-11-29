@@ -14,15 +14,3 @@ const (
 	// UnitTypeInfantry defines a unit type
 	UnitTypeInfantry = 3
 )
-
-// NewUnitFromType creates a new unit based on the type specified
-func NewUnitFromType(unitType, owner int8) Unit {
-	switch unitType {
-	case UnitTypeYou:
-		return &You{P: owner}
-	case UnitTypeInfantry:
-		return &Infantry{P: owner}
-	default:
-		return nil
-	}
-}

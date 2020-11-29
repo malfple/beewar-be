@@ -15,7 +15,7 @@ type Game struct {
 	Height      uint8
 	PlayerCount uint8
 	Terrain     [][]uint8
-	Units       [][]*units.Unit
+	Units       [][]units.Unit
 	MapID       uint64
 	TurnCount   int32
 	TurnPlayer  int8

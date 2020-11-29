@@ -32,6 +32,8 @@ the most basic information that a flag has are:
 - turn state - most units only have two states: not yet moved, and already moved: hence 1 bit
 	- this complicates more when the units store firing states and can carry other units
 
+
+unit type information is available in `units` package
 */
 
 // ErrMapInvalidUnitInfo is returned when unit info does not follow format
@@ -39,22 +41,54 @@ var ErrMapInvalidUnitInfo = errors.New("invalid unit info")
 
 // ValidateUnitInfo validates whether unit info follows format
 func ValidateUnitInfo(width, height uint8, unitInfo []byte) error {
-	if len(unitInfo)%6 != 0 {
-		return ErrMapInvalidUnitInfo
+	for i := 0; i < len(unitInfo); {
+		if i+5 >= len(unitInfo) { // the remaining length is less than 6 (the required minimum of a normal unit)
+			return ErrMapInvalidUnitInfo
+		}
+		y := unitInfo[i]
+		x := unitInfo[i+1]
+		if y < 0 || y >= height || x < 0 || x >= width {
+			return ErrMapInvalidUnitInfo
+		}
+		t := unitInfo[i+3]
+		switch t {
+		case units.UnitTypeYou:
+			i += 6
+		case units.UnitTypeInfantry:
+			i += 6
+		default:
+			return ErrMapInvalidUnitInfo
+		}
 	}
 	return nil
 }
 
 // ModelToGameUnit converts unit info from model.Game to objects.Game
-func ModelToGameUnit(width, height uint8, unitInfo []byte) [][]*units.Unit {
-	_units := make([][]*units.Unit, height)
+// this function does not validate unit info and might panic if given bad unit info
+func ModelToGameUnit(width, height uint8, unitInfo []byte) [][]units.Unit {
+	_units := make([][]units.Unit, height)
 	for i := uint8(0); i < height; i++ {
-		_units[i] = make([]*units.Unit, width)
+		_units[i] = make([]units.Unit, width)
 		for j := uint8(0); j < width; j++ {
 			_units[i][j] = nil
 		}
 	}
-	// TODO: translate unit and assign to cells
+	for i := 0; i < len(unitInfo); {
+		y := unitInfo[i]
+		x := unitInfo[i+1]
+		p := int8(unitInfo[i+2])
+		t := unitInfo[i+3]
+		switch t {
+		case units.UnitTypeYou:
+			_units[y][x] = &units.You{P: p}
+			i += 6
+		case units.UnitTypeInfantry:
+			_units[y][x] = &units.Infantry{P: p}
+			i += 6
+		default:
+			panic("panic convert: unknown unit type from unit info")
+		}
+	}
 	return _units
 }
 
