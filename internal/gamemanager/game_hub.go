@@ -3,6 +3,7 @@ package gamemanager
 import (
 	"errors"
 	"github.com/gorilla/websocket"
+	"gitlab.com/otqee/otqee-be/internal/gamemanager/loader"
 	"gitlab.com/otqee/otqee-be/internal/gamemanager/message"
 	"sync"
 )
@@ -15,6 +16,7 @@ var ErrClientDuplicate = errors.New("only one user per game hub allowed")
 // GameHub is the central broadcasting service for a game
 type GameHub struct {
 	GameID     uint64
+	GameLoader *loader.GameLoader
 	Clients    map[uint64]*GameClient
 	MessageBus chan *message.GameMessage
 	Mutex      sync.Mutex // this lock is used to make sure broadcast and client register/unreg is synced
@@ -31,6 +33,21 @@ func (hub *GameHub) RegisterClient(client *GameClient) error {
 			err = ErrClientDuplicate
 		} else {
 			hub.Clients[client.UserID] = client
+			// send game data
+			gameModel := hub.GameLoader.Game.ToModel()
+			gameDataMsg := &message.GameMessage{
+				Cmd:  message.CmdGameData,
+				Data: gameModel,
+			}
+			rawMsg, err := message.MarshalGameMessage(gameDataMsg)
+			if err != nil {
+				panic("shouldn't have errored when marshaling")
+			}
+			err = client.WS.WriteMessage(websocket.TextMessage, rawMsg)
+			if err != nil {
+				client.WS.Close()
+				delete(hub.Clients, client.UserID)
+			}
 		}
 	}
 	hub.Mutex.Unlock()
@@ -85,6 +102,7 @@ func (hub *GameHub) checkClients() {
 		if len(hub.Clients) == 0 {
 			// shutdown, but without lock
 			hub.IsShutdown = true
+			hub.GameLoader.SaveToDB()
 			hub.MessageBus <- &message.GameMessage{Cmd: message.CmdShutdown} // trigger shutdown for the listening goroutine
 			hub.OnShutdown()
 		}
@@ -97,6 +115,7 @@ func (hub *GameHub) ForceShutdown() {
 	hub.Mutex.Lock()
 	if !hub.IsShutdown {
 		hub.IsShutdown = true
+		hub.GameLoader.SaveToDB()
 		hub.MessageBus <- &message.GameMessage{Cmd: message.CmdShutdown} // trigger shutdown for the listening goroutine
 		for _, client := range hub.Clients {
 			client.WS.Close()
@@ -112,6 +131,7 @@ func (hub *GameHub) ForceShutdown() {
 func NewGameHub(gameID uint64, onShutdown func()) *GameHub {
 	return &GameHub{
 		GameID:     gameID,
+		GameLoader: loader.NewGameLoader(gameID),
 		Clients:    make(map[uint64]*GameClient),
 		MessageBus: make(chan *message.GameMessage),
 		Mutex:      sync.Mutex{},

@@ -2,7 +2,6 @@ package loader
 
 import (
 	"gitlab.com/otqee/otqee-be/internal/access"
-	"gitlab.com/otqee/otqee-be/internal/access/model"
 	"gitlab.com/otqee/otqee-be/internal/gamemanager/loader/objects"
 	"gitlab.com/otqee/otqee-be/internal/logger"
 	"go.uber.org/zap"
@@ -15,8 +14,8 @@ type GameLoader struct {
 	Game *objects.Game
 }
 
-// NewGameLoader loads game by gameID and return the GameLoader object and model.Game db model
-func NewGameLoader(gameID uint64) (*GameLoader, *model.Game) {
+// NewGameLoader loads game by gameID and return the GameLoader object
+func NewGameLoader(gameID uint64) *GameLoader {
 	game := access.QueryGameByID(gameID)
 	if game == nil {
 		// the websocket handler should already handle this
@@ -25,7 +24,7 @@ func NewGameLoader(gameID uint64) (*GameLoader, *model.Game) {
 
 	return &GameLoader{
 		Game: objects.NewGameFromModel(game),
-	}, game
+	}
 }
 
 // SaveToDB saves the current game object to db

@@ -12,6 +12,8 @@ const (
 	CmdShutdown = "SHUTDOWN"
 	// CmdChat is a cmd for text chat. no restriction
 	CmdChat = "CHAT"
+	// CmdGameInfo is a cmd for sending game data. server-only
+	CmdGameData = "GAME_DATA"
 )
 
 var (
