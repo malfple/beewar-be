@@ -4,6 +4,8 @@ import (
 	"gitlab.com/otqee/otqee-be/internal/access"
 	"gitlab.com/otqee/otqee-be/internal/access/model"
 	"gitlab.com/otqee/otqee-be/internal/gamemanager/loader/objects"
+	"gitlab.com/otqee/otqee-be/internal/logger"
+	"go.uber.org/zap"
 )
 
 // GameLoader loads game from db and perform game tasks.
@@ -18,7 +20,7 @@ func NewGameLoader(gameID uint64) (*GameLoader, *model.Game) {
 	game := access.QueryGameByID(gameID)
 	if game == nil {
 		// the websocket handler should already handle this
-		panic("game is supposed to exist")
+		panic("loader: game is supposed to exist")
 	}
 
 	return &GameLoader{
@@ -26,4 +28,12 @@ func NewGameLoader(gameID uint64) (*GameLoader, *model.Game) {
 	}, game
 }
 
-// TODO: add save function (need access layer first
+// SaveToDB saves the current game object to db
+func (gl *GameLoader) SaveToDB() error {
+	gameModel := gl.Game.ToModel()
+	if err := access.UpdateGame(gameModel); err != nil {
+		logger.GetLogger().Error("loader: error save game to db", zap.Error(err))
+		return err
+	}
+	return nil
+}
