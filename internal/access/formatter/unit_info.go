@@ -76,14 +76,16 @@ func ModelToGameUnit(width, height uint8, unitInfo []byte) [][]units.Unit {
 	for i := 0; i < len(unitInfo); {
 		y := unitInfo[i]
 		x := unitInfo[i+1]
-		p := int8(unitInfo[i+2])
+		p := uint8(unitInfo[i+2])
 		t := unitInfo[i+3]
+		hp := uint8(unitInfo[i+4])
+		s := uint8(unitInfo[i+5])
 		switch t {
 		case units.UnitTypeYou:
-			_units[y][x] = &units.You{P: p}
+			_units[y][x] = units.NewYou(p, hp, s)
 			i += 6
 		case units.UnitTypeInfantry:
-			_units[y][x] = &units.Infantry{P: p}
+			_units[y][x] = units.NewInfantry(p, hp, s)
 			i += 6
 		default:
 			panic("panic convert: unknown unit type from unit info")
@@ -93,6 +95,26 @@ func ModelToGameUnit(width, height uint8, unitInfo []byte) [][]units.Unit {
 }
 
 // GameUnitToModel converts unit info from objects.Game to model.Game
-func GameUnitToModel(width, height int8, _units [][]*units.Unit) []byte {
-	return nil
+func GameUnitToModel(width, height uint8, _units [][]units.Unit) []byte {
+	var unitInfo []byte
+	for i := uint8(0); i < height; i++ {
+		for j := uint8(0); j < width; j++ {
+			if _units[i][j] == nil {
+				continue
+			}
+
+			unit := _units[i][j]
+			switch unit.GetUnitType() {
+			case units.UnitTypeYou:
+				you := unit.(*units.You)
+				unitInfo = append(unitInfo, i, j, you.Owner, unit.GetUnitType(), you.HP, unit.GetUnitState())
+			case units.UnitTypeInfantry:
+				inf := unit.(*units.Infantry)
+				unitInfo = append(unitInfo, i, j, inf.Owner, unit.GetUnitType(), inf.HP, unit.GetUnitState())
+			default:
+				panic("panic convert: unknown unit type from unit object")
+			}
+		}
+	}
+	return unitInfo
 }

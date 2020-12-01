@@ -2,9 +2,14 @@ package units
 
 // Unit is an object that describes units on the map
 // to implement this interface, the basic fields that a unit struct should have are:
-// P (owner of this unit)
+// Owner (owner of this unit)
+// HP (health point)
+// State (state/flags), which can split into multiple fields, or renamed
 type Unit interface {
-	GetUnitType() int8
+	// GetUnitType gets the unit type of the current unit object
+	GetUnitType() uint8
+	// GetUnitState combines unit states and return it in one byte
+	GetUnitState() uint8
 }
 
 // these are the unit types
