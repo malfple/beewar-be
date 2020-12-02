@@ -1,4 +1,4 @@
-package units
+package objects
 
 // Unit is an object that describes units on the map
 // to implement this interface, the basic fields that a unit struct should have are:

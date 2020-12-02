@@ -1,4 +1,4 @@
-package units
+package objects
 
 // You is a unit object. It is most often the win or lose condition in a game.
 type You struct {

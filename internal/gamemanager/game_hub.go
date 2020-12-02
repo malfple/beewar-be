@@ -34,7 +34,7 @@ func (hub *GameHub) RegisterClient(client *GameClient) error {
 		} else {
 			hub.Clients[client.UserID] = client
 			// send game data
-			gameModel := hub.GameLoader.Game.ToModel()
+			gameModel := hub.GameLoader.ToModel()
 			gameDataMsg := &message.GameMessage{
 				Cmd:  message.CmdGameData,
 				Data: gameModel,

@@ -24,7 +24,7 @@ func ValidateTerrainInfo(width, height uint8, terrainInfo []byte) error {
 	return nil
 }
 
-// ModelToGameTerrain converts terrain info from model.Game to objects.Game
+// ModelToGameTerrain converts terrain info from model.Game to loader.GameLoader
 func ModelToGameTerrain(width, height uint8, terrainInfo []byte) [][]uint8 {
 	terrain := make([][]uint8, height)
 	for i := uint8(0); i < height; i++ {
@@ -36,7 +36,7 @@ func ModelToGameTerrain(width, height uint8, terrainInfo []byte) [][]uint8 {
 	return terrain
 }
 
-// GameTerrainToModel converts terrain info from objects.Game to model.Game
+// GameTerrainToModel converts terrain info from loader.GameLoader to model.Game
 func GameTerrainToModel(width, height uint8, terrain [][]uint8) []byte {
 	terrainInfo := make([]byte, int(width)*int(height))
 	for i := uint8(0); i < height; i++ {

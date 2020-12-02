@@ -1,4 +1,4 @@
-package units
+package objects
 
 // Infantry is a unit object.
 type Infantry struct {

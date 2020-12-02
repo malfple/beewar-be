@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"gitlab.com/otqee/otqee-be/internal/access"
-	"gitlab.com/otqee/otqee-be/internal/gamemanager/loader/objects"
+	"gitlab.com/otqee/otqee-be/internal/gamemanager/loader"
 	"gitlab.com/otqee/otqee-be/internal/logger"
 )
 
@@ -23,7 +23,7 @@ func main() {
 	game := access.QueryGameByID(1)
 	fmt.Println(game)
 
-	gameObj := objects.NewGameFromModel(game)
+	gameObj := loader.NewGameLoader(1)
 	fmt.Println(gameObj.Terrain)
 	for i, row := range gameObj.Units {
 		for j, unit := range row {

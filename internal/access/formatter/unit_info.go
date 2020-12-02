@@ -2,7 +2,7 @@ package formatter
 
 import (
 	"errors"
-	"gitlab.com/otqee/otqee-be/internal/gamemanager/loader/objects/units"
+	"gitlab.com/otqee/otqee-be/internal/access/formatter/objects"
 )
 
 /*
@@ -52,9 +52,9 @@ func ValidateUnitInfo(width, height uint8, unitInfo []byte) error {
 		}
 		t := unitInfo[i+3]
 		switch t {
-		case units.UnitTypeYou:
+		case objects.UnitTypeYou:
 			i += 6
-		case units.UnitTypeInfantry:
+		case objects.UnitTypeInfantry:
 			i += 6
 		default:
 			return ErrMapInvalidUnitInfo
@@ -63,12 +63,12 @@ func ValidateUnitInfo(width, height uint8, unitInfo []byte) error {
 	return nil
 }
 
-// ModelToGameUnit converts unit info from model.Game to objects.Game
+// ModelToGameUnit converts unit info from model.Game to loader.GameLoader
 // this function does not validate unit info and might panic if given bad unit info
-func ModelToGameUnit(width, height uint8, unitInfo []byte) [][]units.Unit {
-	_units := make([][]units.Unit, height)
+func ModelToGameUnit(width, height uint8, unitInfo []byte) [][]objects.Unit {
+	_units := make([][]objects.Unit, height)
 	for i := uint8(0); i < height; i++ {
-		_units[i] = make([]units.Unit, width)
+		_units[i] = make([]objects.Unit, width)
 		for j := uint8(0); j < width; j++ {
 			_units[i][j] = nil
 		}
@@ -81,11 +81,11 @@ func ModelToGameUnit(width, height uint8, unitInfo []byte) [][]units.Unit {
 		hp := uint8(unitInfo[i+4])
 		s := uint8(unitInfo[i+5])
 		switch t {
-		case units.UnitTypeYou:
-			_units[y][x] = units.NewYou(p, hp, s)
+		case objects.UnitTypeYou:
+			_units[y][x] = objects.NewYou(p, hp, s)
 			i += 6
-		case units.UnitTypeInfantry:
-			_units[y][x] = units.NewInfantry(p, hp, s)
+		case objects.UnitTypeInfantry:
+			_units[y][x] = objects.NewInfantry(p, hp, s)
 			i += 6
 		default:
 			panic("panic convert: unknown unit type from unit info")
@@ -94,8 +94,8 @@ func ModelToGameUnit(width, height uint8, unitInfo []byte) [][]units.Unit {
 	return _units
 }
 
-// GameUnitToModel converts unit info from objects.Game to model.Game
-func GameUnitToModel(width, height uint8, _units [][]units.Unit) []byte {
+// GameUnitToModel converts unit info from loader.GameLoader to model.Game
+func GameUnitToModel(width, height uint8, _units [][]objects.Unit) []byte {
 	var unitInfo []byte
 	for i := uint8(0); i < height; i++ {
 		for j := uint8(0); j < width; j++ {
@@ -105,11 +105,11 @@ func GameUnitToModel(width, height uint8, _units [][]units.Unit) []byte {
 
 			unit := _units[i][j]
 			switch unit.GetUnitType() {
-			case units.UnitTypeYou:
-				you := unit.(*units.You)
+			case objects.UnitTypeYou:
+				you := unit.(*objects.You)
 				unitInfo = append(unitInfo, i, j, you.Owner, unit.GetUnitType(), you.HP, unit.GetUnitState())
-			case units.UnitTypeInfantry:
-				inf := unit.(*units.Infantry)
+			case objects.UnitTypeInfantry:
+				inf := unit.(*objects.Infantry)
 				unitInfo = append(unitInfo, i, j, inf.Owner, unit.GetUnitType(), inf.HP, unit.GetUnitState())
 			default:
 				panic("panic convert: unknown unit type from unit object")
