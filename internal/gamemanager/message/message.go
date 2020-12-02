@@ -12,8 +12,16 @@ const (
 	CmdShutdown = "SHUTDOWN"
 	// CmdChat is a cmd for text chat. no restriction
 	CmdChat = "CHAT"
-	// CmdGameInfo is a cmd for sending game data. server-only
+	// CmdGameData is a cmd for sending game data. server-only
 	CmdGameData = "GAME_DATA"
+	// CmdError is a cmd for sending server error. server-only
+	CmdError = "ERROR"
+
+	// CmdUnitMove is a unit cmd for general moving. no restriction.
+	CmdUnitMove = "UNIT_MOVE"
+
+	// CmdEndTurn is a cmd to end the turn
+	CmdEndTurn = "END_TURN"
 )
 
 var (
@@ -53,8 +61,13 @@ func UnmarshalAndValidateGameMessage(rawPayload []byte, senderID uint64) (*GameM
 		return nil, ErrCmdNotAllowed
 	case CmdChat:
 		var data string
-		err := json.Unmarshal(temp.Data, &data)
-		if err != nil {
+		if err := json.Unmarshal(temp.Data, &data); err != nil {
+			return nil, err
+		}
+		message.Data = data
+	case CmdUnitMove:
+		var data UnitMoveMessageData
+		if err := json.Unmarshal(temp.Data, &data); err != nil {
 			return nil, err
 		}
 		message.Data = data
@@ -75,4 +88,12 @@ func MarshalGameMessage(message *GameMessage) ([]byte, error) {
 	}
 
 	return rawData, nil
+}
+
+// GameMessageWithError creates an error game message
+func GameMessageWithError(err error) *GameMessage {
+	return &GameMessage{
+		Cmd:  CmdError,
+		Data: err.Error(),
+	}
 }
