@@ -35,7 +35,7 @@ func NewGameLoader(gameID uint64) *GameLoader {
 		panic("loader: game is supposed to exist")
 	}
 
-	return &GameLoader{
+	gameLoader := &GameLoader{
 		ID:           gameModel.ID,
 		Type:         gameModel.Type,
 		Width:        gameModel.Width,
@@ -49,6 +49,8 @@ func NewGameLoader(gameID uint64) *GameLoader {
 		TimeCreated:  gameModel.TimeCreated,
 		TimeModified: gameModel.TimeModified,
 	}
+
+	return gameLoader
 }
 
 // ToModel converts the current game object into a model.Game db model

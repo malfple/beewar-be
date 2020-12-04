@@ -11,6 +11,8 @@ func main() {
 	logger.InitLogger()
 	access.InitAccess()
 
+	fmt.Println("oye testing")
+
 	//mapp := access.QueryMapByID(1)
 	//fmt.Println(mapp)
 	//
