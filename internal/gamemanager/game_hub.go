@@ -80,8 +80,16 @@ func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 		}
 
 		hub.Mutex.Lock()
+		// process message
+		var resp *message.GameMessage
+		if msg.Cmd == message.CmdChat {
+			resp = msg
+		} else {
+			resp = hub.GameLoader.HandleMessage(msg)
+		}
+		// broadcast
 		for _, client := range hub.Clients {
-			rawMsg, err := message.MarshalGameMessage(msg)
+			rawMsg, err := message.MarshalGameMessage(resp)
 			if err != nil {
 				panic("shouldn't have errored when marshaling")
 			}

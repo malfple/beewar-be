@@ -5,6 +5,7 @@ import (
 	"gitlab.com/otqee/otqee-be/internal/access/formatter"
 	"gitlab.com/otqee/otqee-be/internal/access/formatter/objects"
 	"gitlab.com/otqee/otqee-be/internal/access/model"
+	"gitlab.com/otqee/otqee-be/internal/gamemanager/message"
 	"gitlab.com/otqee/otqee-be/internal/logger"
 	"go.uber.org/zap"
 )
@@ -85,5 +86,10 @@ func (gl *GameLoader) SaveToDB() error {
 		logger.GetLogger().Error("loader: error save game to db", zap.Error(err))
 		return err
 	}
+	return nil
+}
+
+// HandleMessage handles game related message
+func (gl *GameLoader) HandleMessage(msg *message.GameMessage) *message.GameMessage {
 	return nil
 }
