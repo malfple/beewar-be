@@ -71,8 +71,6 @@ func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	for !hub.IsShutdown {
-		hub.checkClients()
-
 		msg := <-hub.MessageBus
 
 		if msg.Cmd == message.CmdShutdown {
@@ -100,6 +98,8 @@ func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 			}
 		}
 		hub.Mutex.Unlock()
+
+		hub.checkClients()
 	}
 }
 

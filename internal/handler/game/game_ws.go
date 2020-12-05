@@ -61,5 +61,7 @@ func HandleGameWS(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	client := gamemanager.NewGameClientByID(userID, c, uint64(gameID))
+	logger.GetLogger().Debug("client start listening", zap.Uint64("user_id", userID), zap.Int64("game_id", gameID))
 	client.Listen()
+	logger.GetLogger().Debug("client stop listening", zap.Uint64("user_id", userID), zap.Int64("game_id", gameID))
 }

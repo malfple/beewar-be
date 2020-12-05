@@ -22,6 +22,7 @@ func ShutdownGameManager() {
 	logger.GetLogger().Info("game manager: shutting down hubs", zap.Int("hub_count", len(gameHubStore)))
 	gameHubStoreLock.Lock()
 	for gameID, hub := range gameHubStore {
+		logger.GetLogger().Debug("game manager: force shutdown hub", zap.Uint64("game_id", hub.GameID))
 		hub.ForceShutdown()
 		delete(gameHubStore, gameID)
 	}
