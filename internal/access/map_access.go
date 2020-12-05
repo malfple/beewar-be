@@ -21,18 +21,18 @@ var (
 )
 
 const (
-	mapMaxWidth      = 50
 	mapMaxHeight     = 50
+	mapMaxWidth      = 50
 	mapMaxNameLength = 255
 )
 
 // CreateEmptyMap creates an empty map with the specified type and size, and returns the id
-func CreateEmptyMap(mapType, width, height uint8, name string, authorUserID uint64) (uint64, error) {
-	if width < 1 || width > mapMaxWidth {
-		return 0, ErrMapWidth
-	}
+func CreateEmptyMap(mapType uint8, height, width int, name string, authorUserID uint64) (uint64, error) {
 	if height < 1 || height > mapMaxHeight {
 		return 0, ErrMapHeight
+	}
+	if width < 1 || width > mapMaxWidth {
+		return 0, ErrMapWidth
 	}
 	if len(name) > mapMaxNameLength {
 		return 0, ErrMapNameLength
@@ -42,11 +42,11 @@ func CreateEmptyMap(mapType, width, height uint8, name string, authorUserID uint
 	unitInfo := make([]byte, 0)
 
 	const stmtCreateEmptyMap = `INSERT INTO map_tab
-(type, width, height, name, player_count, terrain_info, unit_info, author_user_id, time_created, time_modified)
+(type, height, width, name, player_count, terrain_info, unit_info, author_user_id, time_created, time_modified)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 
 	res, err := db.Exec(stmtCreateEmptyMap,
-		mapType, width, height, name, 1, terrainInfo, unitInfo, authorUserID)
+		mapType, height, width, name, 1, terrainInfo, unitInfo, authorUserID)
 	if err != nil {
 		logger.GetLogger().Error("db: insert error", zap.String("table", "map_tab"), zap.Error(err))
 		return 0, err
@@ -56,29 +56,29 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 }
 
 // UpdateMap updates a map
-func UpdateMap(id uint64, mapType, width, height uint8, name string, playerCount uint8, terrainInfo, unitInfo []byte) error {
-	if width < 1 || width > mapMaxWidth {
-		return ErrMapWidth
-	}
+func UpdateMap(id uint64, mapType uint8, height, width int, name string, playerCount uint8, terrainInfo, unitInfo []byte) error {
 	if height < 1 || height > mapMaxHeight {
 		return ErrMapHeight
+	}
+	if width < 1 || width > mapMaxWidth {
+		return ErrMapWidth
 	}
 	if len(name) > mapMaxNameLength {
 		return ErrMapNameLength
 	}
-	if err := formatter.ValidateTerrainInfo(width, height, terrainInfo); err != nil {
+	if err := formatter.ValidateTerrainInfo(height, width, terrainInfo); err != nil {
 		return err
 	}
-	if err := formatter.ValidateUnitInfo(width, height, unitInfo); err != nil {
+	if err := formatter.ValidateUnitInfo(height, width, unitInfo); err != nil {
 		return err
 	}
 
 	const stmtUpdateMap = `UPDATE map_tab
-SET type=?, width=?, height=?, name=?, player_count=?, terrain_info=?, unit_info=?, time_modified=UNIX_TIMESTAMP()
+SET type=?, height=?, width=?, name=?, player_count=?, terrain_info=?, unit_info=?, time_modified=UNIX_TIMESTAMP()
 WHERE id=?`
 
 	_, err := db.Exec(stmtUpdateMap,
-		mapType, width, height, name, playerCount, terrainInfo, unitInfo,
+		mapType, height, width, name, playerCount, terrainInfo, unitInfo,
 		id)
 	if err != nil {
 		logger.GetLogger().Error("db: update error", zap.String("table", "map_tab"), zap.Error(err))
@@ -96,8 +96,8 @@ func QueryMapByID(mapID uint64) *model.Map {
 	err := row.Scan(
 		&mapp.ID,
 		&mapp.Type,
-		&mapp.Width,
 		&mapp.Height,
+		&mapp.Width,
 		&mapp.Name,
 		&mapp.PlayerCount,
 		&mapp.TerrainInfo,

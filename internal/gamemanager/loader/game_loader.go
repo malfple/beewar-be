@@ -15,10 +15,10 @@ import (
 type GameLoader struct {
 	ID           uint64
 	Type         uint8
-	Width        uint8
-	Height       uint8
+	Height       int
+	Width        int
 	PlayerCount  uint8
-	Terrain      [][]uint8
+	Terrain      [][]int
 	Units        [][]objects.Unit
 	MapID        uint64
 	TurnCount    int32
@@ -38,11 +38,11 @@ func NewGameLoader(gameID uint64) *GameLoader {
 	gameLoader := &GameLoader{
 		ID:           gameModel.ID,
 		Type:         gameModel.Type,
-		Width:        gameModel.Width,
 		Height:       gameModel.Height,
+		Width:        gameModel.Width,
 		PlayerCount:  gameModel.PlayerCount,
-		Terrain:      formatter.ModelToGameTerrain(gameModel.Width, gameModel.Height, gameModel.TerrainInfo),
-		Units:        formatter.ModelToGameUnit(gameModel.Width, gameModel.Height, gameModel.UnitInfo),
+		Terrain:      formatter.ModelToGameTerrain(gameModel.Height, gameModel.Width, gameModel.TerrainInfo),
+		Units:        formatter.ModelToGameUnit(gameModel.Height, gameModel.Width, gameModel.UnitInfo),
 		MapID:        gameModel.MapID,
 		TurnCount:    gameModel.TurnCount,
 		TurnPlayer:   gameModel.TurnPlayer,
@@ -58,11 +58,11 @@ func (gl *GameLoader) ToModel() *model.Game {
 	return &model.Game{
 		ID:           gl.ID,
 		Type:         gl.Type,
-		Width:        gl.Width,
 		Height:       gl.Height,
+		Width:        gl.Width,
 		PlayerCount:  gl.PlayerCount,
-		TerrainInfo:  formatter.GameTerrainToModel(gl.Width, gl.Height, gl.Terrain),
-		UnitInfo:     formatter.GameUnitToModel(gl.Width, gl.Height, gl.Units),
+		TerrainInfo:  formatter.GameTerrainToModel(gl.Height, gl.Width, gl.Terrain),
+		UnitInfo:     formatter.GameUnitToModel(gl.Height, gl.Width, gl.Units),
 		MapID:        gl.MapID,
 		TurnCount:    gl.TurnCount,
 		TurnPlayer:   gl.TurnPlayer,

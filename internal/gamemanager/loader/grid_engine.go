@@ -25,8 +25,8 @@ func getAdjList(y, x int) ([]int, []int) {
 // GridEngine is a game engine for movement and attack range calculations
 // keep in mind that GridEngine should not edit the pointer to slices (treated as input only)
 type GridEngine struct {
-	Width    int
 	Height   int
+	Width    int
 	Terrain  *[][]int
 	Units    *[][]objects.Unit
 	dist     [][]int // distance matrix, used temporarily
@@ -34,10 +34,10 @@ type GridEngine struct {
 }
 
 // NewGridEngine returns a new grid engine
-func NewGridEngine(width, height int, terrain *[][]int, units *[][]objects.Unit) *GridEngine {
+func NewGridEngine(height, width int, terrain *[][]int, units *[][]objects.Unit) *GridEngine {
 	engine := &GridEngine{
-		Width:   width,
 		Height:  height,
+		Width:   width,
 		Terrain: terrain,
 		Units:   units,
 		dist:    make([][]int, height),

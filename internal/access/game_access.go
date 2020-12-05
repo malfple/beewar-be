@@ -48,11 +48,11 @@ func CreateGameFromMap(mapID uint64, userIDs []uint64) (uint64, error) {
 	}
 
 	const stmtCreateGameFromMap = `INSERT INTO game_tab
-(type, width, height, player_count, terrain_info, unit_info, map_id, time_created, time_modified)
+(type, height, width, player_count, terrain_info, unit_info, map_id, time_created, time_modified)
 VALUES (?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 
 	res, err := db.Exec(stmtCreateGameFromMap,
-		mapp.Type, mapp.Width, mapp.Height, mapp.PlayerCount, mapp.TerrainInfo, mapp.UnitInfo, mapp.ID)
+		mapp.Type, mapp.Height, mapp.Width, mapp.PlayerCount, mapp.TerrainInfo, mapp.UnitInfo, mapp.ID)
 	if err != nil {
 		logger.GetLogger().Error("db: insert error", zap.String("table", "game_tab"), zap.Error(err))
 		return 0, err
@@ -77,7 +77,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 // UpdateGame saves a game model to db.
 // only updates updatable fields
 func UpdateGame(game *model.Game) error {
-	if err := formatter.ValidateUnitInfo(game.Width, game.Height, game.UnitInfo); err != nil {
+	if err := formatter.ValidateUnitInfo(game.Height, game.Width, game.UnitInfo); err != nil {
 		return err
 	}
 
@@ -103,8 +103,8 @@ func QueryGameByID(gameID uint64) *model.Game {
 	err := row.Scan(
 		&game.ID,
 		&game.Type,
-		&game.Width,
 		&game.Height,
+		&game.Width,
 		&game.PlayerCount,
 		&game.TerrainInfo,
 		&game.UnitInfo,

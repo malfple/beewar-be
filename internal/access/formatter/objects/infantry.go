@@ -2,13 +2,13 @@ package objects
 
 // Infantry is a unit object.
 type Infantry struct {
-	Owner uint8
-	HP    uint8
-	State uint8
+	Owner int
+	HP    int
+	State int
 }
 
 // NewInfantry returns a new Infantry object
-func NewInfantry(owner, hp, state uint8) *Infantry {
+func NewInfantry(owner, hp, state int) *Infantry {
 	return &Infantry{
 		Owner: owner,
 		HP:    hp,
@@ -17,11 +17,11 @@ func NewInfantry(owner, hp, state uint8) *Infantry {
 }
 
 // GetUnitType see function from Unit
-func (inf *Infantry) GetUnitType() uint8 {
+func (inf *Infantry) GetUnitType() int {
 	return UnitTypeInfantry
 }
 
 // GetUnitState see function from Unit
-func (inf *Infantry) GetUnitState() uint8 {
+func (inf *Infantry) GetUnitState() int {
 	return inf.State
 }

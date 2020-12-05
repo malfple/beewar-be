@@ -34,31 +34,31 @@ and for a cell in odd rows,
 var ErrMapInvalidTerrainInfo = errors.New("invalid terrain info")
 
 // ValidateTerrainInfo validates whether a terrain info follows format
-func ValidateTerrainInfo(width, height uint8, terrainInfo []byte) error {
-	if len(terrainInfo) != int(width)*int(height) {
+func ValidateTerrainInfo(height, width int, terrainInfo []byte) error {
+	if len(terrainInfo) != height*width {
 		return ErrMapInvalidTerrainInfo
 	}
 	return nil
 }
 
 // ModelToGameTerrain converts terrain info from model.Game to loader.GameLoader
-func ModelToGameTerrain(width, height uint8, terrainInfo []byte) [][]uint8 {
-	terrain := make([][]uint8, height)
-	for i := uint8(0); i < height; i++ {
-		terrain[i] = make([]uint8, width)
-		for j := uint8(0); j < width; j++ {
-			terrain[i][j] = terrainInfo[i*width+j]
+func ModelToGameTerrain(height, width int, terrainInfo []byte) [][]int {
+	terrain := make([][]int, height)
+	for i := 0; i < height; i++ {
+		terrain[i] = make([]int, width)
+		for j := 0; j < width; j++ {
+			terrain[i][j] = int(terrainInfo[i*width+j])
 		}
 	}
 	return terrain
 }
 
 // GameTerrainToModel converts terrain info from loader.GameLoader to model.Game
-func GameTerrainToModel(width, height uint8, terrain [][]uint8) []byte {
-	terrainInfo := make([]byte, int(width)*int(height))
-	for i := uint8(0); i < height; i++ {
-		for j := uint8(0); j < width; j++ {
-			terrainInfo[i*width+j] = terrain[i][j]
+func GameTerrainToModel(height, width int, terrain [][]int) []byte {
+	terrainInfo := make([]byte, height*width)
+	for i := 0; i < height; i++ {
+		for j := 0; j < width; j++ {
+			terrainInfo[i*width+j] = byte(terrain[i][j])
 		}
 	}
 	return terrainInfo

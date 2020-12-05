@@ -7,9 +7,9 @@ package objects
 // State (state/flags), which can split into multiple fields, or renamed
 type Unit interface {
 	// GetUnitType gets the unit type of the current unit object
-	GetUnitType() uint8
+	GetUnitType() int
 	// GetUnitState combines unit states and return it in one byte
-	GetUnitState() uint8
+	GetUnitState() int
 }
 
 // these are the unit types

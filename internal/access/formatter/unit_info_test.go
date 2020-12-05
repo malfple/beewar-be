@@ -33,16 +33,17 @@ var testUnits = [][]objects.Unit{
 	{nil, nil, nil, nil, nil, nil, nil, nil, nil, nil},
 	{nil, nil, nil, nil, nil, nil, nil, nil, nil, nil},
 	{nil, nil, nil, nil, nil, nil, nil, nil, nil, nil},
+	{nil, nil, nil, nil, nil, nil, nil, nil, nil, nil},
 }
 
 func TestValidateUnitInfo(t *testing.T) {
-	err := ValidateUnitInfo(testWidth, testHeight, testUnitInfo)
+	err := ValidateUnitInfo(testHeight, testWidth, testUnitInfo)
 	assert.Equal(t, nil, err)
 }
 
 func TestConvertUnit(t *testing.T) {
-	realUnits := ModelToGameUnit(testWidth, testHeight, testUnitInfo)
+	realUnits := ModelToGameUnit(testHeight, testWidth, testUnitInfo)
 	assert.Equal(t, testUnits, realUnits)
-	realUnitInfo := GameUnitToModel(testWidth, testHeight, realUnits)
+	realUnitInfo := GameUnitToModel(testHeight, testWidth, realUnits)
 	assert.Equal(t, testUnitInfo, realUnitInfo)
 }

@@ -40,13 +40,13 @@ unit type information is available in `units` package
 var ErrMapInvalidUnitInfo = errors.New("invalid unit info")
 
 // ValidateUnitInfo validates whether unit info follows format
-func ValidateUnitInfo(width, height uint8, unitInfo []byte) error {
+func ValidateUnitInfo(height, width int, unitInfo []byte) error {
 	for i := 0; i < len(unitInfo); {
 		if i+5 >= len(unitInfo) { // the remaining length is less than 6 (the required minimum of a normal unit)
 			return ErrMapInvalidUnitInfo
 		}
-		y := unitInfo[i]
-		x := unitInfo[i+1]
+		y := int(unitInfo[i])
+		x := int(unitInfo[i+1])
 		if y < 0 || y >= height || x < 0 || x >= width {
 			return ErrMapInvalidUnitInfo
 		}
@@ -65,21 +65,21 @@ func ValidateUnitInfo(width, height uint8, unitInfo []byte) error {
 
 // ModelToGameUnit converts unit info from model.Game to loader.GameLoader
 // this function does not validate unit info and might panic if given bad unit info
-func ModelToGameUnit(width, height uint8, unitInfo []byte) [][]objects.Unit {
+func ModelToGameUnit(height, width int, unitInfo []byte) [][]objects.Unit {
 	_units := make([][]objects.Unit, height)
-	for i := uint8(0); i < height; i++ {
+	for i := 0; i < height; i++ {
 		_units[i] = make([]objects.Unit, width)
-		for j := uint8(0); j < width; j++ {
+		for j := 0; j < width; j++ {
 			_units[i][j] = nil
 		}
 	}
 	for i := 0; i < len(unitInfo); {
 		y := unitInfo[i]
 		x := unitInfo[i+1]
-		p := uint8(unitInfo[i+2])
+		p := int(unitInfo[i+2])
 		t := unitInfo[i+3]
-		hp := uint8(unitInfo[i+4])
-		s := uint8(unitInfo[i+5])
+		hp := int(unitInfo[i+4])
+		s := int(unitInfo[i+5])
 		switch t {
 		case objects.UnitTypeYou:
 			_units[y][x] = objects.NewYou(p, hp, s)
@@ -95,10 +95,10 @@ func ModelToGameUnit(width, height uint8, unitInfo []byte) [][]objects.Unit {
 }
 
 // GameUnitToModel converts unit info from loader.GameLoader to model.Game
-func GameUnitToModel(width, height uint8, _units [][]objects.Unit) []byte {
+func GameUnitToModel(height, width int, _units [][]objects.Unit) []byte {
 	var unitInfo []byte
-	for i := uint8(0); i < height; i++ {
-		for j := uint8(0); j < width; j++ {
+	for i := 0; i < height; i++ {
+		for j := 0; j < width; j++ {
 			if _units[i][j] == nil {
 				continue
 			}
@@ -107,10 +107,10 @@ func GameUnitToModel(width, height uint8, _units [][]objects.Unit) []byte {
 			switch unit.GetUnitType() {
 			case objects.UnitTypeYou:
 				you := unit.(*objects.You)
-				unitInfo = append(unitInfo, i, j, you.Owner, unit.GetUnitType(), you.HP, unit.GetUnitState())
+				unitInfo = append(unitInfo, byte(i), byte(j), byte(you.Owner), byte(unit.GetUnitType()), byte(you.HP), byte(unit.GetUnitState()))
 			case objects.UnitTypeInfantry:
 				inf := unit.(*objects.Infantry)
-				unitInfo = append(unitInfo, i, j, inf.Owner, unit.GetUnitType(), inf.HP, unit.GetUnitState())
+				unitInfo = append(unitInfo, byte(i), byte(j), byte(inf.Owner), byte(unit.GetUnitType()), byte(inf.HP), byte(unit.GetUnitState()))
 			default:
 				panic("panic convert: unknown unit type from unit object")
 			}

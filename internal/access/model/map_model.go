@@ -4,8 +4,8 @@ package model
 type Map struct {
 	ID            uint64 `json:"id"`
 	Type          uint8  `json:"type"`
-	Width         uint8  `json:"width"`
-	Height        uint8  `json:"height"`
+	Height        int    `json:"height"`
+	Width         int    `json:"width"`
 	Name          string `json:"name"`
 	PlayerCount   uint8  `json:"player_count"`
 	TerrainInfo   []byte `json:"terrain_info"`
