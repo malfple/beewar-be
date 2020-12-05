@@ -25,6 +25,7 @@ type GameLoader struct {
 	TurnPlayer   int8
 	TimeCreated  int64
 	TimeModified int64
+	GridEngine   *GridEngine
 }
 
 // NewGameLoader loads game by gameID and return the GameLoader object
@@ -49,6 +50,12 @@ func NewGameLoader(gameID uint64) *GameLoader {
 		TimeCreated:  gameModel.TimeCreated,
 		TimeModified: gameModel.TimeModified,
 	}
+
+	gameLoader.GridEngine = NewGridEngine(
+		gameLoader.Width,
+		gameLoader.Height,
+		&gameLoader.Terrain,
+		&gameLoader.Units)
 
 	return gameLoader
 }
