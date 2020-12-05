@@ -11,7 +11,7 @@ CREATE TABLE user_tab(
     rating SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     moves_made BIGINT UNSIGNED NOT NULL DEFAULT 0,
     games_played INT UNSIGNED NOT NULL DEFAULT 0,
-    time_created BIGINT,
+    time_created BIGINT NOT NULL,
     PRIMARY KEY (id),
     UNIQUE INDEX unq_email (email),
     UNIQUE INDEX unq_username (username)
@@ -26,10 +26,10 @@ CREATE TABLE map_tab(
     player_count TINYINT UNSIGNED NOT NULL,
     terrain_info BLOB,
     unit_info BLOB,
-    author_user_id BIGINT UNSIGNED,
+    author_user_id BIGINT UNSIGNED NOT NULL,
     stat_play_count INT UNSIGNED NOT NULL DEFAULT 0,
-    time_created BIGINT,
-    time_modified BIGINT,
+    time_created BIGINT NOT NULL,
+    time_modified BIGINT NOT NULL,
     PRIMARY KEY (id),
     INDEX idx_author_user_id (author_user_id)
 );
@@ -45,8 +45,8 @@ CREATE TABLE game_tab(
     map_id BIGINT UNSIGNED NOT NULL,
     turn_count INT NOT NULL DEFAULT 1,
     turn_player TINYINT NOT NULL DEFAULT 1,
-    time_created BIGINT,
-    time_modified BIGINT,
+    time_created BIGINT NOT NULL,
+    time_modified BIGINT NOT NULL,
     PRIMARY KEY (id)
 );
 
@@ -54,8 +54,8 @@ CREATE TABLE game_user_tab(
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     game_id BIGINT UNSIGNED NOT NULL,
     user_id BIGINT UNSIGNED NOT NULL,
-    rank_order TINYINT UNSIGNED DEFAULT 0,
-    turns_lasted INT DEFAULT 0,
+    rank_order TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    turns_lasted INT NOT NULL DEFAULT 0,
     PRIMARY KEY (id),
     INDEX idx_game_id (game_id),
     INDEX idx_user_id (user_id)
