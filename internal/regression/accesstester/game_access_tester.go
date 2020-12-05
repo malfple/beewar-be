@@ -63,5 +63,14 @@ func TestGameAccess() bool {
 		return false
 	}
 
+	if !access.IsExistGameByID(gameID) {
+		logger.GetLogger().Error("game doesn't exist")
+		return false
+	}
+	if access.IsExistGameByID(696969) {
+		logger.GetLogger().Error("game isn't supposed to exist")
+		return false
+	}
+
 	return true
 }

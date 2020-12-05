@@ -8,10 +8,13 @@ type pos struct {
 	X int
 }
 
+// K is the number of adjacent cells (hex cells)
 const K = 6
+
 var adjY = []int{0, 0, -1, 1, -1, 1}
 var adjXEven = []int{-1, 1, 0, 0, 1, 1}
 var adjXOdd = []int{-1, 1, 0, 0, -1, -1}
+
 func getAdjList(y, x int) ([]int, []int) {
 	if y&1 == 0 { // even row
 		return adjY, adjXEven
@@ -27,7 +30,7 @@ type GridEngine struct {
 	Terrain  *[][]int
 	Units    *[][]objects.Unit
 	dist     [][]int // distance matrix, used temporarily
-	posQueue []pos     // the queue used for bfs
+	posQueue []pos   // the queue used for bfs
 }
 
 // NewGridEngine returns a new grid engine

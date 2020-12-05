@@ -44,8 +44,7 @@ func HandleGameWS(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	game := access.QueryGameByID(uint64(gameID))
-	if game == nil {
+	if !access.IsExistGameByID(uint64(gameID)) {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}

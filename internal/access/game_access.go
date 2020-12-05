@@ -122,3 +122,18 @@ func QueryGameByID(gameID uint64) *model.Game {
 
 	return game
 }
+
+// IsExistGameByID checks for gameID existence
+func IsExistGameByID(gameID uint64) bool {
+	row := db.QueryRow(`SELECT 1 FROM game_tab WHERE id=? LIMIT 1`, gameID)
+
+	var temp int
+	err := row.Scan(&temp)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			logger.GetLogger().Error("db: query error", zap.String("table", "game_tab"), zap.Error(err))
+		}
+		return false
+	}
+	return true
+}
