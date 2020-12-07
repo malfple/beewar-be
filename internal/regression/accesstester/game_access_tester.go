@@ -63,6 +63,12 @@ func TestGameAccess() bool {
 		return false
 	}
 
+	players := access.QueryUsersLinkedToGame(gameID)
+	if players[0].UserID != user1.ID || players[1].UserID != user2.ID {
+		logger.GetLogger().Error("error query users linked to game")
+		return false
+	}
+
 	if !access.IsExistGameByID(gameID) {
 		logger.GetLogger().Error("game doesn't exist")
 		return false
