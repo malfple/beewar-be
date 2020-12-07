@@ -14,7 +14,7 @@ import (
 // also supports saving back to db on demand.
 // game loader is not concurrent safe, and the caller needs to handle this with locks
 type GameLoader struct {
-	ID           uint64
+	ID           uint64 // this is game id
 	Type         uint8
 	Height       int
 	Width        int
@@ -87,6 +87,27 @@ func (gl *GameLoader) SaveToDB() error {
 		return err
 	}
 	return nil
+}
+
+// GameData returns the game data message of the loaded game
+func (gl *GameLoader) GameData() *message.GameMessage {
+	gameUsers := access.QueryUsersLinkedToGame(gl.ID)
+	players := make([]*message.Player, len(gameUsers))
+	for i, gameUser := range gameUsers {
+		players[i] = &message.Player{
+			UserID:      gameUser.UserID,
+			PlayerOrder: gameUser.PlayerOrder,
+			FinalRank:   gameUser.FinalRank,
+			FinalTurns:  gameUser.FinalTurns,
+		}
+	}
+	return &message.GameMessage{
+		Cmd: message.CmdGameData,
+		Data: &message.GameDataMessageData{
+			Game:    gl.ToModel(),
+			Players: players,
+		},
+	}
 }
 
 // HandleMessage handles game related message

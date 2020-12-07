@@ -34,11 +34,7 @@ func (hub *GameHub) RegisterClient(client *GameClient) error {
 		} else {
 			hub.Clients[client.UserID] = client
 			// send game data
-			gameModel := hub.GameLoader.ToModel()
-			gameDataMsg := &message.GameMessage{
-				Cmd:  message.CmdGameData,
-				Data: gameModel,
-			}
+			gameDataMsg := hub.GameLoader.GameData()
 			rawMsg, err := message.MarshalGameMessage(gameDataMsg)
 			if err != nil {
 				panic("shouldn't have errored when marshaling")

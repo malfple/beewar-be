@@ -64,7 +64,7 @@ func TestGameAccess() bool {
 	}
 
 	players := access.QueryUsersLinkedToGame(gameID)
-	if players[0].UserID != user1.ID || players[1].UserID != user2.ID {
+	if len(players) != 2 || players[0].UserID != user1.ID || players[1].UserID != user2.ID {
 		logger.GetLogger().Error("error query users linked to game")
 		return false
 	}
