@@ -40,12 +40,12 @@ var expectedDist = [][]int{
 	{-1, -1, 2, 3, 4, 5, 6, 7, 8, -1},
 	{-1, 1, 2, 3, 4, 5, 6, 7, -1, -1},
 	{-1, 0, 1, 2, 3, -1, 6, 7, -1, -1},
-	{1, -1, 2, -1, -1, -1, -1, 8, -1, -1},
-	{2, -1, 3, -1, -1, -1, -1, 9, -1, -1},
-	{3, -1, 4, 5, -1, 8, 9, 10, -1, -1},
-	{-1, -1, 5, 5, 6, 7, 8, 9, 10, -1},
-	{-1, 6, 6, 6, 7, 8, 9, 10, -1, -1},
-	{-1, -1, 7, 7, 7, 8, 9, 10, -1, -1},
+	{1, 1, 2, -1, -1, -1, -1, 8, -1, -1},
+	{2, 2, 2, -1, -1, -1, -1, 9, -1, -1},
+	{3, 3, 3, 4, -1, 7, 8, 9, -1, -1},
+	{-1, 4, 4, 4, 5, 6, 7, 8, 9, -1},
+	{-1, 5, 5, 5, 6, 7, 8, 9, -1, -1},
+	{-1, -1, 6, 6, 6, 7, 8, 9, -1, -1},
 }
 
 var cleanDist = [][]int{
@@ -62,29 +62,29 @@ var cleanDist = [][]int{
 }
 
 func TestGridEngine_BFS(t *testing.T) {
-	gl := NewGridEngine(testHeight, testWidth, &testTerrain, &testUnits)
+	ge := NewGridEngine(testHeight, testWidth, &testTerrain, &testUnits)
 
-	gl.BFS(3, 1, 100)
-	assert.Equal(t, expectedDist, gl.dist)
+	ge.BFS(3, 1, 100)
+	assert.Equal(t, expectedDist, ge.dist)
 
-	gl.BFSReset(3, 1)
-	assert.Equal(t, cleanDist, gl.dist)
+	ge.BFSReset(3, 1)
+	assert.Equal(t, cleanDist, ge.dist)
 }
 
 func BenchmarkGridEngine_BFS(b *testing.B) {
-	gl := NewGridEngine(testHeight, testWidth, &testTerrain, &testUnits)
+	ge := NewGridEngine(testHeight, testWidth, &testTerrain, &testUnits)
 
 	for i := 0; i < b.N; i++ {
-		gl.BFS(3, 1, 100)
-		gl.BFSReset(3, 1)
+		ge.BFS(3, 1, 100)
+		ge.BFSReset(3, 1)
 	}
 }
 
-func TestGridEngine_ValidateMove(t *testing.T) {
-	gl := NewGridEngine(testHeight, testWidth, &testTerrain, &testUnits)
+func TestGridEngine_ValidateMoveNormal(t *testing.T) {
+	ge := NewGridEngine(testHeight, testWidth, &testTerrain, &testUnits)
 
-	assert.Equal(t, true, gl.ValidateMove(3, 1, 4, 7, 8))
-	assert.Equal(t, cleanDist, gl.dist)
-	assert.Equal(t, false, gl.ValidateMove(3, 1, 4, 7, 7))
-	assert.Equal(t, cleanDist, gl.dist)
+	assert.Equal(t, true, ge.ValidateMoveNormal(3, 1, 4, 7, 8))
+	assert.Equal(t, cleanDist, ge.dist)
+	assert.Equal(t, false, ge.ValidateMoveNormal(3, 1, 4, 7, 7))
+	assert.Equal(t, cleanDist, ge.dist)
 }

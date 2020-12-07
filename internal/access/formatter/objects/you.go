@@ -21,6 +21,16 @@ func (you *You) GetUnitType() int {
 	return UnitTypeYou
 }
 
+// GetWeight see function from Unit
+func (you *You) GetWeight() int {
+	return UnitWeightYou
+}
+
+// GetUnitOwner see function from Unit
+func (you *You) GetUnitOwner() int {
+	return you.Owner
+}
+
 // GetUnitState see function from Unit
 func (you *You) GetUnitState() int {
 	return you.State

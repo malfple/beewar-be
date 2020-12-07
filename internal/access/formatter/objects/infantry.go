@@ -21,6 +21,16 @@ func (inf *Infantry) GetUnitType() int {
 	return UnitTypeInfantry
 }
 
+// GetWeight see function from Unit
+func (inf *Infantry) GetWeight() int {
+	return UnitWeightInfantry
+}
+
+// GetUnitOwner see function from Unit
+func (inf *Infantry) GetUnitOwner() int {
+	return inf.Owner
+}
+
 // GetUnitState see function from Unit
 func (inf *Infantry) GetUnitState() int {
 	return inf.State

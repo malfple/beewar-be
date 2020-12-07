@@ -1,6 +1,15 @@
 package loader
 
-import "gitlab.com/otqee/otqee-be/internal/access/formatter/objects"
+import (
+	"gitlab.com/otqee/otqee-be/internal/access/formatter/objects"
+)
+
+/*
+Terrain information in formatter/terrain_info.go
+
+Normal move
+BFS. Unit pass-through determined in objects/unit.go
+*/
 
 // defines position
 type pos struct {
@@ -53,10 +62,10 @@ func NewGridEngine(height, width int, terrain *[][]int, units *[][]objects.Unit)
 }
 
 // BFS does a breadth first search starting on (y, x) and fills dist array up to the required steps.
+// there should be a unit at (y, x) to get weight and owner
+// WARNING: this function does not do validation checks
 func (ge *GridEngine) BFS(y, x, steps int) {
-	if y < 0 || y >= ge.Height || x < 0 || x > ge.Width {
-		return
-	}
+	self := (*ge.Units)[y][x]
 	ge.dist[y][x] = 0
 	ge.posQueue = append(ge.posQueue, pos{y, x})
 	for len(ge.posQueue) > 0 {
@@ -71,17 +80,22 @@ func (ge *GridEngine) BFS(y, x, steps int) {
 		for k := 0; k < K; k++ {
 			ty := now.Y + cy[k]
 			tx := now.X + cx[k]
-			if ty < 0 || ty >= ge.Height || tx < 0 || tx > ge.Width {
+			if ty < 0 || ty >= ge.Height || tx < 0 || tx >= ge.Width {
 				continue
 			}
-			if (*ge.Units)[ty][tx] != nil {
+			if ge.dist[ty][tx] != -1 {
 				continue
 			}
 			if (*ge.Terrain)[ty][tx] != 1 {
 				continue
 			}
-			if ge.dist[ty][tx] != -1 {
-				continue
+			if unit := (*ge.Units)[ty][tx]; unit != nil {
+				if unit.GetUnitOwner() != self.GetUnitOwner() {
+					continue
+				}
+				if unit.GetWeight()+self.GetWeight() > 1 {
+					continue
+				}
 			}
 			ge.dist[ty][tx] = ge.dist[now.Y][now.X] + 1
 			ge.posQueue = append(ge.posQueue, pos{ty, tx})
@@ -90,10 +104,9 @@ func (ge *GridEngine) BFS(y, x, steps int) {
 }
 
 // BFSReset is similar to BFS but clears the dist array instead of filling it
+// it has to be used at the same spot when doing BFS
+// WARNING: this function does not do validation checks
 func (ge *GridEngine) BFSReset(y, x int) {
-	if y < 0 || y >= ge.Height || x < 0 || x > ge.Width {
-		return
-	}
 	ge.dist[y][x] = -1
 	ge.posQueue = append(ge.posQueue, pos{y, x})
 	for len(ge.posQueue) > 0 {
@@ -104,7 +117,7 @@ func (ge *GridEngine) BFSReset(y, x int) {
 		for k := 0; k < K; k++ {
 			ty := now.Y + cy[k]
 			tx := now.X + cx[k]
-			if ty < 0 || ty >= ge.Height || tx < 0 || tx > ge.Width {
+			if ty < 0 || ty >= ge.Height || tx < 0 || tx >= ge.Width {
 				continue
 			}
 			if ge.dist[ty][tx] == -1 {
@@ -116,8 +129,8 @@ func (ge *GridEngine) BFSReset(y, x int) {
 	}
 }
 
-// ValidateMove checks if a move from (y1, x1) to (y2, x2) with the required steps is valid
-func (ge *GridEngine) ValidateMove(y1, x1, y2, x2, steps int) bool {
+// ValidateMoveNormal checks if a move from (y1, x1) to (y2, x2) with the required steps is valid
+func (ge *GridEngine) ValidateMoveNormal(y1, x1, y2, x2, steps int) bool {
 	if y1 < 0 || y1 >= ge.Height || x1 < 0 || x1 >= ge.Width {
 		return false
 	}

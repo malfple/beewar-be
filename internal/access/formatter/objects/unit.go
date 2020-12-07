@@ -8,14 +8,29 @@ package objects
 type Unit interface {
 	// GetUnitType gets the unit type of the current unit object
 	GetUnitType() int
-	// GetUnitState combines unit states and return it in one byte
+	// GetWeight returns the weight characteristic of the unit type
+	GetWeight() int
+	// GetUnitOwner returns the owner of the unit
+	GetUnitOwner() int
+	// GetUnitState returns unit states
 	GetUnitState() int
 }
 
 // these are the unit types
 const (
-	// UnitTypeYou defines a unit type
+	// UnitTypeYou defines the unit type number of You
 	UnitTypeYou = 1
-	// UnitTypeInfantry defines a unit type
+	// UnitTypeInfantry defines the unit type number of Infantry
 	UnitTypeInfantry = 3
+)
+
+// unit weights
+// 0 = light. 1 = heavy. 2 = unpassable
+// weight is used to determine whether a unit can pass another unit.
+// 2 units can pass through each other if the sum of their weight <= 1 AND they have the same owner
+const (
+	// UnitWeightYou defines unit weight of You
+	UnitWeightYou = 0
+	// UnitWeightInfantry defines unit weight of Infantry
+	UnitWeightInfantry = 0
 )
