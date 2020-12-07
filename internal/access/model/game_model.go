@@ -21,6 +21,7 @@ type GameUser struct {
 	ID          uint64
 	GameID      uint64
 	UserID      uint64
-	RankOrder   uint8
-	TurnsLasted int32
+	PlayerOrder uint8
+	FinalRank   uint8
+	FinalTurns  int32
 }

@@ -21,7 +21,7 @@ and has to match their sum of byte requirements without excess information
 each unit have their own requirements depending on its type, but most need 6 bytes
 y, x, p, t, hp, s
 y = row number, x = column number
-p = the player who owns this unit (0..number of players)
+p = the player who owns this unit (0..number of players, 0 means neutral, >=1 means player owned)
 t = unit type
 hp = unit health point
 s = state/flags (unit state)

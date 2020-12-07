@@ -18,13 +18,14 @@ var (
 	ErrUserDoesNotExist = errors.New("user does not exist")
 )
 
-func linkGameToUser(gameID, userID uint64) error {
+func linkGameToUser(gameID, userID uint64, playerOrder uint8) error {
+	// player order defines the player number of user `userID` in game `gameID`
 	const stmtLinkGameToUser = `INSERT INTO game_user_tab
-(game_id, user_id)
-VALUES (?, ?)`
+(game_id, user_id, player_order)
+VALUES (?, ?, ?)`
 
 	_, err := db.Exec(stmtLinkGameToUser,
-		gameID, userID)
+		gameID, userID, playerOrder)
 	if err != nil {
 		logger.GetLogger().Error("db: insert error", zap.String("table", "game_user_tab"), zap.Error(err))
 		return err
@@ -33,6 +34,8 @@ VALUES (?, ?)`
 }
 
 // CreateGameFromMap initializes a game from a map, and returns the id
+// userIDs should be ordered by the player number.
+// userIDs[0] will be player number 1, userIDs[1] player num 2, and so on.
 func CreateGameFromMap(mapID uint64, userIDs []uint64) (uint64, error) {
 	mapp := QueryMapByID(mapID)
 	if mapp == nil {
@@ -64,8 +67,8 @@ VALUES (?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 	}
 
 	// link game to users
-	for _, userID := range userIDs {
-		err := linkGameToUser(gameID, userID)
+	for i, userID := range userIDs {
+		err := linkGameToUser(gameID, userID, uint8(i+1))
 		if err != nil {
 			return 0, err
 		}
