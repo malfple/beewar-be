@@ -61,6 +61,20 @@ func (hub *GameHub) UnregisterClient(client *GameClient) {
 	hub.checkClients()
 }
 
+// util function.
+// WARNING: hub.Mutex should already be locked
+func (hub *GameHub) sendMessageToClient(client *GameClient, msg *message.GameMessage) {
+	rawMsg, err := message.MarshalGameMessage(msg)
+	if err != nil {
+		panic("shouldn't have errored when marshaling")
+	}
+	err = client.WS.WriteMessage(websocket.TextMessage, rawMsg)
+	if err != nil {
+		client.WS.Close()
+		delete(hub.Clients, client.UserID)
+	}
+}
+
 // ListenAndBroadcast handles broadcasting
 // pass in wg to wait for hub to shutdown before exiting application
 func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
@@ -76,22 +90,19 @@ func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 		hub.Mutex.Lock()
 		// process message
 		var resp *message.GameMessage
+		var isBroadcast = true
 		if msg.Cmd == message.CmdChat {
 			resp = msg
 		} else {
-			resp = hub.GameLoader.HandleMessage(msg)
+			resp, isBroadcast = hub.GameLoader.HandleMessage(msg)
 		}
 		// broadcast
-		for _, client := range hub.Clients {
-			rawMsg, err := message.MarshalGameMessage(resp)
-			if err != nil {
-				panic("shouldn't have errored when marshaling")
+		if isBroadcast {
+			for _, client := range hub.Clients {
+				hub.sendMessageToClient(client, resp)
 			}
-			err = client.WS.WriteMessage(websocket.TextMessage, rawMsg)
-			if err != nil {
-				client.WS.Close()
-				delete(hub.Clients, client.UserID)
-			}
+		} else {
+			hub.sendMessageToClient(hub.Clients[msg.Sender], resp)
 		}
 		hub.Mutex.Unlock()
 

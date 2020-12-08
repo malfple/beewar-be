@@ -36,6 +36,7 @@ type GameMessageTemporary struct {
 }
 
 // GameMessage is the main message struct for websocket message exchange
+// WARNING: received messages should not be modified!
 type GameMessage struct {
 	Cmd    string      `json:"cmd"`
 	Sender uint64      `json:"sender,omitempty"`
@@ -71,6 +72,8 @@ func UnmarshalAndValidateGameMessage(rawPayload []byte, senderID uint64) (*GameM
 			return nil, err
 		}
 		message.Data = data
+	case CmdEndTurn:
+		// do nothing
 	default:
 		return nil, ErrCmdNotAllowed
 	}
@@ -90,10 +93,10 @@ func MarshalGameMessage(message *GameMessage) ([]byte, error) {
 	return rawData, nil
 }
 
-// GameMessageWithError creates an error game message
-func GameMessageWithError(err error) *GameMessage {
+// GameErrorMessage creates an error game message
+func GameErrorMessage(errMsg string) *GameMessage {
 	return &GameMessage{
 		Cmd:  CmdError,
-		Data: err.Error(),
+		Data: errMsg,
 	}
 }

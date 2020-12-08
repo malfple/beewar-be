@@ -52,7 +52,7 @@ func main() {
 
 	// game 1
 	if access.QueryGameByID(1) == nil {
-		gameID, _ := access.CreateGameFromMap(1, []uint64{1, 2})
+		gameID, _ := access.CreateGameFromMap(1, []uint64{2, 4})
 		fmt.Printf("create game with id %d \n", gameID)
 	}
 

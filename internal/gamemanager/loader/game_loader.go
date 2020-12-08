@@ -10,9 +10,15 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	// ErrMsgUnauthorized is returned when the player who sends the message is not authorized
+	ErrMsgUnauthorized = "player is not authorized to perform the cmd"
+)
+
 // GameLoader loads game from db and perform game tasks.
-// also supports saving back to db on demand.
+// also supports saving back to db on demand (only the game -> game_tab).
 // game loader is not concurrent safe, and the caller needs to handle this with locks
+// players information (game_user_tab) will be saved to db when a player is defeated
 type GameLoader struct {
 	ID           uint64 // this is game id
 	Type         uint8
@@ -22,11 +28,12 @@ type GameLoader struct {
 	Terrain      [][]int
 	Units        [][]objects.Unit
 	MapID        uint64
-	TurnCount    int32
-	TurnPlayer   int8
+	TurnCount    int32 // turns start from 1, defined in migration
+	TurnPlayer   int8  // players are numbered 1..PlayerCount
 	TimeCreated  int64
 	TimeModified int64
 	GridEngine   *GridEngine
+	GameUsers    []*model.GameUser
 }
 
 // NewGameLoader loads game by gameID and return the GameLoader object
@@ -36,7 +43,7 @@ func NewGameLoader(gameID uint64) *GameLoader {
 		// the websocket handler should already handle this
 		panic("loader: game is supposed to exist")
 	}
-
+	// load main fields from game model
 	gameLoader := &GameLoader{
 		ID:           gameModel.ID,
 		Type:         gameModel.Type,
@@ -51,12 +58,14 @@ func NewGameLoader(gameID uint64) *GameLoader {
 		TimeCreated:  gameModel.TimeCreated,
 		TimeModified: gameModel.TimeModified,
 	}
-
+	// create grid engine
 	gameLoader.GridEngine = NewGridEngine(
 		gameLoader.Width,
 		gameLoader.Height,
 		&gameLoader.Terrain,
 		&gameLoader.Units)
+	// load players
+	gameLoader.GameUsers = access.QueryUsersLinkedToGame(gameLoader.ID)
 
 	return gameLoader
 }
@@ -91,9 +100,8 @@ func (gl *GameLoader) SaveToDB() error {
 
 // GameData returns the game data message of the loaded game
 func (gl *GameLoader) GameData() *message.GameMessage {
-	gameUsers := access.QueryUsersLinkedToGame(gl.ID)
-	players := make([]*message.Player, len(gameUsers))
-	for i, gameUser := range gameUsers {
+	players := make([]*message.Player, len(gl.GameUsers))
+	for i, gameUser := range gl.GameUsers {
 		players[i] = &message.Player{
 			UserID:      gameUser.UserID,
 			PlayerOrder: gameUser.PlayerOrder,
@@ -110,7 +118,28 @@ func (gl *GameLoader) GameData() *message.GameMessage {
 	}
 }
 
+// end current player turn
+func (gl *GameLoader) endTurn() {
+	gl.TurnPlayer++
+	if int(gl.TurnPlayer) > int(gl.PlayerCount) {
+		gl.TurnCount++
+		gl.TurnPlayer = 1
+	}
+}
+
 // HandleMessage handles game related message
-func (gl *GameLoader) HandleMessage(msg *message.GameMessage) *message.GameMessage {
-	return nil
+// returns the message and a boolean value whether the message should be broadcasted (true = broadcast)
+func (gl *GameLoader) HandleMessage(msg *message.GameMessage) (*message.GameMessage, bool) {
+	switch msg.Cmd {
+	case message.CmdUnitMove:
+		// TODO: implement
+	case message.CmdEndTurn:
+		// only current user can end current turn
+		if msg.Sender != gl.GameUsers[gl.TurnPlayer-1].UserID {
+			return message.GameErrorMessage(ErrMsgUnauthorized), false
+		}
+		gl.endTurn()
+		return msg, true
+	}
+	panic("panic game loader handle message: cmd not allowed")
 }
