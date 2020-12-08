@@ -88,3 +88,12 @@ func TestGridEngine_ValidateMoveNormal(t *testing.T) {
 	assert.Equal(t, false, ge.ValidateMoveNormal(3, 1, 4, 7, 7))
 	assert.Equal(t, cleanDist, ge.dist)
 }
+
+func TestGridEngine_ValidateMove(t *testing.T) {
+	ge := NewGridEngine(testHeight, testWidth, &testTerrain, &testUnits)
+
+	assert.Equal(t, true, ge.ValidateMove(3, 1, 3, 4))
+	assert.Equal(t, false, ge.ValidateMove(3, 1, 3, 5))
+	assert.Equal(t, false, ge.ValidateMove(3, 1, 6, 1))
+	assert.Equal(t, true, ge.ValidateMove(3, 1, 6, 2))
+}

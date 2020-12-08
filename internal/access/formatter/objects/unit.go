@@ -34,3 +34,12 @@ const (
 	// UnitWeightInfantry defines unit weight of Infantry
 	UnitWeightInfantry = 0
 )
+
+// unit steps
+// for units that has a maximum movement range
+const (
+	// UnitMoveStepsYou defines unit movement range of You
+	UnitMoveStepsYou = 1
+	// UnitMoveStepsInfantry defines unit movement range of Infantry
+	UnitMoveStepsInfantry = 3
+)

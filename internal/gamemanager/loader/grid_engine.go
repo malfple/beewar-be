@@ -9,6 +9,9 @@ Terrain information in formatter/terrain_info.go
 
 Normal move
 BFS. Unit pass-through determined in objects/unit.go
+
+
+The move pattern for each unit is defined in ValidateMove function
 */
 
 // defines position
@@ -129,8 +132,18 @@ func (ge *GridEngine) BFSReset(y, x int) {
 	}
 }
 
-// ValidateMoveNormal checks if a move from (y1, x1) to (y2, x2) with the required steps is valid
+// ValidateMoveNormal checks if a normal move from (y1, x1) to (y2, x2) with the required steps is valid
+// WARNING: does not validate positions or if a unit exists. Only validates move with BFS
 func (ge *GridEngine) ValidateMoveNormal(y1, x1, y2, x2, steps int) bool {
+	var reach bool
+	ge.BFS(y1, x1, steps)
+	reach = ge.dist[y2][x2] != -1
+	ge.BFSReset(y1, x1)
+	return reach
+}
+
+// ValidateMove checks if a unit move from (y1, x1) to (y2, x2) is valid
+func (ge *GridEngine) ValidateMove(y1, x1, y2, x2 int) bool {
 	if y1 < 0 || y1 >= ge.Height || x1 < 0 || x1 >= ge.Width {
 		return false
 	}
@@ -143,8 +156,14 @@ func (ge *GridEngine) ValidateMoveNormal(y1, x1, y2, x2, steps int) bool {
 	if (*ge.Units)[y2][x2] != nil {
 		return false
 	}
-	ge.BFS(y1, x1, steps)
-	reach := ge.dist[y2][x2] != -1
-	ge.BFSReset(y1, x1)
-	return reach
+
+	switch (*ge.Units)[y1][x1].GetUnitType() {
+	case objects.UnitTypeYou:
+		return ge.ValidateMoveNormal(y1, x1, y2, x2, objects.UnitMoveStepsYou)
+	case objects.UnitTypeInfantry:
+		return ge.ValidateMoveNormal(y1, x1, y2, x2, objects.UnitMoveStepsInfantry)
+	default:
+		panic("panic validate move: unknown unit type")
+	}
+	return false
 }
