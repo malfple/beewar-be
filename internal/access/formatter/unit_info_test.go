@@ -12,6 +12,10 @@ var testUnitInfo = []byte{
 	0, 0, 1, 1, 10, 0,
 	2, 1, 1, 3, 8, 1,
 }
+var testUnitInfo2 = []byte{
+	2, 1, 1, 1, 10, 0,
+	2, 1, 1, 3, 8, 1,
+}
 var testUnitYou = &objects.You{
 	Owner: 1,
 	HP:    10,
@@ -39,6 +43,8 @@ var testUnits = [][]objects.Unit{
 func TestValidateUnitInfo(t *testing.T) {
 	err := ValidateUnitInfo(testHeight, testWidth, testUnitInfo)
 	assert.Equal(t, nil, err)
+	err = ValidateUnitInfo(testHeight, testWidth, testUnitInfo2)
+	assert.Equal(t, ErrMapUnitSamePosition, err)
 }
 
 func TestConvertUnit(t *testing.T) {

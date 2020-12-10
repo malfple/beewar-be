@@ -36,11 +36,16 @@ the most basic information that a flag has are:
 unit type information is available in `units` package
 */
 
-// ErrMapInvalidUnitInfo is returned when unit info does not follow format
-var ErrMapInvalidUnitInfo = errors.New("invalid unit info")
+var (
+	// ErrMapInvalidUnitInfo is returned when unit info does not follow format
+	ErrMapInvalidUnitInfo = errors.New("invalid unit info")
+	// ErrMapUnitSamePosition is returned when two units are in the same position
+	ErrMapUnitSamePosition = errors.New("no two units can share the same position")
+)
 
 // ValidateUnitInfo validates whether unit info follows format
 func ValidateUnitInfo(height, width int, unitInfo []byte) error {
+	posMap := make(map[int]bool)
 	for i := 0; i < len(unitInfo); {
 		if i+5 >= len(unitInfo) { // the remaining length is less than 6 (the required minimum of a normal unit)
 			return ErrMapInvalidUnitInfo
@@ -50,6 +55,10 @@ func ValidateUnitInfo(height, width int, unitInfo []byte) error {
 		if y < 0 || y >= height || x < 0 || x >= width {
 			return ErrMapInvalidUnitInfo
 		}
+		if _, ok := posMap[y*width+x]; ok { // 2 unit in the same pos
+			return ErrMapUnitSamePosition
+		}
+		posMap[y*width+x] = true
 		t := unitInfo[i+3]
 		switch t {
 		case objects.UnitTypeYou:
