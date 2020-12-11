@@ -1,6 +1,7 @@
 package objects
 
 // You is a unit object. It is most often the win or lose condition in a game.
+// State description: 1 bit for moved state
 type You struct {
 	Owner int
 	HP    int
@@ -34,4 +35,13 @@ func (you *You) GetUnitOwner() int {
 // GetUnitState see function from Unit
 func (you *You) GetUnitState() int {
 	return you.State
+}
+
+// StartTurn see function from Unit
+func (you *You) StartTurn() {}
+
+// EndTurn see function from Unit
+func (you *You) EndTurn() {
+	// turn off `moved` bit
+	you.State &= ^UnitStateBitMoved
 }

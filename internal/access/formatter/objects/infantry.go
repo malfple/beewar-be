@@ -1,6 +1,7 @@
 package objects
 
 // Infantry is a unit object.
+// State description: 1 bit for moved state
 type Infantry struct {
 	Owner int
 	HP    int
@@ -34,4 +35,13 @@ func (inf *Infantry) GetUnitOwner() int {
 // GetUnitState see function from Unit
 func (inf *Infantry) GetUnitState() int {
 	return inf.State
+}
+
+// StartTurn see function from Unit
+func (inf *Infantry) StartTurn() {}
+
+// EndTurn see function from Unit
+func (inf *Infantry) EndTurn() {
+	// turn off `moved` bit
+	inf.State &= ^UnitStateBitMoved
 }

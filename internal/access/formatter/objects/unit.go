@@ -14,6 +14,10 @@ type Unit interface {
 	GetUnitOwner() int
 	// GetUnitState returns unit states
 	GetUnitState() int
+	// StartTurn triggers start-of-turn effects
+	StartTurn()
+	// EndTurn ends the turn for the unit, reset states and trigger any end-of-turn effects
+	EndTurn()
 }
 
 // these are the unit types
@@ -42,4 +46,9 @@ const (
 	UnitMoveStepsYou = 1
 	// UnitMoveStepsInfantry defines unit movement range of Infantry
 	UnitMoveStepsInfantry = 3
+)
+
+const (
+	// UnitStateBitMoved defines the bit in unit states that specifies moved state
+	UnitStateBitMoved = 1
 )

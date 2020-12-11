@@ -24,12 +24,12 @@ type GameLoader struct {
 	Type         uint8
 	Height       int
 	Width        int
-	PlayerCount  uint8
+	PlayerCount  int
 	Terrain      [][]int
 	Units        [][]objects.Unit
 	MapID        uint64
 	TurnCount    int32 // turns start from 1, defined in migration
-	TurnPlayer   int8  // players are numbered 1..PlayerCount
+	TurnPlayer   int   // players are numbered 1..PlayerCount
 	TimeCreated  int64
 	TimeModified int64
 	GridEngine   *GridEngine
@@ -49,12 +49,12 @@ func NewGameLoader(gameID uint64) *GameLoader {
 		Type:         gameModel.Type,
 		Height:       gameModel.Height,
 		Width:        gameModel.Width,
-		PlayerCount:  gameModel.PlayerCount,
+		PlayerCount:  int(gameModel.PlayerCount),
 		Terrain:      formatter.ModelToGameTerrain(gameModel.Height, gameModel.Width, gameModel.TerrainInfo),
 		Units:        formatter.ModelToGameUnit(gameModel.Height, gameModel.Width, gameModel.UnitInfo),
 		MapID:        gameModel.MapID,
 		TurnCount:    gameModel.TurnCount,
-		TurnPlayer:   gameModel.TurnPlayer,
+		TurnPlayer:   int(gameModel.TurnPlayer),
 		TimeCreated:  gameModel.TimeCreated,
 		TimeModified: gameModel.TimeModified,
 	}
@@ -77,12 +77,12 @@ func (gl *GameLoader) ToModel() *model.Game {
 		Type:         gl.Type,
 		Height:       gl.Height,
 		Width:        gl.Width,
-		PlayerCount:  gl.PlayerCount,
+		PlayerCount:  uint8(gl.PlayerCount),
 		TerrainInfo:  formatter.GameTerrainToModel(gl.Height, gl.Width, gl.Terrain),
 		UnitInfo:     formatter.GameUnitToModel(gl.Height, gl.Width, gl.Units),
 		MapID:        gl.MapID,
 		TurnCount:    gl.TurnCount,
-		TurnPlayer:   gl.TurnPlayer,
+		TurnPlayer:   int8(gl.TurnPlayer),
 		TimeCreated:  gl.TimeCreated,
 		TimeModified: gl.TimeModified,
 	}
@@ -120,10 +120,24 @@ func (gl *GameLoader) GameData() *message.GameMessage {
 
 // end current player turn
 func (gl *GameLoader) endTurn() {
+	prevPlayer := gl.TurnPlayer
 	gl.TurnPlayer++
-	if int(gl.TurnPlayer) > int(gl.PlayerCount) {
+	if gl.TurnPlayer > gl.PlayerCount {
 		gl.TurnCount++
 		gl.TurnPlayer = 1
+	}
+	// unit states
+	for i := 0; i < gl.Height; i++ {
+		for j := 0; j < gl.Width; j++ {
+			if gl.Units[i][j] == nil {
+				continue
+			}
+			if gl.Units[i][j].GetUnitOwner() == prevPlayer {
+				gl.Units[i][j].EndTurn()
+			} else if gl.Units[i][j].GetUnitOwner() == gl.TurnPlayer {
+				gl.Units[i][j].StartTurn()
+			}
+		}
 	}
 }
 
