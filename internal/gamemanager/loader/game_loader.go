@@ -118,8 +118,8 @@ func (gl *GameLoader) GameData() *message.GameMessage {
 	}
 }
 
-// end current player turn
-func (gl *GameLoader) endTurn() {
+// end current player turn and start next player turn
+func (gl *GameLoader) nextTurn() {
 	prevPlayer := gl.TurnPlayer
 	gl.TurnPlayer++
 	if gl.TurnPlayer > gl.PlayerCount {
@@ -152,7 +152,7 @@ func (gl *GameLoader) HandleMessage(msg *message.GameMessage) (*message.GameMess
 		if msg.Sender != gl.GameUsers[gl.TurnPlayer-1].UserID {
 			return message.GameErrorMessage(ErrMsgUnauthorized), false
 		}
-		gl.endTurn()
+		gl.nextTurn()
 		return msg, true
 	}
 	panic("panic game loader handle message: cmd not allowed")
