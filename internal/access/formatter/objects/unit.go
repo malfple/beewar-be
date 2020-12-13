@@ -14,6 +14,10 @@ type Unit interface {
 	GetUnitOwner() int
 	// GetUnitState returns unit states
 	GetUnitState() int
+	// GetUnitStateBit returns one specified unit state bit as a bool (0 or 1)
+	GetUnitStateBit(bit int) bool
+	// ToggleUnitStateBit toggles state using the bit given. bit has to be one of the const below
+	ToggleUnitStateBit(bit int)
 	// StartTurn triggers start-of-turn effects
 	StartTurn()
 	// EndTurn ends the turn for the unit, reset states and trigger any end-of-turn effects
@@ -48,6 +52,7 @@ const (
 	UnitMoveStepsInfantry = 3
 )
 
+// state bit constants. always in the form of 2^n
 const (
 	// UnitStateBitMoved defines the bit in unit states that specifies moved state
 	UnitStateBitMoved = 1

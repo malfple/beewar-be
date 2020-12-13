@@ -11,8 +11,18 @@ import (
 )
 
 const (
-	// ErrMsgUnauthorized is returned when the player who sends the message is not authorized
-	ErrMsgUnauthorized = "player is not authorized to perform the cmd"
+	// ErrMsgNotYetTurn is returned when it is not yet the turn for the player who sends the message
+	ErrMsgNotYetTurn = "not your turn yet"
+	// ErrMsgInvalidPos is returned if given position does not have a unit or is out of bound
+	ErrMsgInvalidPos = "you tried to move a non-existent unit or position is out of map"
+	// ErrMsgUnitNotOwned is returned when the player tries to move a unit they do not own
+	ErrMsgUnitNotOwned = "you tried to move a unit you do not own"
+	// ErrMsgUnitCmdNotAllowed is returned if a cmd cannot be used on the unit. See CmdWhitelist
+	ErrMsgUnitCmdNotAllowed = "the cmd cannot be used on that unit"
+	// ErrMsgUnitAlreadyMoved is returned when the unit already moved or attacked
+	ErrMsgUnitAlreadyMoved = "unit already moved or attacked"
+	// ErrMsgInvalidMove is returned when a move is invalid
+	ErrMsgInvalidMove = "invalid move duh"
 )
 
 // GameLoader loads game from db and perform game tasks.
@@ -20,20 +30,21 @@ const (
 // game loader is not concurrent safe, and the caller needs to handle this with locks
 // players information (game_user_tab) will be saved to db when a player is defeated
 type GameLoader struct {
-	ID           uint64 // this is game id
-	Type         uint8
-	Height       int
-	Width        int
-	PlayerCount  int
-	Terrain      [][]int
-	Units        [][]objects.Unit
-	MapID        uint64
-	TurnCount    int32 // turns start from 1, defined in migration
-	TurnPlayer   int   // players are numbered 1..PlayerCount
-	TimeCreated  int64
-	TimeModified int64
-	GridEngine   *GridEngine
-	GameUsers    []*model.GameUser
+	ID                uint64 // this is game id
+	Type              uint8
+	Height            int
+	Width             int
+	PlayerCount       int
+	Terrain           [][]int
+	Units             [][]objects.Unit
+	MapID             uint64
+	TurnCount         int32 // turns start from 1, defined in migration
+	TurnPlayer        int   // players are numbered 1..PlayerCount
+	TimeCreated       int64
+	TimeModified      int64
+	GridEngine        *GridEngine
+	GameUsers         []*model.GameUser
+	UserIDToPlayerMap map[uint64]int
 }
 
 // NewGameLoader loads game by gameID and return the GameLoader object
@@ -66,6 +77,11 @@ func NewGameLoader(gameID uint64) *GameLoader {
 		&gameLoader.Units)
 	// load players
 	gameLoader.GameUsers = access.QueryUsersLinkedToGame(gameLoader.ID)
+	// make reverse map
+	gameLoader.UserIDToPlayerMap = make(map[uint64]int)
+	for _, user := range gameLoader.GameUsers {
+		gameLoader.UserIDToPlayerMap[user.UserID] = int(user.PlayerOrder)
+	}
 
 	return gameLoader
 }
@@ -141,17 +157,54 @@ func (gl *GameLoader) nextTurn() {
 	}
 }
 
+// validate functions return empty string if no errors
+
+// validates of unit is owned by the userID given.
+// also validates position inside map, and if a unit exists in the given position
+func (gl *GameLoader) validateUnitOwned(userID uint64, y, x int) string {
+	if y < 0 || y > gl.Height || x < 0 || x > gl.Width {
+		return ErrMsgInvalidPos
+	}
+	if gl.Units[y][x] == nil {
+		return ErrMsgInvalidPos
+	}
+	// player doesn't own the unit
+	if gl.UserIDToPlayerMap[userID] != gl.Units[y][x].GetUnitOwner() {
+		return ErrMsgUnitNotOwned
+	}
+
+	return ""
+}
+
 // HandleMessage handles game related message
 // returns the message and a boolean value whether the message should be broadcasted (true = broadcast)
 func (gl *GameLoader) HandleMessage(msg *message.GameMessage) (*message.GameMessage, bool) {
+	// only current player can do stuff
+	if msg.Sender != gl.GameUsers[gl.TurnPlayer-1].UserID {
+		return message.GameErrorMessage(ErrMsgNotYetTurn), false
+	}
+
 	switch msg.Cmd {
 	case message.CmdUnitMove:
-		// TODO: implement
-	case message.CmdEndTurn:
-		// only current user can end current turn
-		if msg.Sender != gl.GameUsers[gl.TurnPlayer-1].UserID {
-			return message.GameErrorMessage(ErrMsgUnauthorized), false
+		data := msg.Data.(*message.UnitMoveMessageData)
+		if errMsg := gl.validateUnitOwned(msg.Sender, data.Y1, data.X1); len(errMsg) > 0 {
+			return message.GameErrorMessage(errMsg), false
 		}
+		if _, ok := CmdWhitelistUnitMove[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
+			return message.GameErrorMessage(ErrMsgUnitCmdNotAllowed), false
+		}
+		if gl.Units[data.Y1][data.X1].GetUnitStateBit(objects.UnitStateBitMoved) {
+			return message.GameErrorMessage(ErrMsgUnitAlreadyMoved), false
+		}
+		if !gl.GridEngine.ValidateMove(data.Y1, data.X1, data.Y2, data.X2) {
+			return message.GameErrorMessage(ErrMsgInvalidMove), false
+		}
+		gl.Units[data.Y2][data.X2] = gl.Units[data.Y1][data.X1]
+		gl.Units[data.Y2][data.X2].ToggleUnitStateBit(objects.UnitStateBitMoved)
+		gl.Units[data.Y1][data.X1] = nil
+		// TODO: make EVENT message and return that instead
+		return msg, true
+	case message.CmdEndTurn:
 		gl.nextTurn()
 		return msg, true
 	}

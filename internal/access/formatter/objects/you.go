@@ -37,6 +37,16 @@ func (you *You) GetUnitState() int {
 	return you.State
 }
 
+// ToggleUnitStateBit see function from Unit
+func (you *You) ToggleUnitStateBit(bit int) {
+	you.State ^= bit
+}
+
+// GetUnitStateBit see function from Unit
+func (you *You) GetUnitStateBit(bit int) bool {
+	return (you.State & bit) != 0
+}
+
 // StartTurn see function from Unit
 func (you *You) StartTurn() {}
 

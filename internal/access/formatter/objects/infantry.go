@@ -37,6 +37,16 @@ func (inf *Infantry) GetUnitState() int {
 	return inf.State
 }
 
+// GetUnitStateBit see function from Unit
+func (inf *Infantry) GetUnitStateBit(bit int) bool {
+	return (inf.State & bit) != 0
+}
+
+// ToggleUnitStateBit see function from Unit
+func (inf *Infantry) ToggleUnitStateBit(bit int) {
+	inf.State ^= bit
+}
+
 // StartTurn see function from Unit
 func (inf *Infantry) StartTurn() {}
 

@@ -67,7 +67,7 @@ func UnmarshalAndValidateGameMessage(rawPayload []byte, senderID uint64) (*GameM
 		}
 		message.Data = data
 	case CmdUnitMove:
-		var data UnitMoveMessageData
+		var data *UnitMoveMessageData
 		if err := json.Unmarshal(temp.Data, &data); err != nil {
 			return nil, err
 		}
