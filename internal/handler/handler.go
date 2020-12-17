@@ -5,6 +5,7 @@ import (
 	"gitlab.com/otqee/otqee-be/internal/handler/auth"
 	"gitlab.com/otqee/otqee-be/internal/handler/game"
 	_map "gitlab.com/otqee/otqee-be/internal/handler/map"
+	"gitlab.com/otqee/otqee-be/internal/handler/user"
 	"gitlab.com/otqee/otqee-be/internal/middleware"
 )
 
@@ -18,7 +19,7 @@ func RootRouter() *mux.Router {
 
 	apiRouter.HandleFunc("/", Ping).Methods("GET")
 	auth.RegisterAuthRouter(apiRouter.PathPrefix("/auth").Subrouter())
-	apiRouter.HandleFunc("/profile", HandleProfile).Methods("GET")
+	user.RegisterUserRouter(apiRouter.PathPrefix("/user").Subrouter())
 
 	_map.RegisterMapRouter(apiRouter.PathPrefix("/map").Subrouter())
 	game.RegisterGameRouter(apiRouter.PathPrefix("/game").Subrouter())

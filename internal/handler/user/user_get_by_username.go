@@ -1,4 +1,4 @@
-package handler
+package user
 
 import (
 	"encoding/json"
@@ -8,17 +8,17 @@ import (
 	"net/http"
 )
 
-// HandleProfile handles profile query
-func HandleProfile(w http.ResponseWriter, r *http.Request) {
+// HandleUserGetByUsername handles profile query
+func HandleUserGetByUsername(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 	user := access.QueryUserByUsername(username)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	resp := &ProfileResponse{User: nil}
+	resp := &GetResponse{User: nil}
 	if user != nil {
-		resp.User = &userProfile{
+		resp.User = &ReducedUser{
 			ID:          user.ID,
 			Email:       user.Email,
 			Username:    user.Username,
@@ -35,17 +35,7 @@ func HandleProfile(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// ProfileResponse is a response for profile handler
-type ProfileResponse struct {
-	User *userProfile `json:"user"`
-}
-
-type userProfile struct {
-	ID          uint64 `json:"id"`
-	Email       string `json:"email"`
-	Username    string `json:"username"`
-	Rating      uint16 `json:"rating"`
-	MovesMade   uint64 `json:"moves_made"`
-	GamesPlayed uint32 `json:"games_played"`
-	TimeCreated int64  `json:"time_created"`
+// GetResponse is a response for user get handler
+type GetResponse struct {
+	User *ReducedUser `json:"user"`
 }
