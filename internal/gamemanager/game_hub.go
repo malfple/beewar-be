@@ -8,8 +8,15 @@ import (
 	"sync"
 )
 
-// ErrClientDuplicate is returned when a duplicate userID for a hub tries to register
-var ErrClientDuplicate = errors.New("only one user per game hub allowed")
+var (
+	// ErrClientDuplicate is returned when a duplicate userID for a hub tries to register
+	ErrClientDuplicate = errors.New("only one user per game hub allowed")
+)
+
+const (
+	// ErrMsgNotPlayer is returned when a non-player sends message to game hub
+	ErrMsgNotPlayer = "you are not a player in this game"
+)
 
 // the hub is responsible for broadcasting messages to the clients
 
@@ -91,7 +98,10 @@ func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 		// process message
 		var resp *message.GameMessage
 		var isBroadcast = true
-		if msg.Cmd == message.CmdChat {
+		if _, ok := hub.GameLoader.UserIDToPlayerMap[msg.Sender]; !ok { // non-player
+			resp = message.GameErrorMessage(ErrMsgNotPlayer)
+			isBroadcast = false
+		} else if msg.Cmd == message.CmdChat {
 			resp = msg
 		} else {
 			resp, isBroadcast = hub.GameLoader.HandleMessage(msg)
