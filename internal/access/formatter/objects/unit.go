@@ -18,6 +18,10 @@ type Unit interface {
 	GetUnitStateBit(bit int) bool
 	// ToggleUnitStateBit toggles state using the bit given. bit has to be one of the const below
 	ToggleUnitStateBit(bit int)
+	// GetUnitHP returns hp of the unit
+	GetUnitHP() int
+	// SetUnitHP sets the hp of the unit
+	SetUnitHP(hp int)
 	// StartTurn triggers start-of-turn effects
 	StartTurn()
 	// EndTurn ends the turn for the unit, reset states and trigger any end-of-turn effects
@@ -43,13 +47,20 @@ const (
 	UnitWeightInfantry = 0
 )
 
-// unit steps
+// unit move steps
 // for units that has a maximum movement range
 const (
 	// UnitMoveStepsYou defines unit movement range of You
 	UnitMoveStepsYou = 1
 	// UnitMoveStepsInfantry defines unit movement range of Infantry
 	UnitMoveStepsInfantry = 3
+)
+
+// unit attack range
+// only for units that can attack
+const (
+	// UnitAttackRangeInfantry defines unit attack range of Infantry
+	UnitAttackRangeInfantry = 1
 )
 
 // state bit constants. always in the form of 2^n

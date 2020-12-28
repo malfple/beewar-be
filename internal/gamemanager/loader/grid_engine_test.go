@@ -3,6 +3,7 @@ package loader
 import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/otqee/otqee-be/internal/access/formatter"
+	"gitlab.com/otqee/otqee-be/internal/utils"
 	"testing"
 )
 
@@ -96,4 +97,30 @@ func TestGridEngine_ValidateMove(t *testing.T) {
 	assert.Equal(t, false, ge.ValidateMove(3, 1, 3, 5))
 	assert.Equal(t, false, ge.ValidateMove(3, 1, 6, 1))
 	assert.Equal(t, true, ge.ValidateMove(3, 1, 6, 2))
+}
+
+var testTerrain2 = formatter.ModelToGameTerrain(testHeight, testWidth, []byte{
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+})
+var testUnits2 = formatter.ModelToGameUnit(testHeight, testWidth, []byte{})
+
+func TestHexDistance(t *testing.T) {
+	ge := NewGridEngine(testHeight, testWidth, &testTerrain2, &testUnits2)
+
+	ge.BFS(5, 5, 100)
+
+	for i := 0; i < testHeight; i++ {
+		for j := 0; j < testWidth; j++ {
+			assert.Equal(t, ge.dist[i][j], utils.HexDistance(5, 5, i, j))
+		}
+	}
 }

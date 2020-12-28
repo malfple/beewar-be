@@ -42,6 +42,16 @@ func (you *You) ToggleUnitStateBit(bit int) {
 	you.State ^= bit
 }
 
+// GetUnitHP see function from Unit
+func (you *You) GetUnitHP() int {
+	return you.HP
+}
+
+// SetUnitHP see function from Unit
+func (you *You) SetUnitHP(hp int) {
+	you.HP = hp
+}
+
 // GetUnitStateBit see function from Unit
 func (you *You) GetUnitStateBit(bit int) bool {
 	return (you.State & bit) != 0

@@ -19,6 +19,8 @@ const (
 
 	// CmdUnitMove is a unit cmd for general moving. no restriction.
 	CmdUnitMove = "UNIT_MOVE"
+	// CmdUnitMoveAndAttack is a unit cmd for general move and attack. no restriction.
+	CmdUnitMoveAndAttack = "UNIT_MOVE_ATTACK"
 
 	// CmdEndTurn is a cmd to end the turn
 	CmdEndTurn = "END_TURN"
@@ -68,6 +70,12 @@ func UnmarshalAndValidateGameMessage(rawPayload []byte, senderID uint64) (*GameM
 		message.Data = data
 	case CmdUnitMove:
 		var data *UnitMoveMessageData
+		if err := json.Unmarshal(temp.Data, &data); err != nil {
+			return nil, err
+		}
+		message.Data = data
+	case CmdUnitMoveAndAttack:
+		var data *UnitMoveAndAttackMessageData
 		if err := json.Unmarshal(temp.Data, &data); err != nil {
 			return nil, err
 		}

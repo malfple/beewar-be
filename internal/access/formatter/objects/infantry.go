@@ -47,6 +47,16 @@ func (inf *Infantry) ToggleUnitStateBit(bit int) {
 	inf.State ^= bit
 }
 
+// GetUnitHP see function from Unit
+func (inf *Infantry) GetUnitHP() int {
+	return inf.HP
+}
+
+// SetUnitHP see function from Unit
+func (inf *Infantry) SetUnitHP(hp int) {
+	inf.HP = hp
+}
+
 // StartTurn see function from Unit
 func (inf *Infantry) StartTurn() {}
 

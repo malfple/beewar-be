@@ -9,3 +9,8 @@ var CmdWhitelistUnitMove = map[int]bool{
 	objects.UnitTypeYou:      true,
 	objects.UnitTypeInfantry: true,
 }
+
+// CmdWhiteListUnitMoveAndAttack indicates which unit types can use message.CmdUnitMoveAndAttack
+var CmdWhiteListUnitMoveAndAttack = map[int]bool{
+	objects.UnitTypeInfantry: true,
+}

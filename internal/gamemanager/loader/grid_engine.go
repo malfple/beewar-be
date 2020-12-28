@@ -2,6 +2,7 @@ package loader
 
 import (
 	"gitlab.com/otqee/otqee-be/internal/access/formatter/objects"
+	"gitlab.com/otqee/otqee-be/internal/utils"
 )
 
 /*
@@ -64,6 +65,11 @@ func NewGridEngine(height, width int, terrain *[][]int, units *[][]objects.Unit)
 	return engine
 }
 
+// insideMap checks if position is inside map
+func (ge *GridEngine) insideMap(y, x int) bool {
+	return y >= 0 && y < ge.Height && x >= 0 && x < ge.Width
+}
+
 // BFS does a breadth first search starting on (y, x) and fills dist array up to the required steps.
 // there should be a unit at (y, x) to get weight and owner
 // WARNING: this function does not do validation checks
@@ -83,7 +89,7 @@ func (ge *GridEngine) BFS(y, x, steps int) {
 		for k := 0; k < K; k++ {
 			ty := now.Y + cy[k]
 			tx := now.X + cx[k]
-			if ty < 0 || ty >= ge.Height || tx < 0 || tx >= ge.Width {
+			if !ge.insideMap(ty, tx) {
 				continue
 			}
 			if ge.dist[ty][tx] != -1 {
@@ -120,7 +126,7 @@ func (ge *GridEngine) BFSReset(y, x int) {
 		for k := 0; k < K; k++ {
 			ty := now.Y + cy[k]
 			tx := now.X + cx[k]
-			if ty < 0 || ty >= ge.Height || tx < 0 || tx >= ge.Width {
+			if !ge.insideMap(ty, tx) {
 				continue
 			}
 			if ge.dist[ty][tx] == -1 {
@@ -144,13 +150,13 @@ func (ge *GridEngine) ValidateMoveNormal(y1, x1, y2, x2, steps int) bool {
 
 // ValidateMove checks if a unit move from (y1, x1) to (y2, x2) is valid
 func (ge *GridEngine) ValidateMove(y1, x1, y2, x2 int) bool {
-	if y1 < 0 || y1 >= ge.Height || x1 < 0 || x1 >= ge.Width {
+	if !ge.insideMap(y1, x1) {
 		return false
 	}
 	if (*ge.Units)[y1][x1] == nil {
 		return false
 	}
-	if y2 < 0 || y2 >= ge.Height || x2 < 0 || x2 >= ge.Width {
+	if !ge.insideMap(y2, x2) {
 		return false
 	}
 	if (*ge.Units)[y2][x2] != nil {
@@ -166,4 +172,30 @@ func (ge *GridEngine) ValidateMove(y1, x1, y2, x2 int) bool {
 		panic("panic validate move: unknown unit type")
 	}
 	return false
+}
+
+// ValidateAttack checks if an attack from (y, x) to (yt, xt) is valid
+// there has to be a unit at (yt, xt), but not necessarily at (y, x). Therefore the attacker unit is needed
+func (ge *GridEngine) ValidateAttack(y, x, yt, xt int, attacker objects.Unit) (bool, int) {
+	if !ge.insideMap(y, x) {
+		return false, -1
+	}
+	if !ge.insideMap(yt, xt) {
+		return false, -1
+	}
+	if (*ge.Units)[yt][xt] == nil {
+		return false, -1
+	}
+	if attacker.GetUnitOwner() == (*ge.Units)[yt][xt].GetUnitOwner() {
+		return false, -1
+	}
+
+	distBetween := utils.HexDistance(y, x, yt, xt)
+	switch attacker.GetUnitType() {
+	case objects.UnitTypeInfantry:
+		return distBetween <= objects.UnitAttackRangeInfantry, distBetween
+	default:
+		panic("panic validate move: unknown unit type")
+	}
+	return false, -1
 }
