@@ -8,10 +8,11 @@ type GameDataMessageData struct {
 	Players []*Player   `json:"players"`
 }
 
-// Player is similar to model.GameUser but with some fields removed
+// Player is similar to model.GameUser but with some fields removed and user data added
 type Player struct {
-	UserID      uint64 `json:"user_id"`
-	PlayerOrder uint8  `json:"player_order"`
-	FinalRank   uint8  `json:"final_rank"`
-	FinalTurns  int32  `json:"final_turns"`
+	UserID      uint64      `json:"user_id"`
+	PlayerOrder uint8       `json:"player_order"`
+	FinalRank   uint8       `json:"final_rank"`
+	FinalTurns  int32       `json:"final_turns"`
+	User        *model.User `json:"user"`
 }
