@@ -3,6 +3,7 @@ package user
 import (
 	"encoding/json"
 	"gitlab.com/otqee/otqee-be/internal/access"
+	"gitlab.com/otqee/otqee-be/internal/access/model"
 	"gitlab.com/otqee/otqee-be/internal/logger"
 	"go.uber.org/zap"
 	"net/http"
@@ -18,15 +19,8 @@ func HandleUserGetByUsername(w http.ResponseWriter, r *http.Request) {
 
 	resp := &GetResponse{User: nil}
 	if user != nil {
-		resp.User = &ReducedUser{
-			ID:          user.ID,
-			Email:       user.Email,
-			Username:    user.Username,
-			Rating:      user.Rating,
-			MovesMade:   user.MovesMade,
-			GamesPlayed: user.GamesPlayed,
-			TimeCreated: user.TimeCreated,
-		}
+		resp.User = user
+		resp.User.Password = ""
 	}
 
 	err := json.NewEncoder(w).Encode(resp)
@@ -37,5 +31,5 @@ func HandleUserGetByUsername(w http.ResponseWriter, r *http.Request) {
 
 // GetResponse is a response for user get handler
 type GetResponse struct {
-	User *ReducedUser `json:"user"`
+	User *model.User `json:"user"`
 }
