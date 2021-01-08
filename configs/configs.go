@@ -17,7 +17,7 @@ const (
 	defaultDatabasePassword = "malfplemac"
 	// EnvDatabaseName defines an env variable name
 	EnvDatabaseName     = "DATABASE_NAME"
-	defaultDatabaseName = "otqee"
+	defaultDatabaseName = "beewar"
 )
 
 // GetServerAddress returns server address

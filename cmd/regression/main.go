@@ -15,7 +15,7 @@ import (
 // so that the relative path to files are correct
 
 // the database for regression test, which is defined in this constant, have to be made manually
-const regressionDatabaseName = "otqee_regression"
+const regressionDatabaseName = "beewar_regression"
 
 func runMigration() bool {
 	logger.GetLogger().Info("run db migration to prepare tables")
