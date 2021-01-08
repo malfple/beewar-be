@@ -11,7 +11,7 @@ func HandleLogout(w http.ResponseWriter, r *http.Request) {
 
 	// take refresh token from cookie
 	refreshToken := ""
-	if refreshTokenCookie, err := r.Cookie("otqee-rtoken"); err == nil {
+	if refreshTokenCookie, err := r.Cookie(RefreshTokenCookieName); err == nil {
 		refreshToken = refreshTokenCookie.Value
 	}
 
@@ -24,7 +24,7 @@ func HandleLogout(w http.ResponseWriter, r *http.Request) {
 	auth.RemoveRefreshToken(refreshToken)
 
 	http.SetCookie(w, &http.Cookie{
-		Name:     "otqee-rtoken",
+		Name:     RefreshTokenCookieName,
 		Value:    "",
 		MaxAge:   0, // immediately expire the invalid refresh token
 		Path:     "/api/auth",

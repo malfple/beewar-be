@@ -10,3 +10,6 @@ func RegisterAuthRouter(router *mux.Router) {
 	router.HandleFunc("/token", HandleToken).Methods("POST")
 	router.HandleFunc("/logout", HandleLogout).Methods("POST")
 }
+
+// RefreshTokenCookieName is the cookie name that stores the refresh token
+const RefreshTokenCookieName = "beewar-rtoken"
