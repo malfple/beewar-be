@@ -3,6 +3,7 @@ package access
 import (
 	"database/sql"
 	"errors"
+	"github.com/jmoiron/sqlx"
 	"gitlab.com/otqee/otqee-be/internal/access/model"
 	"gitlab.com/otqee/otqee-be/internal/logger"
 	"go.uber.org/zap"
@@ -68,6 +69,50 @@ func QueryUserByUsername(username string) *model.User {
 		return nil
 	}
 	return user
+}
+
+// QueryUsersByID gets a list of users by id
+func QueryUsersByID(userIDs []uint64) []*model.User {
+	stmt, args, err := sqlx.In(`SELECT * FROM user_tab WHERE id IN (?)`, userIDs)
+	if err != nil {
+		logger.GetLogger().Error("db: build sqlx query error", zap.String("table", "user_tab"), zap.Error(err))
+		return nil
+	}
+	rows, err := db.Query(stmt, args...)
+	if err != nil {
+		logger.GetLogger().Error("db: query error", zap.String("table", "user_tab"), zap.Error(err))
+		return nil
+	}
+	defer rows.Close()
+
+	users := make([]*model.User, len(userIDs))
+	for rows.Next() {
+		user := &model.User{}
+		err := rows.Scan(
+			&user.ID,
+			&user.Email,
+			&user.Username,
+			&user.Password,
+			&user.Rating,
+			&user.MovesMade,
+			&user.GamesPlayed,
+			&user.TimeCreated)
+		if err != nil {
+			logger.GetLogger().Error("db: query error", zap.String("table", "user_tab"), zap.Error(err))
+		} else {
+			// find index to insert
+			for i, id := range userIDs {
+				if id == user.ID {
+					users[i] = user
+					break
+				}
+			}
+		}
+	}
+	if err := rows.Err(); err != nil {
+		logger.GetLogger().Error("db: query error", zap.String("table", "user_tab"), zap.Error(err))
+	}
+	return users
 }
 
 // IsExistUserByID checks for userID existence

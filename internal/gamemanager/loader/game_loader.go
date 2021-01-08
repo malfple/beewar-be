@@ -47,6 +47,7 @@ type GameLoader struct {
 	TimeModified      int64
 	GridEngine        *GridEngine
 	GameUsers         []*model.GameUser
+	Users             []*model.User
 	UserIDToPlayerMap map[uint64]int
 }
 
@@ -80,6 +81,14 @@ func NewGameLoader(gameID uint64) *GameLoader {
 		&gameLoader.Units)
 	// load players
 	gameLoader.GameUsers = access.QueryUsersLinkedToGame(gameLoader.ID)
+	userIDs := make([]uint64, len(gameLoader.GameUsers))
+	for i, gu := range gameLoader.GameUsers {
+		userIDs[i] = gu.UserID
+	}
+	gameLoader.Users = access.QueryUsersByID(userIDs)
+	for i := range gameLoader.Users {
+		gameLoader.Users[i].Password = ""
+	}
 	// make reverse map
 	gameLoader.UserIDToPlayerMap = make(map[uint64]int)
 	for _, user := range gameLoader.GameUsers {
@@ -126,6 +135,7 @@ func (gl *GameLoader) GameData() *message.GameMessage {
 			PlayerOrder: gameUser.PlayerOrder,
 			FinalRank:   gameUser.FinalRank,
 			FinalTurns:  gameUser.FinalTurns,
+			User:        gl.Users[i],
 		}
 	}
 	return &message.GameMessage{
