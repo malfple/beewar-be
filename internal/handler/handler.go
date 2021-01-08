@@ -2,11 +2,11 @@ package handler
 
 import (
 	"github.com/gorilla/mux"
-	"gitlab.com/otqee/otqee-be/internal/handler/auth"
-	"gitlab.com/otqee/otqee-be/internal/handler/game"
-	_map "gitlab.com/otqee/otqee-be/internal/handler/map"
-	"gitlab.com/otqee/otqee-be/internal/handler/user"
-	"gitlab.com/otqee/otqee-be/internal/middleware"
+	"gitlab.com/beewar/beewar-be/internal/handler/auth"
+	"gitlab.com/beewar/beewar-be/internal/handler/game"
+	_map "gitlab.com/beewar/beewar-be/internal/handler/map"
+	"gitlab.com/beewar/beewar-be/internal/handler/user"
+	"gitlab.com/beewar/beewar-be/internal/middleware"
 )
 
 // This file is the root file for all the views

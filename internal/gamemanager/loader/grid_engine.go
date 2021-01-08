@@ -1,8 +1,8 @@
 package loader
 
 import (
-	"gitlab.com/otqee/otqee-be/internal/access/formatter/objects"
-	"gitlab.com/otqee/otqee-be/internal/utils"
+	"gitlab.com/beewar/beewar-be/internal/access/formatter/objects"
+	"gitlab.com/beewar/beewar-be/internal/utils"
 )
 
 /*

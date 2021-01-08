@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"gitlab.com/otqee/otqee-be/internal/access"
+	"gitlab.com/beewar/beewar-be/internal/access"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 )

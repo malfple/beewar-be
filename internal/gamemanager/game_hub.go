@@ -3,8 +3,8 @@ package gamemanager
 import (
 	"errors"
 	"github.com/gorilla/websocket"
-	"gitlab.com/otqee/otqee-be/internal/gamemanager/loader"
-	"gitlab.com/otqee/otqee-be/internal/gamemanager/message"
+	"gitlab.com/beewar/beewar-be/internal/gamemanager/loader"
+	"gitlab.com/beewar/beewar-be/internal/gamemanager/message"
 	"sync"
 )
 

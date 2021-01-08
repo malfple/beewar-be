@@ -3,7 +3,7 @@ package auth
 import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"gitlab.com/otqee/otqee-be/internal/logger"
+	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 	"time"
 )

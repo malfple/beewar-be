@@ -2,7 +2,7 @@ package formatter
 
 import (
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/otqee/otqee-be/internal/access/formatter/objects"
+	"gitlab.com/beewar/beewar-be/internal/access/formatter/objects"
 	"testing"
 )
 

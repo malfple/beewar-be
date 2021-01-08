@@ -1,6 +1,6 @@
 package message
 
-import "gitlab.com/otqee/otqee-be/internal/access/model"
+import "gitlab.com/beewar/beewar-be/internal/access/model"
 
 // GameDataMessageData is message data for CmdGameData
 type GameDataMessageData struct {

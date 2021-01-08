@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"gitlab.com/otqee/otqee-be/internal/auth"
+	"gitlab.com/beewar/beewar-be/internal/auth"
 	"net/http"
 )
 

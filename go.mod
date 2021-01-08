@@ -1,4 +1,4 @@
-module gitlab.com/otqee/otqee-be
+module gitlab.com/beewar/beewar-be
 
 go 1.14
 

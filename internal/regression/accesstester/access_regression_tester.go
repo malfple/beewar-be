@@ -1,6 +1,6 @@
 package accesstester
 
-import "gitlab.com/otqee/otqee-be/internal/logger"
+import "gitlab.com/beewar/beewar-be/internal/logger"
 
 // RunAccessRegressionTester runs the regression tests for access layer.
 // the db does not need to be seeded

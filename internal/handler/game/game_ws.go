@@ -2,10 +2,10 @@ package game
 
 import (
 	"github.com/gorilla/websocket"
-	"gitlab.com/otqee/otqee-be/internal/access"
-	"gitlab.com/otqee/otqee-be/internal/auth"
-	"gitlab.com/otqee/otqee-be/internal/gamemanager"
-	"gitlab.com/otqee/otqee-be/internal/logger"
+	"gitlab.com/beewar/beewar-be/internal/access"
+	"gitlab.com/beewar/beewar-be/internal/auth"
+	"gitlab.com/beewar/beewar-be/internal/gamemanager"
+	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 	"net/http"
 	"strconv"

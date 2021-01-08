@@ -1,8 +1,8 @@
 package combat
 
 import (
-	"gitlab.com/otqee/otqee-be/internal/access/formatter/objects"
-	"gitlab.com/otqee/otqee-be/internal/utils"
+	"gitlab.com/beewar/beewar-be/internal/access/formatter/objects"
+	"gitlab.com/beewar/beewar-be/internal/utils"
 )
 
 // NormalCombat does a normal combat (1 attack, 1 counter-attack) and modifies the given attacker and defender units' hp

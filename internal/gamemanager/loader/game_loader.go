@@ -1,13 +1,13 @@
 package loader
 
 import (
-	"gitlab.com/otqee/otqee-be/internal/access"
-	"gitlab.com/otqee/otqee-be/internal/access/formatter"
-	"gitlab.com/otqee/otqee-be/internal/access/formatter/objects"
-	"gitlab.com/otqee/otqee-be/internal/access/model"
-	"gitlab.com/otqee/otqee-be/internal/gamemanager/loader/combat"
-	"gitlab.com/otqee/otqee-be/internal/gamemanager/message"
-	"gitlab.com/otqee/otqee-be/internal/logger"
+	"gitlab.com/beewar/beewar-be/internal/access"
+	"gitlab.com/beewar/beewar-be/internal/access/formatter"
+	"gitlab.com/beewar/beewar-be/internal/access/formatter/objects"
+	"gitlab.com/beewar/beewar-be/internal/access/model"
+	"gitlab.com/beewar/beewar-be/internal/gamemanager/loader/combat"
+	"gitlab.com/beewar/beewar-be/internal/gamemanager/message"
+	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 )
 

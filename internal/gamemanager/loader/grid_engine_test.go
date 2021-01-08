@@ -2,8 +2,8 @@ package loader
 
 import (
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/otqee/otqee-be/internal/access/formatter"
-	"gitlab.com/otqee/otqee-be/internal/utils"
+	"gitlab.com/beewar/beewar-be/internal/access/formatter"
+	"gitlab.com/beewar/beewar-be/internal/utils"
 	"testing"
 )
 

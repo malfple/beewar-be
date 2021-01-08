@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"gitlab.com/otqee/otqee-be/internal/access"
-	"gitlab.com/otqee/otqee-be/internal/logger"
+	"gitlab.com/beewar/beewar-be/internal/access"
+	"gitlab.com/beewar/beewar-be/internal/logger"
 )
 
 func main() {

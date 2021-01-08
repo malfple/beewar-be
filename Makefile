@@ -1,4 +1,4 @@
-PKG := "gitlab.com/otqee/otqee-be"
+PKG := "gitlab.com/beewar/beewar-be"
 PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/)
 GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
 

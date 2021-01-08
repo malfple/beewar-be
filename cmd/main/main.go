@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"gitlab.com/otqee/otqee-be/configs"
-	"gitlab.com/otqee/otqee-be/internal/access"
-	"gitlab.com/otqee/otqee-be/internal/gamemanager"
-	"gitlab.com/otqee/otqee-be/internal/handler"
-	"gitlab.com/otqee/otqee-be/internal/logger"
+	"gitlab.com/beewar/beewar-be/configs"
+	"gitlab.com/beewar/beewar-be/internal/access"
+	"gitlab.com/beewar/beewar-be/internal/gamemanager"
+	"gitlab.com/beewar/beewar-be/internal/handler"
+	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 	"net/http"
 	"os"

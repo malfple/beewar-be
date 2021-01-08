@@ -2,7 +2,7 @@ package formatter
 
 import (
 	"errors"
-	"gitlab.com/otqee/otqee-be/internal/access/formatter/objects"
+	"gitlab.com/beewar/beewar-be/internal/access/formatter/objects"
 )
 
 /*

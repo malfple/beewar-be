@@ -1,7 +1,7 @@
 package loader
 
 import (
-	"gitlab.com/otqee/otqee-be/internal/access/formatter/objects"
+	"gitlab.com/beewar/beewar-be/internal/access/formatter/objects"
 )
 
 // CmdWhitelistUnitMove indicates which unit types can use message.CmdUnitMove

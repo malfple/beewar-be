@@ -1,8 +1,8 @@
 package accesstester
 
 import (
-	"gitlab.com/otqee/otqee-be/internal/access"
-	"gitlab.com/otqee/otqee-be/internal/logger"
+	"gitlab.com/beewar/beewar-be/internal/access"
+	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 )
 

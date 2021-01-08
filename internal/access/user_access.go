@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/jmoiron/sqlx"
-	"gitlab.com/otqee/otqee-be/internal/access/model"
-	"gitlab.com/otqee/otqee-be/internal/logger"
+	"gitlab.com/beewar/beewar-be/internal/access/model"
+	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )

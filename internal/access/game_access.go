@@ -3,9 +3,9 @@ package access
 import (
 	"database/sql"
 	"errors"
-	"gitlab.com/otqee/otqee-be/internal/access/formatter"
-	"gitlab.com/otqee/otqee-be/internal/access/model"
-	"gitlab.com/otqee/otqee-be/internal/logger"
+	"gitlab.com/beewar/beewar-be/internal/access/formatter"
+	"gitlab.com/beewar/beewar-be/internal/access/model"
+	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 )
 
