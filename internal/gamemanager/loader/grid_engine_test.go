@@ -65,7 +65,8 @@ var cleanDist = [][]int{
 func TestGridEngine_BFS(t *testing.T) {
 	ge := NewGridEngine(testHeight, testWidth, &testTerrain, &testUnits)
 
-	ge.BFS(3, 1, 100)
+	self := (*ge.Units)[3][1]
+	ge.BFS(3, 1, 100, self.GetUnitOwner(), self.GetWeight())
 	assert.Equal(t, expectedDist, ge.dist)
 
 	ge.BFSReset(3, 1)
@@ -75,8 +76,9 @@ func TestGridEngine_BFS(t *testing.T) {
 func BenchmarkGridEngine_BFS(b *testing.B) {
 	ge := NewGridEngine(testHeight, testWidth, &testTerrain, &testUnits)
 
+	self := (*ge.Units)[3][1]
 	for i := 0; i < b.N; i++ {
-		ge.BFS(3, 1, 100)
+		ge.BFS(3, 1, 100, self.GetUnitOwner(), self.GetWeight())
 		ge.BFSReset(3, 1)
 	}
 }
@@ -116,7 +118,7 @@ var testUnits2 = formatter.ModelToGameUnit(testHeight, testWidth, []byte{})
 func TestHexDistance(t *testing.T) {
 	ge := NewGridEngine(testHeight, testWidth, &testTerrain2, &testUnits2)
 
-	ge.BFS(5, 5, 100)
+	ge.BFS(5, 5, 100, 0, 0)
 
 	for i := 0; i < testHeight; i++ {
 		for j := 0; j < testWidth; j++ {
