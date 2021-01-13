@@ -189,9 +189,11 @@ func (ge *GridEngine) ValidateAttack(y, x, yt, xt int, attacker objects.Unit) (b
 	}
 
 	distBetween := utils.HexDistance(y, x, yt, xt)
-	switch attacker.GetUnitType() {
-	case objects.UnitTypeInfantry:
-		return distBetween <= objects.UnitAttackRangeInfantry, distBetween
+	switch attacker.GetAttackType() {
+	case objects.AttackTypeNone:
+		return false, -1
+	case objects.AttackTypeGround:
+		return distBetween <= attacker.GetAttackRange(), distBetween
 	default:
 		panic("panic validate move: unknown unit type")
 	}

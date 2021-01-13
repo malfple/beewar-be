@@ -26,6 +26,10 @@ type Unit interface {
 	GetMoveType() int
 	// GetMoveRange returns movement range of the unit type
 	GetMoveRange() int
+	// GetAttackType returns attack type of the unit type
+	GetAttackType() int
+	// GetAttackRange returns attack range of the unit type
+	GetAttackRange() int
 	// StartTurn triggers start-of-turn effects
 	StartTurn()
 	// EndTurn ends the turn for the unit, reset states and trigger any end-of-turn effects
@@ -43,6 +47,8 @@ const (
 // move types
 // move types of a specific unit type defined in each unit file
 const (
+	// MoveTypeNone means the unit cannot move
+	MoveTypeNone = 0
 	// MoveTypeGround is a normal ground move. BFS can be used to check this
 	MoveTypeGround = 1
 )
@@ -56,12 +62,17 @@ const (
 // unit move steps
 // defined in each unit file
 
-// unit attack range
-// only for units that can attack
+// unit attack types
+// attack types of a specific unit type defined in each unit file
 const (
-	// UnitAttackRangeInfantry defines unit attack range of Infantry
-	UnitAttackRangeInfantry = 1
+	// AttackTypeNone means the unit cannot attack
+	AttackTypeNone = 0
+	// AttackTypeGround is a normal melee attack
+	AttackTypeGround = 1
 )
+
+// unit attack range
+// defined in each unit file
 
 // state bit constants. always in the form of 2^n
 const (

@@ -14,13 +14,15 @@ func NormalCombat(attacker, defender objects.Unit, dist int) {
 // Attack does a single attack only. Modifies the defender hp
 func Attack(attacker, defender objects.Unit, dist int) {
 	atkPower := 0
-	switch attacker.GetUnitType() {
-	case objects.UnitTypeInfantry:
-		if dist <= objects.UnitAttackRangeInfantry {
+	switch attacker.GetAttackType() {
+	case objects.AttackTypeNone:
+		panic("panic attack: AttackTypeNone cannot attack")
+	case objects.AttackTypeGround:
+		if dist <= attacker.GetAttackRange() {
 			atkPower = (attacker.GetUnitHP() + 1) / 2
 		}
 	default:
-		panic("panic attack: unknown attacker unit type")
+		panic("panic attack: unknown attack type")
 	}
 
 	hpDef := utils.MaxInt(defender.GetUnitHP()-atkPower, 0)
