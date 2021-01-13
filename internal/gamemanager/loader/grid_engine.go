@@ -163,13 +163,11 @@ func (ge *GridEngine) ValidateMove(y1, x1, y2, x2 int) bool {
 		return false
 	}
 
-	switch (*ge.Units)[y1][x1].GetUnitType() {
-	case objects.UnitTypeYou:
-		return ge.ValidateMoveNormal(y1, x1, y2, x2, objects.UnitMoveStepsYou)
-	case objects.UnitTypeInfantry:
-		return ge.ValidateMoveNormal(y1, x1, y2, x2, objects.UnitMoveStepsInfantry)
+	switch unit := (*ge.Units)[y1][x1]; unit.GetMoveType() {
+	case objects.MoveTypeGround:
+		return ge.ValidateMoveNormal(y1, x1, y2, x2, unit.GetMoveRange())
 	default:
-		panic("panic validate move: unknown unit type")
+		panic("panic validate move: unknown move type")
 	}
 	return false
 }

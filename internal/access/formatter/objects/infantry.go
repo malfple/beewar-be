@@ -1,5 +1,12 @@
 package objects
 
+const (
+	// UnitWeightInfantry defines weight stat of Infantry
+	UnitWeightInfantry = 0
+	// UnitMoveRangeInfantry defines movement range stat of Infantry
+	UnitMoveRangeInfantry = 3
+)
+
 // Infantry is a unit object.
 // State description: 1 bit for moved state
 type Infantry struct {
@@ -20,11 +27,6 @@ func NewInfantry(owner, hp, state int) *Infantry {
 // GetUnitType see function from Unit
 func (inf *Infantry) GetUnitType() int {
 	return UnitTypeInfantry
-}
-
-// GetWeight see function from Unit
-func (inf *Infantry) GetWeight() int {
-	return UnitWeightInfantry
 }
 
 // GetUnitOwner see function from Unit
@@ -55,6 +57,21 @@ func (inf *Infantry) GetUnitHP() int {
 // SetUnitHP see function from Unit
 func (inf *Infantry) SetUnitHP(hp int) {
 	inf.HP = hp
+}
+
+// GetWeight see function from Unit
+func (inf *Infantry) GetWeight() int {
+	return UnitWeightInfantry
+}
+
+// GetMoveType see function from Unit
+func (inf *Infantry) GetMoveType() int {
+	return MoveTypeGround
+}
+
+// GetMoveRange see funtion from Unit
+func (inf *Infantry) GetMoveRange() int {
+	return UnitMoveRangeInfantry
 }
 
 // StartTurn see function from Unit

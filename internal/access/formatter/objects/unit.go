@@ -8,8 +8,6 @@ package objects
 type Unit interface {
 	// GetUnitType gets the unit type of the current unit object
 	GetUnitType() int
-	// GetWeight returns the weight characteristic of the unit type
-	GetWeight() int
 	// GetUnitOwner returns the owner of the unit
 	GetUnitOwner() int
 	// GetUnitState returns unit states
@@ -22,6 +20,12 @@ type Unit interface {
 	GetUnitHP() int
 	// SetUnitHP sets the hp of the unit
 	SetUnitHP(hp int)
+	// GetWeight returns the weight characteristic of the unit type
+	GetWeight() int
+	// GetMoveType returns movement type of the unit type
+	GetMoveType() int
+	// GetMoveRange returns movement range of the unit type
+	GetMoveRange() int
 	// StartTurn triggers start-of-turn effects
 	StartTurn()
 	// EndTurn ends the turn for the unit, reset states and trigger any end-of-turn effects
@@ -36,25 +40,21 @@ const (
 	UnitTypeInfantry = 3
 )
 
+// move types
+// move types of a specific unit type defined in each unit file
+const (
+	// MoveTypeGround is a normal ground move. BFS can be used to check this
+	MoveTypeGround = 1
+)
+
 // unit weights
 // 0 = light. 1 = heavy. 2 = unpassable
 // weight is used to determine whether a unit can pass another unit.
 // 2 units can pass through each other if the sum of their weight <= 1 AND they have the same owner
-const (
-	// UnitWeightYou defines unit weight of You
-	UnitWeightYou = 0
-	// UnitWeightInfantry defines unit weight of Infantry
-	UnitWeightInfantry = 0
-)
+// defined in each unit file
 
 // unit move steps
-// for units that has a maximum movement range
-const (
-	// UnitMoveStepsYou defines unit movement range of You
-	UnitMoveStepsYou = 1
-	// UnitMoveStepsInfantry defines unit movement range of Infantry
-	UnitMoveStepsInfantry = 3
-)
+// defined in each unit file
 
 // unit attack range
 // only for units that can attack
