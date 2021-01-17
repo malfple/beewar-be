@@ -195,7 +195,7 @@ func (ge *GridEngine) ValidateAttack(y, x, yt, xt int, attacker objects.Unit) (b
 	case objects.AttackTypeGround:
 		return distBetween <= attacker.GetAttackRange(), distBetween
 	default:
-		panic("panic validate move: unknown unit type")
+		panic("panic validate attack: unknown attack type")
 	}
 	return false, -1
 }

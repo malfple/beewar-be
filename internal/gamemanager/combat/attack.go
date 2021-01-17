@@ -16,7 +16,7 @@ func Attack(attacker, defender objects.Unit, dist int) {
 	atkPower := 0
 	switch attacker.GetAttackType() {
 	case objects.AttackTypeNone:
-		panic("panic attack: AttackTypeNone cannot attack")
+		// do nothing
 	case objects.AttackTypeGround:
 		if dist <= attacker.GetAttackRange() {
 			atkPower = (attacker.GetUnitHP() + 1) / 2
