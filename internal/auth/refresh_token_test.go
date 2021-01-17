@@ -19,3 +19,18 @@ func TestRefreshToken(t *testing.T) {
 	assert.Equal(t, "", username2)
 	assert.Equal(t, uint64(0), userID2)
 }
+
+func TestMultipleRefreshTokens(t *testing.T) {
+	userID := uint64(465)
+	username := "some_other_username"
+	token1 := GenerateRefreshToken(userID, username)
+	token2 := GenerateRefreshToken(userID, username)
+	token3 := GenerateRefreshToken(userID, username)
+
+	userID1, _ := ValidateRefreshToken(token1)
+	assert.Equal(t, uint64(0), userID1)
+	userID2, _ := ValidateRefreshToken(token2)
+	assert.Equal(t, uint64(0), userID2)
+	userID3, _ := ValidateRefreshToken(token3)
+	assert.Equal(t, userID, userID3)
+}

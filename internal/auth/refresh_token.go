@@ -17,8 +17,11 @@ type refreshTokenInfo struct {
 	ExpireAt int64
 }
 
-// maps refresh token to username
+// maps refresh token to toke infos: refreshTokenInfo
 var refreshTokenStore = make(map[string]refreshTokenInfo)
+
+// maps userID to refresh token
+var userIDToRefreshTokenMap = make(map[uint64]string)
 
 // GenerateRefreshToken generates a refresh token using uuid (16-long byte array) and binds it to username/userid
 func GenerateRefreshToken(userID uint64, username string) string {
@@ -28,6 +31,10 @@ func GenerateRefreshToken(userID uint64, username string) string {
 		Username: username,
 		ExpireAt: time.Now().Add(refreshTokenExpiry).Unix(),
 	}
+	if oldToken, ok := userIDToRefreshTokenMap[userID]; ok { // user already has refresh token
+		RemoveRefreshToken(oldToken)
+	}
+	userIDToRefreshTokenMap[userID] = token
 	return token
 }
 
