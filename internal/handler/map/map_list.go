@@ -12,8 +12,6 @@ import (
 
 // HandleMapList handles request for getting a list of map, ordered by time
 func HandleMapList(w http.ResponseWriter, r *http.Request) {
-	resp := &MapListResponse{}
-
 	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -26,7 +24,9 @@ func HandleMapList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp.Maps = access.QueryMaps(limit, offset)
+	resp := &MapListResponse{
+		Maps: access.QueryMaps(limit, offset),
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
