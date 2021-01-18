@@ -15,6 +15,14 @@ func TestMapAccess() bool {
 	if err != nil {
 		return false
 	}
+	_, err = access.CreateEmptyMap(0, 3, 2, "map2", 1)
+	if err != nil {
+		return false
+	}
+	_, err = access.CreateEmptyMap(0, 5, 5, "map3", 1)
+	if err != nil {
+		return false
+	}
 
 	terrain1 := make([]byte, 100)
 	for i := 0; i < 10; i++ {
@@ -33,8 +41,45 @@ func TestMapAccess() bool {
 	if mapp.ID != mapID {
 		return false
 	}
-	if int(mapp.Width)*int(mapp.Height) != 100 {
+	if mapp.Width*mapp.Height != 100 {
 		return false
 	}
+
+	// batch queries
+	if !TestmapaccessQuerymaps() {
+		return false
+	}
+
+	return true
+}
+
+// TestmapaccessQuerymaps tests access.QueryMaps
+func TestmapaccessQuerymaps() bool {
+	maps := access.QueryMaps(2, 0)
+	if len(maps) != 2 {
+		logger.GetLogger().Error("mismatch number of maps", zap.Int("expected", 2), zap.Int("found", len(maps)))
+		return false
+	}
+	if maps[0].Name != "map3" {
+		logger.GetLogger().Error("mismatch map name", zap.String("expected", "map3"), zap.String("found", maps[0].Name))
+	}
+	if maps[1].Name != "map2" {
+		logger.GetLogger().Error("mismatch map name", zap.String("expected", "map2"), zap.String("found", maps[1].Name))
+	}
+
+	maps = access.QueryMaps(10, 1)
+	if maps[0].Name != "map2" {
+		logger.GetLogger().Error("mismatch map name", zap.String("expected", "map2"), zap.String("found", maps[1].Name))
+	}
+	if maps[1].Name != "some updated map" {
+		logger.GetLogger().Error("mismatch map name", zap.String("expected", "aome updated map"), zap.String("found", maps[1].Name))
+	}
+
+	maps = access.QueryMaps(10, 10)
+	if len(maps) != 0 {
+		logger.GetLogger().Error("mismatch number of maps", zap.Int("expected", 0), zap.Int("found", len(maps)))
+		return false
+	}
+
 	return true
 }

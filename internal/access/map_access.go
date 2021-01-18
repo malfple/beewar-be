@@ -114,3 +114,44 @@ func QueryMapByID(mapID uint64) *model.Map {
 	}
 	return mapp
 }
+
+// all map batch queries/searches are returned in descending order of id
+// currently, we ues OFFSET :'), because it's easy and the speed doesn't matter because we won't have millions of maps anyway.
+// feel free to speed this up
+
+// QueryMaps gets a list of maps
+func QueryMaps(limit, offset int) []*model.Map {
+	rows, err := db.Query(`SELECT * FROM map_tab ORDER BY id DESC LIMIT ? OFFSET ?`, limit, offset)
+	if err != nil {
+		logger.GetLogger().Error("db: query error", zap.String("table", "map_tab"), zap.Error(err))
+		return nil
+	}
+	defer rows.Close()
+
+	var maps []*model.Map
+	for rows.Next() {
+		mapp := &model.Map{}
+		err := rows.Scan(
+			&mapp.ID,
+			&mapp.Type,
+			&mapp.Height,
+			&mapp.Width,
+			&mapp.Name,
+			&mapp.PlayerCount,
+			&mapp.TerrainInfo,
+			&mapp.UnitInfo,
+			&mapp.AuthorUserID,
+			&mapp.StatPlayCount,
+			&mapp.TimeCreated,
+			&mapp.TimeModified)
+		if err != nil {
+			logger.GetLogger().Error("db: query error", zap.String("table", "map_tab"), zap.Error(err))
+		} else {
+			maps = append(maps, mapp)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		logger.GetLogger().Error("db: query error", zap.String("table", "map_tab"), zap.Error(err))
+	}
+	return maps
+}
