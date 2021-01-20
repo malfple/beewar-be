@@ -19,7 +19,7 @@ func Attack(attacker, defender objects.Unit, dist int) {
 		// do nothing
 	case objects.AttackTypeGround:
 		if dist <= attacker.GetAttackRange() {
-			atkDamage = utils.CeilDivInt(attacker.GetUnitHP() * attacker.GetAttackPower(), 10)
+			atkDamage = utils.CeilDivInt(attacker.GetUnitHP()*attacker.GetAttackPower(), 10)
 		}
 	default:
 		panic("panic attack: unknown attack type")

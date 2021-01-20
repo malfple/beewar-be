@@ -22,7 +22,7 @@ func CeilDivInt(a, b int) int {
 	res := a / b
 	a -= res * b
 	if a != 0 {
-		res += 1
+		res++
 	}
 	return res
 }

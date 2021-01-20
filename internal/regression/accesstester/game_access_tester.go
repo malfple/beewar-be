@@ -7,7 +7,7 @@ import (
 	"math/rand"
 )
 
-// TestGameAccess runs regression tests for game access
+// TestGameAccess runs regression tests for game access and game user access
 func TestGameAccess() bool {
 	logger.GetLogger().Info("game access tester")
 
