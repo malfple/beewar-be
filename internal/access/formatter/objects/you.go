@@ -7,6 +7,8 @@ const (
 	UnitMoveRangeYou = 1
 	// UnitAttackRangeYou defines attack range stat of You
 	UnitAttackRangeYou = 0
+	// UnitAttackPowerYou doesn't mean anything because You cannot attack
+	UnitAttackPowerYou = 0
 )
 
 // You is a unit object. It is most often the win or lose condition in a game.
@@ -84,6 +86,11 @@ func (you *You) GetAttackType() int {
 // GetAttackRange see function from Unit
 func (you *You) GetAttackRange() int {
 	return UnitAttackRangeYou
+}
+
+// GetAttackPower see function from Unit
+func (you *You) GetAttackPower() int {
+	return UnitAttackPowerYou
 }
 
 // StartTurn see function from Unit

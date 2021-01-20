@@ -15,3 +15,14 @@ func MaxInt(a, b int) int {
 	}
 	return b
 }
+
+// CeilDivInt return Ceil(a / b), but integer.
+// a and b has to be non-negative. No handling for negative yet
+func CeilDivInt(a, b int) int {
+	res := a / b
+	a -= res * b
+	if a != 0 {
+		res += 1
+	}
+	return res
+}

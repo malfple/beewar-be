@@ -30,6 +30,8 @@ type Unit interface {
 	GetAttackType() int
 	// GetAttackRange returns attack range of the unit type
 	GetAttackRange() int
+	// GetAttackPower returns attack power of the unit type, multiplied by 10
+	GetAttackPower() int
 	// StartTurn triggers start-of-turn effects
 	StartTurn()
 	// EndTurn ends the turn for the unit, reset states and trigger any end-of-turn effects
@@ -73,6 +75,10 @@ const (
 
 // unit attack range
 // defined in each unit file
+
+// unit attack power
+// defined in each unit file
+// this is multiplied by 10 to avoid floating point. So 5 is actually 0.5
 
 // state bit constants. always in the form of 2^n
 const (

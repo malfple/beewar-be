@@ -7,6 +7,8 @@ const (
 	UnitMoveRangeInfantry = 3
 	// UnitAttackRangeInfantry defines attack range stat of Infantry
 	UnitAttackRangeInfantry = 1
+	// UnitAttackPowerInfantry defines attack power stat of Infantry
+	UnitAttackPowerInfantry = 5
 )
 
 // Infantry is a unit object.
@@ -84,6 +86,11 @@ func (inf *Infantry) GetAttackType() int {
 // GetAttackRange see function frmo Unit
 func (inf *Infantry) GetAttackRange() int {
 	return UnitAttackRangeInfantry
+}
+
+// GetAttackPower see function from Unit
+func (inf *Infantry) GetAttackPower() int {
+	return UnitAttackPowerInfantry
 }
 
 // StartTurn see function from Unit
