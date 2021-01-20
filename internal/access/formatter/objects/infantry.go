@@ -1,16 +1,5 @@
 package objects
 
-const (
-	// UnitWeightInfantry defines weight stat of Infantry
-	UnitWeightInfantry = 0
-	// UnitMoveRangeInfantry defines movement range stat of Infantry
-	UnitMoveRangeInfantry = 3
-	// UnitAttackRangeInfantry defines attack range stat of Infantry
-	UnitAttackRangeInfantry = 1
-	// UnitAttackPowerInfantry defines attack power stat of Infantry
-	UnitAttackPowerInfantry = 5
-)
-
 // Infantry is a unit object.
 // State description: 1 bit for moved state
 type Infantry struct {

@@ -1,16 +1,5 @@
 package objects
 
-const (
-	// UnitWeightYou defines weight stat of You
-	UnitWeightYou = 0
-	// UnitMoveRangeYou defines movement range stat of You
-	UnitMoveRangeYou = 1
-	// UnitAttackRangeYou defines attack range stat of You
-	UnitAttackRangeYou = 0
-	// UnitAttackPowerYou doesn't mean anything because You cannot attack
-	UnitAttackPowerYou = 0
-)
-
 // You is a unit object. It is most often the win or lose condition in a game.
 // State description: 1 bit for moved state
 type You struct {

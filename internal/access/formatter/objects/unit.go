@@ -59,10 +59,20 @@ const (
 // 0 = light. 1 = heavy. 2 = unpassable
 // weight is used to determine whether a unit can pass another unit.
 // 2 units can pass through each other if the sum of their weight <= 1 AND they have the same owner
-// defined in each unit file
+const (
+	// UnitWeightYou defines weight stat of You
+	UnitWeightYou = 0
+	// UnitWeightInfantry defines weight stat of Infantry
+	UnitWeightInfantry = 0
+)
 
-// unit move steps
-// defined in each unit file
+// unit move range
+const (
+	// UnitMoveRangeYou defines movement range stat of You
+	UnitMoveRangeYou = 1
+	// UnitMoveRangeInfantry defines movement range stat of Infantry
+	UnitMoveRangeInfantry = 3
+)
 
 // unit attack types
 // attack types of a specific unit type defined in each unit file
@@ -74,11 +84,21 @@ const (
 )
 
 // unit attack range
-// defined in each unit file
+const (
+	// UnitAttackRangeYou defines attack range stat of You
+	UnitAttackRangeYou = 0
+	// UnitAttackRangeInfantry defines attack range stat of Infantry
+	UnitAttackRangeInfantry = 1
+)
 
 // unit attack power
-// defined in each unit file
 // this is multiplied by 10 to avoid floating point. So 5 is actually 0.5
+const (
+	// UnitAttackPowerYou doesn't mean anything because You cannot attack
+	UnitAttackPowerYou = 0
+	// UnitAttackPowerInfantry defines attack power stat of Infantry
+	UnitAttackPowerInfantry = 5
+)
 
 // state bit constants. always in the form of 2^n
 const (

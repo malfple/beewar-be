@@ -94,7 +94,7 @@ func (ge *GridEngine) BFS(y, x, steps, owner, weight int) {
 			if ge.dist[ty][tx] != -1 {
 				continue
 			}
-			if (*ge.Terrain)[ty][tx] != 1 {
+			if (*ge.Terrain)[ty][tx] != objects.TerrainTypePlains {
 				continue
 			}
 			if unit := (*ge.Units)[ty][tx]; unit != nil {
