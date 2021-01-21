@@ -84,5 +84,19 @@ func TestGameAccess() bool {
 		return false
 	}
 
+	// update game user
+	gameUserToUpdate := games1[0]
+	gameUserToUpdate.FinalTurns = 69
+	gameUserToUpdate.FinalRank = 1
+	if err := access.UpdateGameUser(gameUserToUpdate); err != nil {
+		return false
+	}
+	games1again := access.QueryGamesLinkedToUser(user1.ID)
+	if games1again[0].FinalTurns != 69 || games1again[0].FinalRank != 1 {
+		logger.GetLogger().Error("mismatch update game user",
+			zap.Int32("actual final turns", games1again[0].FinalTurns),
+			zap.Uint8("actual final rank", games1again[0].FinalRank))
+	}
+
 	return true
 }

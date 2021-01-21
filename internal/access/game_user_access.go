@@ -21,6 +21,23 @@ VALUES (?, ?, ?)`
 	return nil
 }
 
+// UpdateGameUser saves a gameUser model to db
+// only updates updatable fields
+func UpdateGameUser(gameUser *model.GameUser) error {
+	const stmtUpdateGameUser = `UPDATE game_user_tab
+SET final_rank=?, final_turns=?
+WHERE id=?`
+
+	_, err := db.Exec(stmtUpdateGameUser,
+		gameUser.FinalRank, gameUser.FinalTurns,
+		gameUser.ID)
+	if err != nil {
+		logger.GetLogger().Error("db: update error", zap.String("table", "game_user_tab"), zap.Error(err))
+		return err
+	}
+	return nil
+}
+
 // QueryUsersLinkedToGame return the game-user link information of a gameID
 func QueryUsersLinkedToGame(gameID uint64) []*model.GameUser {
 	rows, err := db.Query(`SELECT * FROM game_user_tab WHERE game_id=?`, gameID)
