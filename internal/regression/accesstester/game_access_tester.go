@@ -7,7 +7,7 @@ import (
 	"math/rand"
 )
 
-// TestGameAccess runs regression tests for game access
+// TestGameAccess runs regression tests for game access and game user access
 func TestGameAccess() bool {
 	logger.GetLogger().Info("game access tester")
 
@@ -63,9 +63,22 @@ func TestGameAccess() bool {
 		return false
 	}
 
+	// game users
+	if access.QueryUsersLinkedToGame(999999999) == nil {
+		logger.GetLogger().Error("should be empty array, not nil")
+	}
+	if access.QueryGamesLinkedToUser(999999999) == nil {
+		logger.GetLogger().Error("should be empty array, not nil")
+	}
 	players := access.QueryUsersLinkedToGame(gameID)
 	if len(players) != 2 || players[0].UserID != user1.ID || players[1].UserID != user2.ID {
 		logger.GetLogger().Error("error query users linked to game")
+		return false
+	}
+	games1 := access.QueryGamesLinkedToUser(user1.ID)
+	games2 := access.QueryGamesLinkedToUser(user1.ID)
+	if games1[0].GameID != gameID || games1[0].GameID != games2[0].GameID {
+		logger.GetLogger().Error("error query games linked to user")
 		return false
 	}
 
@@ -76,6 +89,20 @@ func TestGameAccess() bool {
 	if access.IsExistGameByID(696969) {
 		logger.GetLogger().Error("game isn't supposed to exist")
 		return false
+	}
+
+	// update game user
+	gameUserToUpdate := games1[0]
+	gameUserToUpdate.FinalTurns = 69
+	gameUserToUpdate.FinalRank = 1
+	if err := access.UpdateGameUser(gameUserToUpdate); err != nil {
+		return false
+	}
+	games1again := access.QueryGamesLinkedToUser(user1.ID)
+	if games1again[0].FinalTurns != 69 || games1again[0].FinalRank != 1 {
+		logger.GetLogger().Error("mismatch update game user",
+			zap.Int32("actual final turns", games1again[0].FinalTurns),
+			zap.Uint8("actual final rank", games1again[0].FinalRank))
 	}
 
 	return true

@@ -2,7 +2,7 @@ package gamemanager
 
 import (
 	"github.com/gorilla/websocket"
-	"gitlab.com/beewar/beewar-be/internal/gamemanager/message"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/message"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 )

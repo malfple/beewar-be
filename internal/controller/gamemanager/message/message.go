@@ -19,6 +19,8 @@ const (
 
 	// CmdUnitMove is a unit cmd for general moving. no restriction.
 	CmdUnitMove = "UNIT_MOVE"
+	// CmdUnitAttack is a unit cmd for general attack. no restriction
+	CmdUnitAttack = "UNIT_ATTACK"
 	// CmdUnitMoveAndAttack is a unit cmd for general move and attack. no restriction.
 	CmdUnitMoveAndAttack = "UNIT_MOVE_ATTACK"
 
@@ -70,6 +72,12 @@ func UnmarshalAndValidateGameMessage(rawPayload []byte, senderID uint64) (*GameM
 		message.Data = data
 	case CmdUnitMove:
 		var data *UnitMoveMessageData
+		if err := json.Unmarshal(temp.Data, &data); err != nil {
+			return nil, err
+		}
+		message.Data = data
+	case CmdUnitAttack:
+		var data *UnitAttackMessageData
 		if err := json.Unmarshal(temp.Data, &data); err != nil {
 			return nil, err
 		}

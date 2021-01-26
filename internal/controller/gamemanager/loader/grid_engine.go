@@ -71,10 +71,9 @@ func (ge *GridEngine) insideMap(y, x int) bool {
 }
 
 // BFS does a breadth first search starting on (y, x) and fills dist array up to the required steps.
-// there should be a unit at (y, x) to get weight and owner
+// This is also constraint by the given owner and weight
 // WARNING: this function does not do validation checks
-func (ge *GridEngine) BFS(y, x, steps int) {
-	self := (*ge.Units)[y][x]
+func (ge *GridEngine) BFS(y, x, steps, owner, weight int) {
 	ge.dist[y][x] = 0
 	ge.posQueue = append(ge.posQueue, pos{y, x})
 	for len(ge.posQueue) > 0 {
@@ -95,14 +94,14 @@ func (ge *GridEngine) BFS(y, x, steps int) {
 			if ge.dist[ty][tx] != -1 {
 				continue
 			}
-			if (*ge.Terrain)[ty][tx] != 1 {
+			if (*ge.Terrain)[ty][tx] != objects.TerrainTypePlains {
 				continue
 			}
 			if unit := (*ge.Units)[ty][tx]; unit != nil {
-				if unit.GetUnitOwner() != self.GetUnitOwner() {
+				if unit.GetUnitOwner() != owner {
 					continue
 				}
-				if unit.GetWeight()+self.GetWeight() > 1 {
+				if unit.GetWeight()+weight > 1 {
 					continue
 				}
 			}
@@ -142,7 +141,8 @@ func (ge *GridEngine) BFSReset(y, x int) {
 // WARNING: does not validate positions or if a unit exists. Only validates move with BFS
 func (ge *GridEngine) ValidateMoveNormal(y1, x1, y2, x2, steps int) bool {
 	var reach bool
-	ge.BFS(y1, x1, steps)
+	self := (*ge.Units)[y1][x1]
+	ge.BFS(y1, x1, steps, self.GetUnitOwner(), self.GetWeight())
 	reach = ge.dist[y2][x2] != -1
 	ge.BFSReset(y1, x1)
 	return reach
@@ -163,13 +163,11 @@ func (ge *GridEngine) ValidateMove(y1, x1, y2, x2 int) bool {
 		return false
 	}
 
-	switch (*ge.Units)[y1][x1].GetUnitType() {
-	case objects.UnitTypeYou:
-		return ge.ValidateMoveNormal(y1, x1, y2, x2, objects.UnitMoveStepsYou)
-	case objects.UnitTypeInfantry:
-		return ge.ValidateMoveNormal(y1, x1, y2, x2, objects.UnitMoveStepsInfantry)
+	switch unit := (*ge.Units)[y1][x1]; unit.GetMoveType() {
+	case objects.MoveTypeGround:
+		return ge.ValidateMoveNormal(y1, x1, y2, x2, unit.GetMoveRange())
 	default:
-		panic("panic validate move: unknown unit type")
+		panic("panic validate move: unknown move type")
 	}
 	return false
 }
@@ -191,11 +189,13 @@ func (ge *GridEngine) ValidateAttack(y, x, yt, xt int, attacker objects.Unit) (b
 	}
 
 	distBetween := utils.HexDistance(y, x, yt, xt)
-	switch attacker.GetUnitType() {
-	case objects.UnitTypeInfantry:
-		return distBetween <= objects.UnitAttackRangeInfantry, distBetween
+	switch attacker.GetAttackType() {
+	case objects.AttackTypeNone:
+		return false, -1
+	case objects.AttackTypeGround:
+		return distBetween <= attacker.GetAttackRange(), distBetween
 	default:
-		panic("panic validate move: unknown unit type")
+		panic("panic validate attack: unknown attack type")
 	}
 	return false, -1
 }

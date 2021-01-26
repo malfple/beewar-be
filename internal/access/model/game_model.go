@@ -15,13 +15,3 @@ type Game struct {
 	TimeCreated  int64  `json:"time_created"`
 	TimeModified int64  `json:"time_modified"`
 }
-
-// GameUser is a db model
-type GameUser struct {
-	ID          uint64
-	GameID      uint64
-	UserID      uint64
-	PlayerOrder uint8
-	FinalRank   uint8
-	FinalTurns  int32
-}

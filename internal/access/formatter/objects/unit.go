@@ -8,8 +8,6 @@ package objects
 type Unit interface {
 	// GetUnitType gets the unit type of the current unit object
 	GetUnitType() int
-	// GetWeight returns the weight characteristic of the unit type
-	GetWeight() int
 	// GetUnitOwner returns the owner of the unit
 	GetUnitOwner() int
 	// GetUnitState returns unit states
@@ -22,6 +20,18 @@ type Unit interface {
 	GetUnitHP() int
 	// SetUnitHP sets the hp of the unit
 	SetUnitHP(hp int)
+	// GetWeight returns the weight characteristic of the unit type
+	GetWeight() int
+	// GetMoveType returns movement type of the unit type
+	GetMoveType() int
+	// GetMoveRange returns movement range of the unit type
+	GetMoveRange() int
+	// GetAttackType returns attack type of the unit type
+	GetAttackType() int
+	// GetAttackRange returns attack range of the unit type
+	GetAttackRange() int
+	// GetAttackPower returns attack power of the unit type, multiplied by 10
+	GetAttackPower() int
 	// StartTurn triggers start-of-turn effects
 	StartTurn()
 	// EndTurn ends the turn for the unit, reset states and trigger any end-of-turn effects
@@ -36,31 +46,58 @@ const (
 	UnitTypeInfantry = 3
 )
 
+// move types
+// move types of a specific unit type defined in each unit file
+const (
+	// MoveTypeNone means the unit cannot move
+	MoveTypeNone = 0
+	// MoveTypeGround is a normal ground move. BFS can be used to check this
+	MoveTypeGround = 1
+)
+
 // unit weights
 // 0 = light. 1 = heavy. 2 = unpassable
 // weight is used to determine whether a unit can pass another unit.
 // 2 units can pass through each other if the sum of their weight <= 1 AND they have the same owner
 const (
-	// UnitWeightYou defines unit weight of You
+	// UnitWeightYou defines weight stat of You
 	UnitWeightYou = 0
-	// UnitWeightInfantry defines unit weight of Infantry
+	// UnitWeightInfantry defines weight stat of Infantry
 	UnitWeightInfantry = 0
 )
 
-// unit move steps
-// for units that has a maximum movement range
+// unit move range
 const (
-	// UnitMoveStepsYou defines unit movement range of You
-	UnitMoveStepsYou = 1
-	// UnitMoveStepsInfantry defines unit movement range of Infantry
-	UnitMoveStepsInfantry = 3
+	// UnitMoveRangeYou defines movement range stat of You
+	UnitMoveRangeYou = 1
+	// UnitMoveRangeInfantry defines movement range stat of Infantry
+	UnitMoveRangeInfantry = 3
+)
+
+// unit attack types
+// attack types of a specific unit type defined in each unit file
+const (
+	// AttackTypeNone means the unit cannot attack
+	AttackTypeNone = 0
+	// AttackTypeGround is a normal melee attack
+	AttackTypeGround = 1
 )
 
 // unit attack range
-// only for units that can attack
 const (
-	// UnitAttackRangeInfantry defines unit attack range of Infantry
+	// UnitAttackRangeYou defines attack range stat of You
+	UnitAttackRangeYou = 0
+	// UnitAttackRangeInfantry defines attack range stat of Infantry
 	UnitAttackRangeInfantry = 1
+)
+
+// unit attack power
+// this is multiplied by 10 to avoid floating point. So 5 is actually 0.5
+const (
+	// UnitAttackPowerYou doesn't mean anything because You cannot attack
+	UnitAttackPowerYou = 0
+	// UnitAttackPowerInfantry defines attack power stat of Infantry
+	UnitAttackPowerInfantry = 5
 )
 
 // state bit constants. always in the form of 2^n

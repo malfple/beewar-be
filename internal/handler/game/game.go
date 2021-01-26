@@ -7,4 +7,5 @@ import (
 // RegisterGameRouter builds router for game related stuff
 func RegisterGameRouter(router *mux.Router) {
 	router.HandleFunc("/ws", HandleGameWS)
+	router.HandleFunc("/list", HandleGameList).Methods("POST")
 }

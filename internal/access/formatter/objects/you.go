@@ -22,11 +22,6 @@ func (you *You) GetUnitType() int {
 	return UnitTypeYou
 }
 
-// GetWeight see function from Unit
-func (you *You) GetWeight() int {
-	return UnitWeightYou
-}
-
 // GetUnitOwner see function from Unit
 func (you *You) GetUnitOwner() int {
 	return you.Owner
@@ -35,6 +30,11 @@ func (you *You) GetUnitOwner() int {
 // GetUnitState see function from Unit
 func (you *You) GetUnitState() int {
 	return you.State
+}
+
+// GetUnitStateBit see function from Unit
+func (you *You) GetUnitStateBit(bit int) bool {
+	return (you.State & bit) != 0
 }
 
 // ToggleUnitStateBit see function from Unit
@@ -52,9 +52,34 @@ func (you *You) SetUnitHP(hp int) {
 	you.HP = hp
 }
 
-// GetUnitStateBit see function from Unit
-func (you *You) GetUnitStateBit(bit int) bool {
-	return (you.State & bit) != 0
+// GetWeight see function from Unit
+func (you *You) GetWeight() int {
+	return UnitWeightYou
+}
+
+// GetMoveType see function from Unit
+func (you *You) GetMoveType() int {
+	return MoveTypeGround
+}
+
+// GetMoveRange see function from Unit
+func (you *You) GetMoveRange() int {
+	return UnitMoveRangeYou
+}
+
+// GetAttackType see function from Unit
+func (you *You) GetAttackType() int {
+	return AttackTypeNone
+}
+
+// GetAttackRange see function from Unit
+func (you *You) GetAttackRange() int {
+	return UnitAttackRangeYou
+}
+
+// GetAttackPower see function from Unit
+func (you *You) GetAttackPower() int {
+	return UnitAttackPowerYou
 }
 
 // StartTurn see function from Unit

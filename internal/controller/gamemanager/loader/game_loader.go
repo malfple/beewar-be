@@ -5,13 +5,15 @@ import (
 	"gitlab.com/beewar/beewar-be/internal/access/formatter"
 	"gitlab.com/beewar/beewar-be/internal/access/formatter/objects"
 	"gitlab.com/beewar/beewar-be/internal/access/model"
-	"gitlab.com/beewar/beewar-be/internal/gamemanager/loader/combat"
-	"gitlab.com/beewar/beewar-be/internal/gamemanager/message"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/combat"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/message"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 )
 
 const (
+	// ErrMsgGameEnded is returned when a message is received and the game is already ended
+	ErrMsgGameEnded = "game already ended"
 	// ErrMsgNotYetTurn is returned when it is not yet the turn for the player who sends the message
 	ErrMsgNotYetTurn = "not your turn yet"
 	// ErrMsgInvalidPos is returned if given position does not have a unit or is out of bound
@@ -42,7 +44,7 @@ type GameLoader struct {
 	Units             [][]objects.Unit
 	MapID             uint64
 	TurnCount         int32 // turns start from 1, defined in migration
-	TurnPlayer        int   // players are numbered 1..PlayerCount
+	TurnPlayer        int   // players are numbered 1..PlayerCount. If this is 0, game is ended
 	TimeCreated       int64
 	TimeModified      int64
 	GridEngine        *GridEngine
@@ -123,6 +125,12 @@ func (gl *GameLoader) SaveToDB() error {
 		logger.GetLogger().Error("loader: error save game to db", zap.Error(err))
 		return err
 	}
+	for _, gu := range gl.GameUsers {
+		if err := access.UpdateGameUser(gu); err != nil {
+			logger.GetLogger().Error("loader: error save game_user to db", zap.Error(err))
+			return err
+		}
+	}
 	return nil
 }
 
@@ -147,13 +155,34 @@ func (gl *GameLoader) GameData() *message.GameMessage {
 	}
 }
 
+func (gl *GameLoader) checkGameEnd() {
+	playersLeft := 0
+	for _, gu := range gl.GameUsers {
+		if gu.FinalTurns == 0 {
+			playersLeft++
+		}
+	}
+	if playersLeft <= 1 {
+		// game ended
+		for i := range gl.GameUsers {
+			gl.assignPlayerRank(i + 1)
+		}
+		gl.TurnPlayer = 0
+	}
+}
+
 // end current player turn and start next player turn
 func (gl *GameLoader) nextTurn() {
 	prevPlayer := gl.TurnPlayer
-	gl.TurnPlayer++
-	if gl.TurnPlayer > gl.PlayerCount {
-		gl.TurnCount++
-		gl.TurnPlayer = 1
+	for {
+		gl.TurnPlayer++
+		if gl.TurnPlayer > gl.PlayerCount {
+			gl.TurnCount++
+			gl.TurnPlayer = 1
+		}
+		if gl.GameUsers[gl.TurnPlayer-1].FinalTurns == 0 { // player not defeated
+			break
+		}
 	}
 	// unit states
 	for i := 0; i < gl.Height; i++ {
@@ -168,6 +197,34 @@ func (gl *GameLoader) nextTurn() {
 			}
 		}
 	}
+	// just in case, also check if game ends
+	gl.checkGameEnd()
+}
+
+// check if a unit is still alive. Also checks player defeat condition. If you dies, you are defeated.
+func (gl *GameLoader) checkUnitAlive(y, x int) {
+	if gl.Units[y][x].GetUnitHP() == 0 {
+		if gl.Units[y][x].GetUnitType() == objects.UnitTypeYou {
+			// player is defeated -> assign rank and turns lasted
+			gl.assignPlayerRank(gl.Units[y][x].GetUnitOwner())
+			// immediately check if game ends
+			gl.checkGameEnd()
+		}
+		gl.Units[y][x] = nil
+	}
+}
+
+// done when player is defeated or when game is finished
+func (gl *GameLoader) assignPlayerRank(player int) {
+	if gl.GameUsers[player-1].FinalTurns != 0 {
+		return
+	}
+	for _, gu := range gl.GameUsers {
+		if gu.FinalTurns == 0 { // player not yet defeated
+			gl.GameUsers[player-1].FinalRank++
+		}
+	}
+	gl.GameUsers[player-1].FinalTurns = gl.TurnCount
 }
 
 // validate functions return empty string if no errors
@@ -192,6 +249,10 @@ func (gl *GameLoader) validateUnitOwned(userID uint64, y, x int) string {
 // HandleMessage handles game related message
 // returns the message and a boolean value whether the message should be broadcasted (true = broadcast)
 func (gl *GameLoader) HandleMessage(msg *message.GameMessage) (*message.GameMessage, bool) {
+	if gl.TurnPlayer == 0 {
+		return message.GameErrorMessage(ErrMsgGameEnded), false
+	}
+
 	// only current player can do stuff
 	if msg.Sender != gl.GameUsers[gl.TurnPlayer-1].UserID {
 		return message.GameErrorMessage(ErrMsgNotYetTurn), false
@@ -215,6 +276,38 @@ func (gl *GameLoader) HandleMessage(msg *message.GameMessage) (*message.GameMess
 		gl.Units[data.Y2][data.X2], gl.Units[data.Y1][data.X1] = gl.Units[data.Y1][data.X1], gl.Units[data.Y2][data.X2]
 		gl.Units[data.Y2][data.X2].ToggleUnitStateBit(objects.UnitStateBitMoved)
 		return msg, true
+	case message.CmdUnitAttack:
+		data := msg.Data.(*message.UnitAttackMessageData)
+		if errMsg := gl.validateUnitOwned(msg.Sender, data.Y1, data.X1); len(errMsg) > 0 {
+			return message.GameErrorMessage(errMsg), false
+		}
+		if _, ok := CmdWhiteListUnitAttack[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
+			return message.GameErrorMessage(ErrMsgUnitCmdNotAllowed), false
+		}
+		if gl.Units[data.Y1][data.X1].GetUnitStateBit(objects.UnitStateBitMoved) { // has this unit moved?
+			return message.GameErrorMessage(ErrMsgUnitAlreadyMoved), false
+		}
+		okAtk, distAtk := gl.GridEngine.ValidateAttack(data.Y1, data.X1, data.YT, data.XT, gl.Units[data.Y1][data.X1])
+		if !okAtk {
+			return message.GameErrorMessage(ErrMsgInvalidAttack), false
+		}
+		gl.Units[data.Y1][data.X1].ToggleUnitStateBit(objects.UnitStateBitMoved)
+		combat.NormalCombat(gl.Units[data.Y1][data.X1], gl.Units[data.YT][data.XT], distAtk)
+		replyMsg := &message.GameMessage{
+			Cmd:    msg.Cmd,
+			Sender: msg.Sender,
+			Data: &message.UnitAttackMessageDataExt{
+				Y1:    data.Y1,
+				X1:    data.X1,
+				YT:    data.YT,
+				XT:    data.XT,
+				HPAtk: gl.Units[data.Y1][data.X1].GetUnitHP(),
+				HPDef: gl.Units[data.YT][data.XT].GetUnitHP(),
+			},
+		}
+		gl.checkUnitAlive(data.Y1, data.X1)
+		gl.checkUnitAlive(data.YT, data.XT)
+		return replyMsg, true
 	case message.CmdUnitMoveAndAttack:
 		data := msg.Data.(*message.UnitMoveAndAttackMessageData)
 		if errMsg := gl.validateUnitOwned(msg.Sender, data.Y1, data.X1); len(errMsg) > 0 {
@@ -250,12 +343,8 @@ func (gl *GameLoader) HandleMessage(msg *message.GameMessage) (*message.GameMess
 				HPDef: gl.Units[data.YT][data.XT].GetUnitHP(),
 			},
 		}
-		if gl.Units[data.Y2][data.X2].GetUnitHP() == 0 {
-			gl.Units[data.Y2][data.X2] = nil
-		}
-		if gl.Units[data.YT][data.XT].GetUnitHP() == 0 {
-			gl.Units[data.YT][data.XT] = nil
-		}
+		gl.checkUnitAlive(data.Y2, data.X2)
+		gl.checkUnitAlive(data.YT, data.XT)
 		return replyMsg, true
 	case message.CmdEndTurn:
 		gl.nextTurn()

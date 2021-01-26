@@ -22,11 +22,6 @@ func (inf *Infantry) GetUnitType() int {
 	return UnitTypeInfantry
 }
 
-// GetWeight see function from Unit
-func (inf *Infantry) GetWeight() int {
-	return UnitWeightInfantry
-}
-
 // GetUnitOwner see function from Unit
 func (inf *Infantry) GetUnitOwner() int {
 	return inf.Owner
@@ -55,6 +50,36 @@ func (inf *Infantry) GetUnitHP() int {
 // SetUnitHP see function from Unit
 func (inf *Infantry) SetUnitHP(hp int) {
 	inf.HP = hp
+}
+
+// GetWeight see function from Unit
+func (inf *Infantry) GetWeight() int {
+	return UnitWeightInfantry
+}
+
+// GetMoveType see function from Unit
+func (inf *Infantry) GetMoveType() int {
+	return MoveTypeGround
+}
+
+// GetMoveRange see function from Unit
+func (inf *Infantry) GetMoveRange() int {
+	return UnitMoveRangeInfantry
+}
+
+// GetAttackType see function from Unit
+func (inf *Infantry) GetAttackType() int {
+	return AttackTypeGround
+}
+
+// GetAttackRange see function frmo Unit
+func (inf *Infantry) GetAttackRange() int {
+	return UnitAttackRangeInfantry
+}
+
+// GetAttackPower see function from Unit
+func (inf *Infantry) GetAttackPower() int {
+	return UnitAttackPowerInfantry
 }
 
 // StartTurn see function from Unit

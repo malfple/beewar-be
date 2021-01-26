@@ -9,6 +9,7 @@ func RegisterAuthRouter(router *mux.Router) {
 	router.HandleFunc("/login", HandleLogin).Methods("POST")
 	router.HandleFunc("/token", HandleToken).Methods("POST")
 	router.HandleFunc("/logout", HandleLogout).Methods("POST")
+	router.HandleFunc("/register", HandleRegister).Methods("POST")
 }
 
 // RefreshTokenCookieName is the cookie name that stores the refresh token
