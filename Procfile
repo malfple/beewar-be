@@ -1,1 +1,1 @@
-main: SERVER_ADDR=":$PORT" bin/main
+web: SERVER_ADDR=":$PORT" bin/main
