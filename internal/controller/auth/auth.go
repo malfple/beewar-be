@@ -19,3 +19,10 @@ func Login(username, password string) (string, string, int) {
 	// username and password is valid
 	return GenerateRefreshToken(user.ID, username), GenerateJWT(user.ID, username), http.StatusOK
 }
+
+// Register registers a new user with the provided credentials and returns status as err
+func Register(email, username, password string) error {
+	// for now, this is a somewhat useless function
+	// need to add validations for duplicate email and username and prevent access layer from handling it
+	return access.CreateUser(email, username, password)
+}
