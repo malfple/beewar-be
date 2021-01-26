@@ -2,7 +2,7 @@ package auth
 
 import (
 	"encoding/json"
-	"gitlab.com/beewar/beewar-be/internal/auth"
+	"gitlab.com/beewar/beewar-be/internal/controller/auth"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 	"net/http"
