@@ -128,7 +128,7 @@ func QueryMaps(limit, offset int) []*model.Map {
 	}
 	defer rows.Close()
 
-	var maps []*model.Map
+	maps := make([]*model.Map, 0)
 	for rows.Next() {
 		mapp := &model.Map{}
 		err := rows.Scan(

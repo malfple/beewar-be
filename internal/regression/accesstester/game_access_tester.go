@@ -63,6 +63,13 @@ func TestGameAccess() bool {
 		return false
 	}
 
+	// game users
+	if access.QueryUsersLinkedToGame(999999999) == nil {
+		logger.GetLogger().Error("should be empty array, not nil")
+	}
+	if access.QueryGamesLinkedToUser(999999999) == nil {
+		logger.GetLogger().Error("should be empty array, not nil")
+	}
 	players := access.QueryUsersLinkedToGame(gameID)
 	if len(players) != 2 || players[0].UserID != user1.ID || players[1].UserID != user2.ID {
 		logger.GetLogger().Error("error query users linked to game")

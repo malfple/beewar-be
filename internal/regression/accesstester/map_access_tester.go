@@ -46,15 +46,21 @@ func TestMapAccess() bool {
 	}
 
 	// batch queries
-	if !TestmapaccessQuerymaps() {
+	if !TestMapAccessQueryMaps() {
 		return false
 	}
 
 	return true
 }
 
-// TestmapaccessQuerymaps tests access.QueryMaps
-func TestmapaccessQuerymaps() bool {
+// TestMapAccessQueryMaps tests access.QueryMaps
+func TestMapAccessQueryMaps() bool {
+	// query 0 maps, should not be null
+	if access.QueryMaps(0, 0) == nil {
+		logger.GetLogger().Error("maps should be empty array, not nil")
+		return false
+	}
+
 	maps := access.QueryMaps(2, 0)
 	if len(maps) != 2 {
 		logger.GetLogger().Error("mismatch number of maps", zap.Int("expected", 2), zap.Int("found", len(maps)))

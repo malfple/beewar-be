@@ -47,7 +47,7 @@ func QueryUsersLinkedToGame(gameID uint64) []*model.GameUser {
 	}
 	defer rows.Close()
 
-	var res []*model.GameUser
+	res := make([]*model.GameUser, 0)
 	for rows.Next() {
 		gameUser := &model.GameUser{}
 		err := rows.Scan(
@@ -78,7 +78,7 @@ func QueryGamesLinkedToUser(userID uint64) []*model.GameUser {
 	}
 	defer rows.Close()
 
-	var res []*model.GameUser
+	res := make([]*model.GameUser, 0)
 	for rows.Next() {
 		gameUser := &model.GameUser{}
 		err := rows.Scan(
