@@ -1,1 +1,1 @@
-main: SERVER_ADDR=:80 bin/main
+main: SERVER_ADDR="0.0.0.0:$PORT" bin/main
