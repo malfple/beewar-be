@@ -1,0 +1,1 @@
+main: SERVER_ADDR=:80 bin/main
