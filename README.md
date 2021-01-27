@@ -1,6 +1,27 @@
 # BeeWar Backend
 
-## local quickstart
+## Quickstart
+
+Get golang (version, see go.mod)
+
+Get mysql server.
+
+```cassandraql
+// install dep
+go mod vendor
+// migration and seed. make a db named 'beewar' first
+mysql -u root(or username) -p beewar < tools/db/migration.sql
+go run tools/db/seeder_go.go
+// run the main service
+make run
+```
+
+Before commit, you can check everything using:
+```cassandraql
+make check
+```
+
+Check out `Makefile` to see what this command does and to see other useful commands!
 
 ## deploy to heroku, db4free.net
 
