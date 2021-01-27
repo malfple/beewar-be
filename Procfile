@@ -1,1 +1,2 @@
 web: SERVER_ADDR=":$PORT" DATABASE_USER="beewaradumin" DATABASE_PASSWORD="basedbeedata" DATABASE_ADDR="db4free.net:3306" bin/main
+seed: DATABASE_USER="beewaradumin" DATABASE_PASSWORD="basedbeedata" DATABASE_ADDR="db4free.net:3306" bin/db
