@@ -16,6 +16,7 @@ import (
 
 func main() {
 	logger.InitLogger()
+	configs.InitConfigs()
 	access.InitAccess()
 	gamemanager.InitGameManager()
 

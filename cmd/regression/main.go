@@ -43,9 +43,12 @@ func runMigration() bool {
 func prepareAndRun() int {
 	logger.InitLogger()
 	defer logger.ShutdownLogger()
+	configs.InitConfigs()
 
-	if err := os.Setenv(configs.EnvDatabaseName, regressionDatabaseName); err != nil {
-		logger.GetLogger().Error("error set env var", zap.String("env_var_name", configs.EnvDatabaseName))
+	// doing something that shouldn't have been done. But only for regression testing
+	configs.GetConfig().Database.Name = regressionDatabaseName
+	if configs.GetConfig().Database.Name != regressionDatabaseName {
+		logger.GetLogger().Error("error set database name")
 		return 1
 	}
 

@@ -2,6 +2,7 @@ package game
 
 import (
 	"github.com/gorilla/websocket"
+	"gitlab.com/beewar/beewar-be/configs"
 	"gitlab.com/beewar/beewar-be/internal/access"
 	"gitlab.com/beewar/beewar-be/internal/controller/auth"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager"
@@ -13,13 +14,11 @@ import (
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
-		// localhost route
-		if r.Header.Get("Origin") == "http://localhost:3000" {
-			return true
-		}
-		// heroku frontend
-		if r.Header.Get("Origin") == "https://beewar.herokuapp.com" {
-			return true
+		origin := r.Header.Get("Origin")
+		for _, allowedOrigin := range configs.GetConfig().AllowedOrigins {
+			if origin == allowedOrigin {
+				return true
+			}
 		}
 		return false
 	},

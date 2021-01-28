@@ -2,7 +2,11 @@
 
 ## Quickstart
 
-Get golang (version, see go.mod)
+Setup local config file: Copy `config.template.yml` to `config.yml`.
+This template config may be different for each person, so change it accordingly.
+You can also commit your own config file if you want (e.g. `config.malfple.yml`).
+
+Get golang (version, see `go.mod`)
 
 Get mysql server.
 
@@ -36,7 +40,8 @@ git push heroku master
 heroku logs --tail
 ```
 
-Database used is db4free.net. Credentials available in heroku Procfile. To migrate, run migration manually in provided phpMyAdmin from db4free
+Database used is db4free.net. Credentials available in heroku Procfile. To migrate, run migration manually in provided phpMyAdmin from db4free.
+Seeding however, is done inside the heroku container:
 
 ```cassandraql
 // seed from local

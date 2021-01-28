@@ -18,8 +18,9 @@ cmd/bin/
 # Dependency directories (remove the comment below to include it)
 vendor/
 
-# coverage files
+# coverage files and other local files
 *.cov
+config.yml
 
 # misc
 .DS_Store
