@@ -1,0 +1,6 @@
+database:
+  username: beewaradumin
+  password: basedbeedata
+  address: "db4free.net:3306"
+  name: beewar
+allowed_origins: ["https://beewar.herokuapp.com"]

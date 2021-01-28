@@ -1,26 +1,17 @@
 package configs
 
-import "os"
+import (
+	"gitlab.com/beewar/beewar-be/internal/logger"
+	"go.uber.org/zap"
+	"gopkg.in/yaml.v2"
+	"os"
+)
 
-// This file contains default configs
-
+// env configs
 const (
 	// EnvServerAddress defines an env variable name
 	EnvServerAddress     = "SERVER_ADDR"
 	defaultServerAddress = ":3001"
-
-	// EnvDatabaseUser defines an env variable name
-	EnvDatabaseUser     = "DATABASE_USER"
-	defaultDatabaseUser = "root"
-	// EnvDatabasePassword defines an env variable name
-	EnvDatabasePassword     = "DATABASE_PASSWORD"
-	defaultDatabasePassword = "malfplemac"
-	// EnvDatabaseAddress defines an env variable name
-	EnvDatabaseAddress     = "DATABASE_ADDR"
-	defaultDatabaseAddress = ":3306"
-	// EnvDatabaseName defines an env variable name
-	EnvDatabaseName     = "DATABASE_NAME"
-	defaultDatabaseName = "beewar"
 )
 
 // GetServerAddress returns server address
@@ -31,29 +22,52 @@ func GetServerAddress() string {
 	return defaultServerAddress
 }
 
-// GetDatabaseConfig returns database config: (user, password, database_name)
-func GetDatabaseConfig() (string, string, string, string) {
-	user := os.Getenv(EnvDatabaseUser)
-	pass := os.Getenv(EnvDatabasePassword)
-	addr := os.Getenv(EnvDatabaseAddress)
-	db := os.Getenv(EnvDatabaseName)
-	if user == "" {
-		user = defaultDatabaseUser
+// Config is a struct defining the config from yaml file for this project.
+// Please define the config in the config file thoroughly, because there are no null pointer checks
+type Config struct {
+	Database struct {
+		Username string `yaml:"username"`
+		Password string `yaml:"password"`
+		Address  string `yaml:"address"`
+		Name     string `yaml:"name"`
+	} `yaml:"database"`
+	AllowedOrigins []string `yaml:"allowed_origins"`
+}
+
+var config *Config
+
+// InitConfigs initializes global config struct
+func InitConfigs() {
+	logger.GetLogger().Info("init configs")
+	config = &Config{}
+
+	file, err := os.Open("config.yml")
+	if err != nil {
+		logger.GetLogger().Fatal("error load config.yml", zap.Error(err))
+		return
 	}
-	if pass == "" {
-		pass = defaultDatabasePassword
+	defer file.Close()
+
+	decoder := yaml.NewDecoder(file)
+	if err := decoder.Decode(&config); err != nil {
+		logger.GetLogger().Fatal("error decode config", zap.Error(err))
+		return
 	}
-	if addr == "" {
-		addr = defaultDatabaseAddress
+}
+
+// GetConfig returns the current config.
+// You should never change whatever is returned, because it's a pointer.
+func GetConfig() *Config {
+	if config == nil {
+		logger.GetLogger().Error("config not initialized")
 	}
-	if db == "" {
-		db = defaultDatabaseName
-	}
-	return user, pass, addr, db
+	return config
 }
 
 // GetDatabaseMySQLDataSourceName returns user, password, database_name combined into a convenient string for mysql
 func GetDatabaseMySQLDataSourceName() string {
-	user, pass, addr, db := GetDatabaseConfig()
-	return user + ":" + pass + "@(" + addr + ")/" + db
+	return config.Database.Username + ":" +
+		config.Database.Password + "@(" +
+		config.Database.Address + ")/" +
+		config.Database.Name
 }

@@ -3,6 +3,7 @@ package logger
 import (
 	"fmt"
 	"go.uber.org/zap"
+	"os"
 )
 
 // logger is the default logger
@@ -15,7 +16,7 @@ func InitLogger() {
 	if err != nil {
 		fmt.Println("failed to init logger!")
 		fmt.Println(err)
-		return
+		os.Exit(1)
 	}
 
 	defer func() {
