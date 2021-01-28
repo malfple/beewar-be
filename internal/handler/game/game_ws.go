@@ -17,6 +17,10 @@ var upgrader = websocket.Upgrader{
 		if r.Header.Get("Origin") == "http://localhost:3000" {
 			return true
 		}
+		// heroku frontend
+		if r.Header.Get("Origin") == "https://beewar.herokuapp.com" {
+			return true
+		}
 		return false
 	},
 	Subprotocols: []string{"game_room"},
