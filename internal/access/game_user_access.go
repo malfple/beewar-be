@@ -6,7 +6,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func linkGameToUser(gameID, userID uint64, playerOrder uint8) error {
+func createGameUser(gameID, userID uint64, playerOrder uint8) error {
 	// player order defines the player number of user `userID` in game `gameID`
 	const stmtLinkGameToUser = `INSERT INTO game_user_tab
 (game_id, user_id, player_order)
@@ -38,8 +38,8 @@ WHERE id=?`
 	return nil
 }
 
-// QueryUsersLinkedToGame return the game-user link information of a gameID
-func QueryUsersLinkedToGame(gameID uint64) []*model.GameUser {
+// QueryGameUsersByGameID return the game-user link information of a gameID
+func QueryGameUsersByGameID(gameID uint64) []*model.GameUser {
 	rows, err := db.Query(`SELECT * FROM game_user_tab WHERE game_id=?`, gameID)
 	if err != nil {
 		logger.GetLogger().Error("db: query error", zap.String("table", "game_user_tab"), zap.Error(err))
@@ -69,8 +69,8 @@ func QueryUsersLinkedToGame(gameID uint64) []*model.GameUser {
 	return res
 }
 
-// QueryGamesLinkedToUser return the game-user link information of a userID
-func QueryGamesLinkedToUser(userID uint64) []*model.GameUser {
+// QueryGameUsersByUserID return the game-user link information of a userID
+func QueryGameUsersByUserID(userID uint64) []*model.GameUser {
 	rows, err := db.Query(`SELECT * FROM game_user_tab WHERE user_id=?`, userID)
 	if err != nil {
 		logger.GetLogger().Error("db: query error", zap.String("table", "game_user_tab"), zap.Error(err))
