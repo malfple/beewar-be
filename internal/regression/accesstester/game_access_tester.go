@@ -64,19 +64,19 @@ func TestGameAccess() bool {
 	}
 
 	// game users
-	if access.QueryUsersLinkedToGame(999999999) == nil {
+	if access.QueryGameUsersByGameID(999999999) == nil {
 		logger.GetLogger().Error("should be empty array, not nil")
 	}
-	if access.QueryGamesLinkedToUser(999999999) == nil {
+	if access.QueryGameUsersByUserID(999999999) == nil {
 		logger.GetLogger().Error("should be empty array, not nil")
 	}
-	players := access.QueryUsersLinkedToGame(gameID)
+	players := access.QueryGameUsersByGameID(gameID)
 	if len(players) != 2 || players[0].UserID != user1.ID || players[1].UserID != user2.ID {
 		logger.GetLogger().Error("error query users linked to game")
 		return false
 	}
-	games1 := access.QueryGamesLinkedToUser(user1.ID)
-	games2 := access.QueryGamesLinkedToUser(user1.ID)
+	games1 := access.QueryGameUsersByUserID(user1.ID)
+	games2 := access.QueryGameUsersByUserID(user1.ID)
 	if games1[0].GameID != gameID || games1[0].GameID != games2[0].GameID {
 		logger.GetLogger().Error("error query games linked to user")
 		return false
@@ -98,7 +98,7 @@ func TestGameAccess() bool {
 	if err := access.UpdateGameUser(gameUserToUpdate); err != nil {
 		return false
 	}
-	games1again := access.QueryGamesLinkedToUser(user1.ID)
+	games1again := access.QueryGameUsersByUserID(user1.ID)
 	if games1again[0].FinalTurns != 69 || games1again[0].FinalRank != 1 {
 		logger.GetLogger().Error("mismatch update game user",
 			zap.Int32("actual final turns", games1again[0].FinalTurns),

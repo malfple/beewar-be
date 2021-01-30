@@ -53,7 +53,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 
 	// link game to users
 	for i, userID := range userIDs {
-		err := linkGameToUser(gameID, userID, uint8(i+1))
+		err := createGameUser(gameID, userID, uint8(i+1))
 		if err != nil {
 			return 0, err
 		}

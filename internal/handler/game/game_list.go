@@ -27,7 +27,7 @@ func HandleGameList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := &ListResponse{
-		GameUsers: access.QueryGamesLinkedToUser(userID),
+		GameUsers: access.QueryGameUsersByUserID(userID),
 	}
 
 	w.Header().Set("Content-Type", "application/json")

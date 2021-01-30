@@ -82,7 +82,7 @@ func NewGameLoader(gameID uint64) *GameLoader {
 		&gameLoader.Terrain,
 		&gameLoader.Units)
 	// load players
-	gameLoader.GameUsers = access.QueryUsersLinkedToGame(gameLoader.ID)
+	gameLoader.GameUsers = access.QueryGameUsersByGameID(gameLoader.ID)
 	userIDs := make([]uint64, len(gameLoader.GameUsers))
 	for i, gu := range gameLoader.GameUsers {
 		userIDs[i] = gu.UserID
