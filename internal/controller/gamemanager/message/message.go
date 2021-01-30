@@ -12,7 +12,8 @@ const (
 	CmdShutdown = "SHUTDOWN"
 	// CmdChat is a cmd for text chat. no restriction
 	CmdChat = "CHAT"
-	// CmdGameData is a cmd for sending game data. server-only
+	// CmdGameData is a cmd for sending game data. no restriction.
+	// If sent by client, it means client is requesting game data.
 	CmdGameData = "GAME_DATA"
 	// CmdError is a cmd for sending server error. server-only
 	CmdError = "ERROR"
@@ -70,6 +71,8 @@ func UnmarshalAndValidateGameMessage(rawPayload []byte, senderID uint64) (*GameM
 			return nil, err
 		}
 		message.Data = data
+	case CmdGameData:
+		// do nothing
 	case CmdUnitMove:
 		var data *UnitMoveMessageData
 		if err := json.Unmarshal(temp.Data, &data); err != nil {

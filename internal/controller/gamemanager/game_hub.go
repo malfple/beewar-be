@@ -40,17 +40,6 @@ func (hub *GameHub) RegisterClient(client *GameClient) error {
 			err = ErrClientDuplicate
 		} else {
 			hub.Clients[client.UserID] = client
-			// send game data
-			gameDataMsg := hub.GameLoader.GameData()
-			rawMsg, err := message.MarshalGameMessage(gameDataMsg)
-			if err != nil {
-				panic("shouldn't have errored when marshaling")
-			}
-			err = client.WS.WriteMessage(websocket.TextMessage, rawMsg)
-			if err != nil {
-				client.WS.Close()
-				delete(hub.Clients, client.UserID)
-			}
 		}
 	}
 	hub.Mutex.Unlock()
@@ -98,7 +87,10 @@ func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 		// process message
 		var resp *message.GameMessage
 		var isBroadcast = true
-		if _, ok := hub.GameLoader.UserIDToPlayerMap[msg.Sender]; !ok { // non-player
+		if msg.Cmd == message.CmdGameData { // any user can get game data
+			resp = hub.GameLoader.GameData()
+			isBroadcast = false
+		} else if _, ok := hub.GameLoader.UserIDToPlayerMap[msg.Sender]; !ok { // non-player
 			resp = message.GameErrorMessage(ErrMsgNotPlayer)
 			isBroadcast = false
 		} else if msg.Cmd == message.CmdChat {
