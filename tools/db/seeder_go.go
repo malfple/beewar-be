@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"gitlab.com/beewar/beewar-be/configs"
 	"gitlab.com/beewar/beewar-be/internal/access"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 )
 
 func main() {
 	logger.InitLogger()
+	configs.InitConfigs()
 	access.InitAccess()
 
 	// users
