@@ -66,8 +66,9 @@ func GetConfig() *Config {
 
 // GetDatabaseMySQLDataSourceName returns user, password, database_name combined into a convenient string for mysql
 func GetDatabaseMySQLDataSourceName() string {
-	return config.Database.Username + ":" +
-		config.Database.Password + "@(" +
-		config.Database.Address + ")/" +
-		config.Database.Name
+	c := GetConfig()
+	return c.Database.Username + ":" +
+		c.Database.Password + "@(" +
+		c.Database.Address + ")/" +
+		c.Database.Name
 }
