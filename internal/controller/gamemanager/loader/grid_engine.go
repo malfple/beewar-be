@@ -9,7 +9,7 @@ import (
 Terrain information in formatter/terrain_info.go
 
 Normal move
-BFS. Unit pass-through determined in objects/unit.go
+FillMoveGround. Unit pass-through determined in objects/unit.go
 
 
 The move pattern for each unit is defined in ValidateMove function
@@ -43,7 +43,7 @@ type GridEngine struct {
 	Terrain  *[][]int
 	Units    *[][]objects.Unit
 	dist     [][]int // distance matrix, used temporarily
-	posQueue []pos   // the queue used for bfs
+	posQueue []pos   // the queue used for shortest path
 }
 
 // NewGridEngine returns a new grid engine
@@ -70,10 +70,10 @@ func (ge *GridEngine) insideMap(y, x int) bool {
 	return y >= 0 && y < ge.Height && x >= 0 && x < ge.Width
 }
 
-// BFS does a breadth first search starting on (y, x) and fills dist array up to the required steps.
+// FillMoveGround does a breadth first search starting on (y, x) and fills dist array up to the required steps.
 // This is also constraint by the given owner and weight
 // WARNING: this function does not do validation checks
-func (ge *GridEngine) BFS(y, x, steps, owner, weight int) {
+func (ge *GridEngine) FillMoveGround(y, x, steps, owner, weight int) {
 	ge.dist[y][x] = 0
 	ge.posQueue = append(ge.posQueue, pos{y, x})
 	for len(ge.posQueue) > 0 {
@@ -111,10 +111,10 @@ func (ge *GridEngine) BFS(y, x, steps, owner, weight int) {
 	}
 }
 
-// BFSReset is similar to BFS but clears the dist array instead of filling it
-// it has to be used at the same spot when doing BFS
+// FillMoveGroundReset is similar to FillMoveGround but clears the dist array instead of filling it
+// it has to be used at the same spot when doing FillMoveGround
 // WARNING: this function does not do validation checks
-func (ge *GridEngine) BFSReset(y, x int) {
+func (ge *GridEngine) FillMoveGroundReset(y, x int) {
 	ge.dist[y][x] = -1
 	ge.posQueue = append(ge.posQueue, pos{y, x})
 	for len(ge.posQueue) > 0 {
@@ -137,14 +137,14 @@ func (ge *GridEngine) BFSReset(y, x int) {
 	}
 }
 
-// ValidateMoveNormal checks if a normal move from (y1, x1) to (y2, x2) with the required steps is valid
-// WARNING: does not validate positions or if a unit exists. Only validates move with BFS
-func (ge *GridEngine) ValidateMoveNormal(y1, x1, y2, x2, steps int) bool {
+// ValidateMoveGround checks if a normal move from (y1, x1) to (y2, x2) with the required steps is valid
+// WARNING: does not validate positions or if a unit exists. Only validates move with FillMoveGround
+func (ge *GridEngine) ValidateMoveGround(y1, x1, y2, x2, steps int) bool {
 	var reach bool
 	self := (*ge.Units)[y1][x1]
-	ge.BFS(y1, x1, steps, self.GetUnitOwner(), self.GetWeight())
+	ge.FillMoveGround(y1, x1, steps, self.GetUnitOwner(), self.GetWeight())
 	reach = ge.dist[y2][x2] != -1
-	ge.BFSReset(y1, x1)
+	ge.FillMoveGroundReset(y1, x1)
 	return reach
 }
 
@@ -165,7 +165,7 @@ func (ge *GridEngine) ValidateMove(y1, x1, y2, x2 int) bool {
 
 	switch unit := (*ge.Units)[y1][x1]; unit.GetMoveType() {
 	case objects.MoveTypeGround:
-		return ge.ValidateMoveNormal(y1, x1, y2, x2, unit.GetMoveRange())
+		return ge.ValidateMoveGround(y1, x1, y2, x2, unit.GetMoveRange())
 	default:
 		panic("panic validate move: unknown move type")
 	}

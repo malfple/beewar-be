@@ -51,7 +51,7 @@ const (
 const (
 	// MoveTypeNone means the unit cannot move
 	MoveTypeNone = 0
-	// MoveTypeGround is a normal ground move. BFS can be used to check this
+	// MoveTypeGround is a normal ground move. Shortest path can be used to check this
 	MoveTypeGround = 1
 )
 
