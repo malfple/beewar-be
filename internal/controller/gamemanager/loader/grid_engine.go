@@ -15,8 +15,8 @@ FillMoveGround. Unit pass-through determined in objects/unit.go
 The move pattern for each unit is defined in ValidateMove function
 */
 
-// defines position
-type pos struct {
+// Pos defines position
+type Pos struct {
 	Y int
 	X int
 }
@@ -38,12 +38,13 @@ func getAdjList(y, x int) ([]int, []int) {
 // GridEngine is a game engine for movement and attack range calculations
 // keep in mind that GridEngine should not edit the pointer to slices (treated as input only)
 type GridEngine struct {
-	Height   int
-	Width    int
-	Terrain  *[][]int
-	Units    *[][]objects.Unit
-	dist     [][]int // distance matrix, used temporarily
-	posQueue []pos   // the queue used for shortest path
+	Height  int
+	Width   int
+	Terrain *[][]int
+	Units   *[][]objects.Unit
+	dist    [][]int        // distance matrix, used temporarily
+	pqueue  *PriorityQueue // the priority_queue used for dijkstra
+	queue   []Pos          // the queue for bfs (to reset the dijkstra)
 }
 
 // NewGridEngine returns a new grid engine
@@ -54,6 +55,7 @@ func NewGridEngine(height, width int, terrain *[][]int, units *[][]objects.Unit)
 		Terrain: terrain,
 		Units:   units,
 		dist:    make([][]int, height),
+		pqueue:  NewPriorityQueue(),
 	}
 	for i := 0; i < height; i++ {
 		engine.dist[i] = make([]int, width)
@@ -70,17 +72,20 @@ func (ge *GridEngine) insideMap(y, x int) bool {
 	return y >= 0 && y < ge.Height && x >= 0 && x < ge.Width
 }
 
-// FillMoveGround does a breadth first search starting on (y, x) and fills dist array up to the required steps.
-// This is also constraint by the given owner and weight
-// WARNING: this function does not do validation checks
+// FillMoveGround does a Dijkstra starting on (y, x) and fills dist array up to the required steps.
+// This is also constraint by the given owner and weight.
+// WARNING: this function does not do validation checks.
 func (ge *GridEngine) FillMoveGround(y, x, steps, owner, weight int) {
-	ge.dist[y][x] = 0
-	ge.posQueue = append(ge.posQueue, pos{y, x})
-	for len(ge.posQueue) > 0 {
-		now := ge.posQueue[0]
-		ge.posQueue = ge.posQueue[1:]
+	ge.pqueue.Push(0, Pos{y, x})
+	for !ge.pqueue.Empty() {
+		d, now := ge.pqueue.Top()
+		ge.pqueue.Pop()
 
-		if ge.dist[now.Y][now.X] >= steps {
+		if ge.dist[now.Y][now.X] != -1 { // already visited
+			continue
+		}
+		ge.dist[now.Y][now.X] = d
+		if d == steps { // end of steps. break to optimize
 			continue
 		}
 
@@ -105,21 +110,23 @@ func (ge *GridEngine) FillMoveGround(y, x, steps, owner, weight int) {
 					continue
 				}
 			}
-			ge.dist[ty][tx] = ge.dist[now.Y][now.X] + 1
-			ge.posQueue = append(ge.posQueue, pos{ty, tx})
+			if d+1 <= steps {
+				ge.pqueue.Push(d+1, Pos{ty, tx})
+			}
 		}
 	}
 }
 
-// FillMoveGroundReset is similar to FillMoveGround but clears the dist array instead of filling it
-// it has to be used at the same spot when doing FillMoveGround
-// WARNING: this function does not do validation checks
+// FillMoveGroundReset is similar to FillMoveGround but clears the dist array instead of filling it.
+// It has to be used at the same spot when doing FillMoveGround.
+// It also uses BFS instead of Dijkstra (because we don't need dijkstra to clear).
+// WARNING: this function does not do validation checks.
 func (ge *GridEngine) FillMoveGroundReset(y, x int) {
 	ge.dist[y][x] = -1
-	ge.posQueue = append(ge.posQueue, pos{y, x})
-	for len(ge.posQueue) > 0 {
-		now := ge.posQueue[0]
-		ge.posQueue = ge.posQueue[1:]
+	ge.queue = append(ge.queue, Pos{y, x})
+	for len(ge.queue) > 0 {
+		now := ge.queue[0]
+		ge.queue = ge.queue[1:]
 
 		cy, cx := getAdjList(now.Y, now.X)
 		for k := 0; k < K; k++ {
@@ -132,7 +139,7 @@ func (ge *GridEngine) FillMoveGroundReset(y, x int) {
 				continue
 			}
 			ge.dist[ty][tx] = -1
-			ge.posQueue = append(ge.posQueue, pos{ty, tx})
+			ge.queue = append(ge.queue, Pos{ty, tx})
 		}
 	}
 }
