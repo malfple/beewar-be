@@ -3,6 +3,8 @@ package auth
 import (
 	"errors"
 	"gitlab.com/beewar/beewar-be/internal/access"
+	"gitlab.com/beewar/beewar-be/internal/logger"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 )
@@ -43,5 +45,10 @@ func Register(email, username, password string) error {
 		return ErrPasswordLength
 	}
 	// need to add validations for duplicate email and username and prevent access layer from handling it
-	return access.CreateUser(email, username, password)
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		logger.GetLogger().Error("error bcrypt", zap.Error(err))
+		return err
+	}
+	return access.CreateUser(email, username, string(passwordHash))
 }

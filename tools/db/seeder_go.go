@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gitlab.com/beewar/beewar-be/configs"
 	"gitlab.com/beewar/beewar-be/internal/access"
+	"gitlab.com/beewar/beewar-be/internal/controller/auth"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 )
 
@@ -13,10 +14,10 @@ func main() {
 	access.InitAccess()
 
 	// users
-	_ = access.CreateUser("malfple@user.com", "malfple", "malfplesecret")
-	_ = access.CreateUser("rapel@user.com", "rapel", "rapelsecret")
-	_ = access.CreateUser("sebas@user.com", "sebas", "sebassecret")
-	_ = access.CreateUser("kyon@user.com", "kyon", "kyonsecret")
+	_ = auth.Register("malfple@user.com", "malfple", "malfplesecret")
+	_ = auth.Register("rapel@user.com", "rapel", "rapelsecret")
+	_ = auth.Register("sebas@user.com", "sebas", "sebassecret")
+	_ = auth.Register("kyon@user.com", "kyon", "kyonsecret")
 
 	// map 1
 	if access.QueryMapByID(1) == nil {

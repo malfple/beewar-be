@@ -6,19 +6,12 @@ import (
 	"gitlab.com/beewar/beewar-be/internal/access/model"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
-	"golang.org/x/crypto/bcrypt"
 )
 
-// CreateUser creates a new user
+// CreateUser creates a new user. password has to be already hashed
 func CreateUser(email, username, password string) error {
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		logger.GetLogger().Error("error bcrypt", zap.Error(err))
-		return err
-	}
-
-	_, err = db.Exec(`INSERT INTO user_tab(email, username, password, time_created) VALUES (?, ?, ?, UNIX_TIMESTAMP())`,
-		email, username, passwordHash)
+	_, err := db.Exec(`INSERT INTO user_tab(email, username, password, time_created) VALUES (?, ?, ?, UNIX_TIMESTAMP())`,
+		email, username, password)
 	if err != nil {
 		logger.GetLogger().Error("db: insert error", zap.String("table", "user_tab"), zap.Error(err))
 		return err
