@@ -34,10 +34,12 @@ install heroku cli, add remote to the heroku git repo (`heroku/master`)
 in `origin/master` branch,
 
 ```cassandraql
+// add remote
+heroku git:remote -a beewar-be
 // deploy
 git push heroku master
 // see logs
-heroku logs --tail
+heroku logs --tail -a beewar-be
 ```
 
 Database used is db4free.net. Credentials available in heroku Procfile. To migrate, run migration manually in provided phpMyAdmin from db4free.
