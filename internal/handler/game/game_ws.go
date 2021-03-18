@@ -20,6 +20,7 @@ var upgrader = websocket.Upgrader{
 				return true
 			}
 		}
+		logger.GetLogger().Debug("ws: origin not allowed", zap.String("origin", origin))
 		return false
 	},
 	Subprotocols: []string{"game_room"},
