@@ -3,4 +3,4 @@ database:
   password: basedbeedata
   address: "db4free.net:3306"
   name: beewar
-allowed_origins: ["https://beewar.herokuapp.com"]
+allowed_origins: ["http://beewar.herokuapp.com", "https://beewar.herokuapp.com"]
