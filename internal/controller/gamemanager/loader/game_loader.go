@@ -2,11 +2,11 @@ package loader
 
 import (
 	"gitlab.com/beewar/beewar-be/internal/access"
-	"gitlab.com/beewar/beewar-be/internal/access/formatter"
-	"gitlab.com/beewar/beewar-be/internal/access/formatter/objects"
 	"gitlab.com/beewar/beewar-be/internal/access/model"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/combat"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/formatter"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/message"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/objects"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 )

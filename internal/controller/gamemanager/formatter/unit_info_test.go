@@ -2,7 +2,7 @@ package formatter
 
 import (
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/beewar/beewar-be/internal/access/formatter/objects"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/objects"
 	"testing"
 )
 

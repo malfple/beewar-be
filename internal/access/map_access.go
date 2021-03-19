@@ -3,8 +3,8 @@ package access
 import (
 	"database/sql"
 	"errors"
-	"gitlab.com/beewar/beewar-be/internal/access/formatter"
 	"gitlab.com/beewar/beewar-be/internal/access/model"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/formatter"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 )

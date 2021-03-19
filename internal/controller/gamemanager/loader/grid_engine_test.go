@@ -2,7 +2,7 @@ package loader
 
 import (
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/beewar/beewar-be/internal/access/formatter"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/formatter"
 	"gitlab.com/beewar/beewar-be/internal/utils"
 	"testing"
 )
