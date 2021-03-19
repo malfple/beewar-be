@@ -20,7 +20,7 @@ vendor/
 
 # coverage files and other local files
 *.cov
-config.yml
+config.json
 
 # misc
 .DS_Store
