@@ -3,7 +3,6 @@ package access
 import (
 	"database/sql"
 	"errors"
-	"gitlab.com/beewar/beewar-be/internal/access/formatter"
 	"gitlab.com/beewar/beewar-be/internal/access/model"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
@@ -65,10 +64,6 @@ VALUES (?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 // UpdateGame saves a game model to db.
 // only updates updatable fields
 func UpdateGame(game *model.Game) error {
-	if err := formatter.ValidateUnitInfo(game.Height, game.Width, game.UnitInfo); err != nil {
-		return err
-	}
-
 	const stmtUpdateGame = `UPDATE game_tab
 SET unit_info=?, turn_count=?, turn_player=?, time_modified=UNIX_TIMESTAMP()
 WHERE id=?`

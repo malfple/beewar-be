@@ -121,6 +121,10 @@ func (gl *GameLoader) ToModel() *model.Game {
 // SaveToDB saves the current game object to db
 func (gl *GameLoader) SaveToDB() error {
 	gameModel := gl.ToModel()
+	if err := formatter.ValidateUnitInfo(gameModel.Height, gameModel.Width, gameModel.UnitInfo); err != nil {
+		logger.GetLogger().Error("loader: fail unit info validation when saving", zap.Error(err))
+		return err
+	}
 	if err := access.UpdateGame(gameModel); err != nil {
 		logger.GetLogger().Error("loader: error save game to db", zap.Error(err))
 		return err
