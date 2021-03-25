@@ -1,10 +1,9 @@
 package configs
 
 import (
-	"encoding/json"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
-	"io/ioutil"
+	"gopkg.in/yaml.v2"
 	"os"
 )
 
@@ -23,16 +22,16 @@ func GetServerAddress() string {
 	return defaultServerAddress
 }
 
-// Config is a struct defining the config from json file for this project.
-// Please define the config in the config file thoroughly, because there are no null pointer checks.
+// Config is a struct defining the config from yaml file for this project.
+// Please define the config in the config file thoroughly, because there are no null pointer checks
 type Config struct {
 	Database struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-		Address  string `json:"address"`
-		Name     string `json:"name"`
-	} `json:"database"`
-	AllowedOrigins []string `json:"allowed_origins"`
+		Username string `yaml:"username"`
+		Password string `yaml:"password"`
+		Address  string `yaml:"address"`
+		Name     string `yaml:"name"`
+	} `yaml:"database"`
+	AllowedOrigins []string `yaml:"allowed_origins"`
 }
 
 var config *Config
@@ -42,16 +41,16 @@ func InitConfigs() {
 	logger.GetLogger().Info("init configs")
 	config = &Config{}
 
-	file, err := os.Open("config.json")
+	file, err := os.Open("config.yml")
 	if err != nil {
-		logger.GetLogger().Fatal("error load config.json", zap.Error(err))
+		logger.GetLogger().Fatal("error load config.yml", zap.Error(err))
 		return
 	}
 	defer file.Close()
 
-	byteVal, _ := ioutil.ReadAll(file)
-	if err := json.Unmarshal(byteVal, &config); err != nil {
-		logger.GetLogger().Fatal("error json unmarshal config", zap.Error(err))
+	decoder := yaml.NewDecoder(file)
+	if err := decoder.Decode(&config); err != nil {
+		logger.GetLogger().Fatal("error decode config", zap.Error(err))
 		return
 	}
 }

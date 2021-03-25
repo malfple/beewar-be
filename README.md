@@ -2,9 +2,9 @@
 
 ## Quickstart
 
-Setup local config file: Copy `config.template.json` to `config.json`.
+Setup local config file: Copy `config.template.yml` to `config.yml`.
 This template config may be different for each person, so change it accordingly.
-You can also commit your own config file if you want (e.g. `config.malfple.json`).
+You can also commit your own config file if you want (e.g. `config.malfple.yml`).
 
 Get golang (version, see `go.mod`)
 
