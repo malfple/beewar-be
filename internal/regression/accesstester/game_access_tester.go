@@ -44,7 +44,7 @@ func TestGameAccess() bool {
 	}
 
 	// game
-	gameID, err := access.CreateGameFromMap(mapID, []uint64{user1.ID, user2.ID})
+	gameID, err := access.CreateGameFromMap(mapID, []uint64{user2.ID, user1.ID})
 	if err != nil {
 		logger.GetLogger().Error("error create game from map", zap.Error(err))
 		return false
@@ -71,7 +71,7 @@ func TestGameAccess() bool {
 		logger.GetLogger().Error("should be empty array, not nil")
 	}
 	players := access.QueryGameUsersByGameID(gameID)
-	if len(players) != 2 || players[0].UserID != user1.ID || players[1].UserID != user2.ID {
+	if len(players) != 2 || players[0].UserID != user2.ID || players[1].UserID != user1.ID {
 		logger.GetLogger().Error("error query users linked to game")
 		return false
 	}
