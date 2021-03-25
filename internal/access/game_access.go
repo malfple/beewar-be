@@ -52,7 +52,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 
 	// link game to users
 	for i, userID := range userIDs {
-		err := createGameUser(gameID, userID, uint8(i+1))
+		err := CreateGameUser(gameID, userID, uint8(i+1))
 		if err != nil {
 			return 0, err
 		}
@@ -61,8 +61,14 @@ VALUES (?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 	return gameID, nil
 }
 
-// UpdateGame saves a game model to db.
-// only updates updatable fields
+/*
+UpdateGame saves a game model to db.
+
+only updates updatable fields:
+ - unit_info
+ - turn_count
+ - turn_player
+*/
 func UpdateGame(game *model.Game) error {
 	const stmtUpdateGame = `UPDATE game_tab
 SET unit_info=?, turn_count=?, turn_player=?, time_modified=UNIX_TIMESTAMP()

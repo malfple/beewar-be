@@ -6,7 +6,8 @@ import (
 	"go.uber.org/zap"
 )
 
-func createGameUser(gameID, userID uint64, playerOrder uint8) error {
+// CreateGameUser creates a game - user link.
+func CreateGameUser(gameID, userID uint64, playerOrder uint8) error {
 	// player order defines the player number of user `userID` in game `gameID`
 	const stmtLinkGameToUser = `INSERT INTO game_user_tab
 (game_id, user_id, player_order)
