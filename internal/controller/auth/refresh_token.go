@@ -7,6 +7,9 @@ import (
 
 // we use uuid for refresh token
 
+// RefreshTokenCookieName is the cookie name that stores the refresh token
+const RefreshTokenCookieName = "beewar-rtoken"
+
 // 7 days expiry time
 const refreshTokenExpiry = 168 * time.Hour
 

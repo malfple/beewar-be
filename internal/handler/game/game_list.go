@@ -12,14 +12,7 @@ import (
 
 // HandleGameList handles request to get a list of games from a user
 func HandleGameList(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	if err != nil {
-		logger.GetLogger().Error("error parse form", zap.Error(err))
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	accessToken := r.Form.Get("token")
+	accessToken := r.Header.Get(auth.AccessTokenHeaderName)
 	userID, _, err := auth.ValidateJWT(accessToken)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
