@@ -62,23 +62,73 @@ VALUES (?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 }
 
 /*
-UpdateGame saves a game model to db.
+UpdateGameUsingTx saves a game model to db. If given transaction is nil, db will be used directly.
 
 only updates updatable fields:
  - unit_info
  - turn_count
  - turn_player
 */
-func UpdateGame(game *model.Game) error {
+func UpdateGameUsingTx(tx *sql.Tx, game *model.Game) error {
 	const stmtUpdateGame = `UPDATE game_tab
 SET unit_info=?, turn_count=?, turn_player=?, time_modified=UNIX_TIMESTAMP()
 WHERE id=?`
 
-	_, err := db.Exec(stmtUpdateGame,
-		game.UnitInfo, game.TurnCount, game.TurnPlayer,
-		game.ID)
+	var err error
+	if tx == nil {
+		_, err = db.Exec(stmtUpdateGame,
+			game.UnitInfo, game.TurnCount, game.TurnPlayer,
+			game.ID)
+	} else {
+		_, err = tx.Exec(stmtUpdateGame,
+			game.UnitInfo, game.TurnCount, game.TurnPlayer,
+			game.ID)
+	}
 	if err != nil {
 		logger.GetLogger().Error("db: update error", zap.String("table", "game_tab"), zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+/*
+UpdateGameAndGameUser saves a game model, and the game users related to it to db.
+
+only updates updatable fields (game):
+ - unit_info
+ - turn_count
+ - turn_player
+only updates updatable fields (game user):
+ - final_rank
+ - final_turns
+*/
+func UpdateGameAndGameUser(game *model.Game, gameUsers []*model.GameUser) error {
+	tx, err := db.Begin()
+	if err != nil {
+		logger.GetLogger().Error("db: begin transaction error", zap.Error(err))
+		return err
+	}
+
+	if err = UpdateGameUsingTx(tx, game); err != nil {
+		if rollbackErr := tx.Rollback(); rollbackErr != nil {
+			logger.GetLogger().Error("db: fail to rollback", zap.Error(rollbackErr))
+			return rollbackErr
+		}
+		return err
+	}
+
+	for _, gu := range gameUsers {
+		if err = UpdateGameUserUsingTx(tx, gu); err != nil {
+			if rollbackErr := tx.Rollback(); rollbackErr != nil {
+				logger.GetLogger().Error("db: fail to rollback", zap.Error(rollbackErr))
+				return rollbackErr
+			}
+			return err
+		}
+	}
+
+	if err = tx.Commit(); err != nil {
+		logger.GetLogger().Error("db: commit transaction error", zap.Error(err))
 		return err
 	}
 	return nil

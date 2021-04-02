@@ -125,15 +125,9 @@ func (gl *GameLoader) SaveToDB() error {
 		logger.GetLogger().Error("loader: fail unit info validation when saving", zap.Error(err))
 		return err
 	}
-	if err := access.UpdateGame(gameModel); err != nil {
+	if err := access.UpdateGameAndGameUser(gameModel, gl.GameUsers); err != nil {
 		logger.GetLogger().Error("loader: error save game to db", zap.Error(err))
 		return err
-	}
-	for _, gu := range gl.GameUsers {
-		if err := access.UpdateGameUser(gu); err != nil {
-			logger.GetLogger().Error("loader: error save game_user to db", zap.Error(err))
-			return err
-		}
 	}
 	return nil
 }

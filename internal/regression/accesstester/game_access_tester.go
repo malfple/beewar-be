@@ -57,7 +57,7 @@ func TestGameAccess() bool {
 	game.TurnPlayer = 2
 	game.TurnCount = 1
 	game.UnitInfo = append(game.UnitInfo, []byte{1, 2, 1, 1, 10, 0}...)
-	err = access.UpdateGame(game)
+	err = access.UpdateGameUsingTx(nil, game)
 	if err != nil {
 		logger.GetLogger().Error("error update game", zap.Error(err))
 		return false
@@ -95,7 +95,7 @@ func TestGameAccess() bool {
 	gameUserToUpdate := games1[0]
 	gameUserToUpdate.FinalTurns = 69
 	gameUserToUpdate.FinalRank = 1
-	if err := access.UpdateGameUser(gameUserToUpdate); err != nil {
+	if err := access.UpdateGameUserUsingTx(nil, gameUserToUpdate); err != nil {
 		return false
 	}
 	games1again := access.QueryGameUsersByUserID(user1.ID)
@@ -103,6 +103,13 @@ func TestGameAccess() bool {
 		logger.GetLogger().Error("mismatch update game user",
 			zap.Int32("actual final turns", games1again[0].FinalTurns),
 			zap.Uint8("actual final rank", games1again[0].FinalRank))
+	}
+
+	// combined updates
+	game = access.QueryGameByID(gameID)
+	players = access.QueryGameUsersByGameID(gameID)
+	if err := access.UpdateGameAndGameUser(game, players); err != nil {
+		return false
 	}
 
 	return true

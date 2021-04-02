@@ -1,6 +1,7 @@
 package access
 
 import (
+	"database/sql"
 	"gitlab.com/beewar/beewar-be/internal/access/model"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
@@ -23,20 +24,27 @@ VALUES (?, ?, ?)`
 }
 
 /*
-UpdateGameUser saves a gameUser model to db
+UpdateGameUserUsingTx saves a gameUser model to db. If given transaction is nil, db will be used directly.
 
 only updates updatable fields:
  - final_rank
  - final_turns
 */
-func UpdateGameUser(gameUser *model.GameUser) error {
+func UpdateGameUserUsingTx(tx *sql.Tx, gameUser *model.GameUser) error {
 	const stmtUpdateGameUser = `UPDATE game_user_tab
 SET final_rank=?, final_turns=?
 WHERE id=?`
 
-	_, err := db.Exec(stmtUpdateGameUser,
-		gameUser.FinalRank, gameUser.FinalTurns,
-		gameUser.ID)
+	var err error
+	if tx == nil {
+		_, err = db.Exec(stmtUpdateGameUser,
+			gameUser.FinalRank, gameUser.FinalTurns,
+			gameUser.ID)
+	} else {
+		_, err = tx.Exec(stmtUpdateGameUser,
+			gameUser.FinalRank, gameUser.FinalTurns,
+			gameUser.ID)
+	}
 	if err != nil {
 		logger.GetLogger().Error("db: update error", zap.String("table", "game_user_tab"), zap.Error(err))
 		return err
