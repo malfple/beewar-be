@@ -46,8 +46,8 @@ func prepareAndRun() int {
 	configs.InitConfigs()
 
 	// doing something that shouldn't have been done. But only for regression testing
-	configs.GetConfig().Database.Name = regressionDatabaseName
-	if configs.GetConfig().Database.Name != regressionDatabaseName {
+	configs.GetServerConfig().Database.Name = regressionDatabaseName
+	if configs.GetServerConfig().Database.Name != regressionDatabaseName {
 		logger.GetLogger().Error("error set database name")
 		return 1
 	}

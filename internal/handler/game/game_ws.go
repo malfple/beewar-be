@@ -15,7 +15,7 @@ import (
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		origin := r.Header.Get("Origin")
-		for _, allowedOrigin := range configs.GetConfig().AllowedOrigins {
+		for _, allowedOrigin := range configs.GetServerConfig().AllowedOrigins {
 			if origin == allowedOrigin {
 				return true
 			}
