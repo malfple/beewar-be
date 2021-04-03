@@ -43,6 +43,7 @@ CREATE TABLE game_tab(
     terrain_info BLOB,
     unit_info BLOB,
     map_id BIGINT UNSIGNED NOT NULL,
+    status TINYINT NOT NULL DEFAULT 0,
     turn_count INT NOT NULL DEFAULT 1,
     turn_player TINYINT NOT NULL DEFAULT 1,
     time_created BIGINT NOT NULL,

@@ -66,22 +66,23 @@ UpdateGameUsingTx saves a game model to db. If given transaction is nil, db will
 
 only updates updatable fields:
  - unit_info
+ - status
  - turn_count
  - turn_player
 */
 func UpdateGameUsingTx(tx *sql.Tx, game *model.Game) error {
 	const stmtUpdateGame = `UPDATE game_tab
-SET unit_info=?, turn_count=?, turn_player=?, time_modified=UNIX_TIMESTAMP()
+SET unit_info=?, status=?, turn_count=?, turn_player=?, time_modified=UNIX_TIMESTAMP()
 WHERE id=?`
 
 	var err error
 	if tx == nil {
 		_, err = db.Exec(stmtUpdateGame,
-			game.UnitInfo, game.TurnCount, game.TurnPlayer,
+			game.UnitInfo, game.Status, game.TurnCount, game.TurnPlayer,
 			game.ID)
 	} else {
 		_, err = tx.Exec(stmtUpdateGame,
-			game.UnitInfo, game.TurnCount, game.TurnPlayer,
+			game.UnitInfo, game.Status, game.TurnCount, game.TurnPlayer,
 			game.ID)
 	}
 	if err != nil {
@@ -96,6 +97,7 @@ UpdateGameAndGameUser saves a game model, and the game users related to it to db
 
 only updates updatable fields (game):
  - unit_info
+ - status
  - turn_count
  - turn_player
 only updates updatable fields (game user):
@@ -148,6 +150,7 @@ func QueryGameByID(gameID uint64) *model.Game {
 		&game.TerrainInfo,
 		&game.UnitInfo,
 		&game.MapID,
+		&game.Status,
 		&game.TurnCount,
 		&game.TurnPlayer,
 		&game.TimeCreated,
