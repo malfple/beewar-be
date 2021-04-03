@@ -41,8 +41,16 @@ func main() {
 	access.InitAccess()
 	defer access.ShutdownAccess()
 
-	if !runMigration() {
+	fmt.Println("run migration? (y/n)")
+	var response string
+	if _, err := fmt.Scanln(&response); err != nil {
+		fmt.Println(err)
 		return
+	}
+	if response == "y" {
+		if !runMigration() {
+			return
+		}
 	}
 
 	// users
