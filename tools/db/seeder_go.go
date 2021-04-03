@@ -6,12 +6,44 @@ import (
 	"gitlab.com/beewar/beewar-be/internal/access"
 	"gitlab.com/beewar/beewar-be/internal/controller/auth"
 	"gitlab.com/beewar/beewar-be/internal/logger"
+	"go.uber.org/zap"
+	"io/ioutil"
+	"strings"
 )
+
+func runMigration() bool {
+	logger.GetLogger().Info("run db migration to prepare tables")
+	// load migration file
+	migrationFile, err := ioutil.ReadFile("tools/db/migration.sql")
+	if err != nil {
+		logger.GetLogger().Error("error open migration file", zap.Error(err))
+		return false
+	}
+	// split statements
+	migrationStmts := strings.Split(string(migrationFile), ";\n")
+	// exclude the last one, which is empty
+	migrationStmts = migrationStmts[:len(migrationStmts)-1]
+	// run migration
+	for _, stmt := range migrationStmts {
+		_, err := access.GetDBClient().Exec(stmt)
+		if err != nil {
+			logger.GetLogger().Error("error running migration", zap.Error(err))
+			return false
+		}
+	}
+	return true
+}
 
 func main() {
 	logger.InitLogger()
+	defer logger.ShutdownLogger()
 	configs.InitConfigs()
 	access.InitAccess()
+	defer access.ShutdownAccess()
+
+	if !runMigration() {
+		return
+	}
 
 	// users
 	_ = auth.Register("malfple@user.com", "malfple", "malfplesecret")
@@ -119,7 +151,4 @@ func main() {
 		gameID, _ := access.CreateGameFromMap(2, []uint64{4, 3, 2, 1})
 		fmt.Printf("create game with id %d \n", gameID)
 	}
-
-	access.ShutdownAccess()
-	logger.ShutdownLogger()
 }
