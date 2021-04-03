@@ -60,5 +60,5 @@ CREATE TABLE game_user_tab(
     final_turns INT NOT NULL DEFAULT 0,
     PRIMARY KEY (id),
     INDEX idx_game_id (game_id, player_order),
-    INDEX idx_user_id (user_id)
+    INDEX idx_user_game_id (user_id, game_id)
 );
