@@ -12,14 +12,13 @@ var (
 	errGameDoesNotExist = errors.New("game does not exist")
 )
 
-// CreateGame creates a new game
-func CreateGame(mapID uint64) error {
-	mapp := access.QueryMapByID(mapID)
-	if mapp == nil {
-		return errMapDoesNotExist
+// CreateGame creates a new game with the given map id
+func CreateGame(mapID uint64) (uint64, error) {
+	mapModel := access.QueryMapByID(mapID)
+	if mapModel == nil {
+		return 0, errMapDoesNotExist
 	}
-	// TODO: call access to create game
-	return nil
+	return access.CreateGameFromMap(mapModel)
 }
 
 // RegisterForGame registers/links user to game

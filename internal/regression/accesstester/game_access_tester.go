@@ -16,6 +16,7 @@ func TestGameAccess() bool {
 	if err != nil {
 		return false
 	}
+	mapModel := access.QueryMapByID(mapID)
 
 	terrain1 := make([]byte, 100)
 	for i := 0; i < 10; i++ {
@@ -44,10 +45,17 @@ func TestGameAccess() bool {
 	}
 
 	// game
-	gameID, err := access.CreateGameFromMap(mapID, []uint64{user2.ID, user1.ID})
+	gameID, err := access.CreateGameFromMap(mapModel)
 	if err != nil {
 		logger.GetLogger().Error("error create game from map", zap.Error(err))
 		return false
+	}
+	for i, userID := range []uint64{user2.ID, user1.ID} {
+		err = access.CreateGameUser(gameID, userID, uint8(i+1))
+		if err != nil {
+			logger.GetLogger().Error("error link game", zap.Error(err), zap.Uint64("user_id", userID))
+			return false
+		}
 	}
 	game := access.QueryGameByID(gameID)
 	if game == nil {

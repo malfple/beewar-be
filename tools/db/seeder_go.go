@@ -95,7 +95,10 @@ func main() {
 
 	// game 1
 	if access.QueryGameByID(1) == nil {
-		gameID, _ := access.CreateGameFromMap(1, []uint64{2, 4})
+		map1 := access.QueryMapByID(1)
+		gameID, _ := access.CreateGameFromMap(map1)
+		_ = access.CreateGameUser(gameID, 2, 1)
+		_ = access.CreateGameUser(gameID, 4, 2)
 		fmt.Printf("create game with id %d \n", gameID)
 	}
 
@@ -156,7 +159,12 @@ func main() {
 			terrainInfo, unitInfo)
 	}
 	if access.QueryGameByID(2) == nil {
-		gameID, _ := access.CreateGameFromMap(2, []uint64{4, 3, 2, 1})
+		map2 := access.QueryMapByID(2)
+		gameID, _ := access.CreateGameFromMap(map2)
+		_ = access.CreateGameUser(gameID, 4, 1)
+		_ = access.CreateGameUser(gameID, 3, 2)
+		_ = access.CreateGameUser(gameID, 2, 3)
+		_ = access.CreateGameUser(gameID, 1, 4)
 		fmt.Printf("create game with id %d \n", gameID)
 	}
 }
