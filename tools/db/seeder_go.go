@@ -96,7 +96,7 @@ func main() {
 	// game 1
 	if access.QueryGameByID(1) == nil {
 		map1 := access.QueryMapByID(1)
-		gameID, _ := access.CreateGameFromMap(map1)
+		gameID, _ := access.CreateGameFromMap(map1, "")
 		_ = access.CreateGameUser(gameID, 2, 1)
 		_ = access.CreateGameUser(gameID, 4, 2)
 		fmt.Printf("create game with id %d \n", gameID)
@@ -160,7 +160,7 @@ func main() {
 	}
 	if access.QueryGameByID(2) == nil {
 		map2 := access.QueryMapByID(2)
-		gameID, _ := access.CreateGameFromMap(map2)
+		gameID, _ := access.CreateGameFromMap(map2, "")
 		_ = access.CreateGameUser(gameID, 4, 1)
 		_ = access.CreateGameUser(gameID, 3, 2)
 		_ = access.CreateGameUser(gameID, 2, 3)

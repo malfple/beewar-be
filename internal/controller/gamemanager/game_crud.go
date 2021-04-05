@@ -18,7 +18,7 @@ func CreateGame(mapID uint64) (uint64, error) {
 	if mapModel == nil {
 		return 0, errMapDoesNotExist
 	}
-	return access.CreateGameFromMap(mapModel)
+	return access.CreateGameFromMap(mapModel, "")
 }
 
 // RegisterForGame registers/links user to game

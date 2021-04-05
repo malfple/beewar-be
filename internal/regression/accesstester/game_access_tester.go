@@ -45,7 +45,7 @@ func TestGameAccess() bool {
 	}
 
 	// game
-	gameID, err := access.CreateGameFromMap(mapModel)
+	gameID, err := access.CreateGameFromMap(mapModel, "")
 	if err != nil {
 		logger.GetLogger().Error("error create game from map", zap.Error(err))
 		return false
