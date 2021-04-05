@@ -10,7 +10,6 @@ type Game struct {
 	TerrainInfo  []byte `json:"terrain_info"`
 	UnitInfo     []byte `json:"unit_info"`
 	MapID        uint64 `json:"map_id"`
-	IsPrivate    bool   `json:"is_private"`
 	Password     string `json:"password"`
 	Status       int8   `json:"status"`
 	TurnCount    int32  `json:"turn_count"`

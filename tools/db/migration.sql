@@ -43,7 +43,6 @@ CREATE TABLE game_tab(
     terrain_info BLOB,
     unit_info BLOB,
     map_id BIGINT UNSIGNED NOT NULL,
-    is_private BOOLEAN NOT NULL,
     password VARCHAR(64) NOT NULL,
     status TINYINT NOT NULL DEFAULT 0,
     turn_count INT NOT NULL DEFAULT 1,
@@ -51,7 +50,7 @@ CREATE TABLE game_tab(
     time_created BIGINT NOT NULL,
     time_modified BIGINT NOT NULL,
     PRIMARY KEY (id),
-    INDEX idx_is_private (is_private)
+    INDEX idx_status_created (status, time_created)
 );
 
 CREATE TABLE game_user_tab(

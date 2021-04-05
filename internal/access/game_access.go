@@ -23,17 +23,12 @@ If password is provided, the game will be private (password-protected). Otherwis
 */
 func CreateGameFromMap(mapModel *model.Map, password string) (uint64, error) {
 	const stmtCreateGame = `INSERT INTO game_tab
-(type, height, width, player_count, terrain_info, unit_info, map_id, is_private, password, time_created, time_modified)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
-
-	isPrivate := true
-	if password == "" {
-		isPrivate = false
-	}
+(type, height, width, player_count, terrain_info, unit_info, map_id, password, time_created, time_modified)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 
 	res, err := db.Exec(stmtCreateGame,
 		mapModel.Type, mapModel.Height, mapModel.Width, mapModel.PlayerCount, mapModel.TerrainInfo, mapModel.UnitInfo, mapModel.ID,
-		isPrivate, password)
+		password)
 	if err != nil {
 		logger.GetLogger().Error("db: insert error", zap.String("table", "game_tab"), zap.Error(err))
 		return 0, err
@@ -131,7 +126,6 @@ func QueryGameByID(gameID uint64) *model.Game {
 		&game.TerrainInfo,
 		&game.UnitInfo,
 		&game.MapID,
-		&game.IsPrivate,
 		&game.Password,
 		&game.Status,
 		&game.TurnCount,
