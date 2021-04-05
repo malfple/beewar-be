@@ -2,8 +2,8 @@ package user
 
 import (
 	"encoding/json"
-	"gitlab.com/beewar/beewar-be/internal/access"
 	"gitlab.com/beewar/beewar-be/internal/access/model"
+	userController "gitlab.com/beewar/beewar-be/internal/controller/user"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 	"net/http"
@@ -11,16 +11,11 @@ import (
 
 // HandleUserGetByUsername handles profile query
 func HandleUserGetByUsername(w http.ResponseWriter, r *http.Request) {
-	username := r.URL.Query().Get("username")
-	user := access.QueryUserByUsername(username)
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	resp := &GetResponse{User: nil}
-	if user != nil {
-		resp.User = user
-		resp.User.Password = ""
+	resp := &GetResponse{
+		User: userController.GetByUsername(r.URL.Query().Get("username")),
 	}
 
 	err := json.NewEncoder(w).Encode(resp)
