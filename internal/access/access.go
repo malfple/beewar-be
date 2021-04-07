@@ -41,3 +41,29 @@ func ShutdownAccess() {
 func GetDBClient() *sql.DB {
 	return db
 }
+
+// ExecWithTransaction is a wrapper function for flexible executions of access functions with transaction.
+// Provide an anonymous function which contains your executions. Your executions should use the transaction parameter.
+// If the function returns error, the transaction will be rollback-ed and the error will be returned.
+func ExecWithTransaction(execFunc func(tx *sql.Tx) error) error {
+	tx, err := db.Begin()
+	if err != nil {
+		logger.GetLogger().Error("db: begin transaction error", zap.Error(err))
+		return err
+	}
+
+	if err = execFunc(tx); err != nil {
+		if rollbackErr := tx.Rollback(); rollbackErr != nil {
+			logger.GetLogger().Error("db: fail to rollback", zap.Error(rollbackErr))
+			return rollbackErr
+		}
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		logger.GetLogger().Error("db: commit transaction error", zap.Error(err))
+		return err
+	}
+
+	return nil
+}
