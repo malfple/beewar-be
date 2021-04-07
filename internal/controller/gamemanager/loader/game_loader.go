@@ -89,7 +89,7 @@ func NewGameLoader(gameID uint64) *GameLoader {
 	}
 	gameLoader.Users = access.QueryUsersByID(userIDs)
 	for i := range gameLoader.Users {
-		gameLoader.Users[i].Password = ""
+		gameLoader.Users[i].Password = "nope."
 	}
 	// make reverse map
 	gameLoader.UserIDToPlayerMap = make(map[uint64]int)
