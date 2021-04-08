@@ -113,3 +113,35 @@ func QueryGameUsersByUserID(userID uint64) []*model.GameUser {
 	}
 	return res
 }
+
+// IsExistGameUserByLink checks if a game user exists by (user_id, game_id) link,
+// which means check if a user is registered to a game.
+func IsExistGameUserByLink(userID, gameID uint64) bool {
+	row := db.QueryRow(`SELECT 1 FROM game_user_tab WHERE user_id=? AND game_id=? LIMIT 1`, userID, gameID)
+
+	var temp int
+	err := row.Scan(&temp)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			logger.GetLogger().Error("db: query error", zap.String("table", "game_user_tab"), zap.Error(err))
+		}
+		return false
+	}
+	return true
+}
+
+// IsExistGameUserByPlayerOrder checks if a game user exists by (game_id, player_order) key,
+// which means check if a certain player order in a game is already taken or not.
+func IsExistGameUserByPlayerOrder(gameID uint64, playerOrder uint8) bool {
+	row := db.QueryRow(`SELECT 1 FROM game_user_tab WHERE game_id=? AND player_order=? LIMIT 1`, gameID, playerOrder)
+
+	var temp int
+	err := row.Scan(&temp)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			logger.GetLogger().Error("db: query error", zap.String("table", "game_user_tab"), zap.Error(err))
+		}
+		return false
+	}
+	return true
+}

@@ -99,6 +99,23 @@ func TestGameAccess() bool {
 		return false
 	}
 
+	if !access.IsExistGameUserByLink(user1.ID, gameID) {
+		logger.GetLogger().Error("game user not found")
+		return false
+	}
+	if access.IsExistGameUserByLink(696969, gameID) {
+		logger.GetLogger().Error("game user isn't supposed to exist")
+		return false
+	}
+	if !access.IsExistGameUserByPlayerOrder(gameID, 2) {
+		logger.GetLogger().Error("slot 2 taken")
+		return false
+	}
+	if access.IsExistGameUserByPlayerOrder(gameID, 3) {
+		logger.GetLogger().Error("slot 3 doesn't exist haha")
+		return false
+	}
+
 	// update game user
 	gameUserToUpdate := games1[0]
 	gameUserToUpdate.FinalTurns = 69
