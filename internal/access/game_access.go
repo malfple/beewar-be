@@ -81,35 +81,17 @@ only updates updatable fields (game user):
  - final_turns
 */
 func UpdateGameAndGameUser(game *model.Game, gameUsers []*model.GameUser) error {
-	tx, err := db.Begin()
-	if err != nil {
-		logger.GetLogger().Error("db: begin transaction error", zap.Error(err))
-		return err
-	}
-
-	if err = UpdateGameUsingTx(tx, game); err != nil {
-		if rollbackErr := tx.Rollback(); rollbackErr != nil {
-			logger.GetLogger().Error("db: fail to rollback", zap.Error(rollbackErr))
-			return rollbackErr
-		}
-		return err
-	}
-
-	for _, gu := range gameUsers {
-		if err = UpdateGameUserUsingTx(tx, gu); err != nil {
-			if rollbackErr := tx.Rollback(); rollbackErr != nil {
-				logger.GetLogger().Error("db: fail to rollback", zap.Error(rollbackErr))
-				return rollbackErr
-			}
+	return ExecWithTransaction(func(tx *sql.Tx) error {
+		if err := UpdateGameUsingTx(tx, game); err != nil {
 			return err
 		}
-	}
-
-	if err = tx.Commit(); err != nil {
-		logger.GetLogger().Error("db: commit transaction error", zap.Error(err))
-		return err
-	}
-	return nil
+		for _, gu := range gameUsers {
+			if err := UpdateGameUserUsingTx(tx, gu); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 // QueryGameByID gets a game from its id
