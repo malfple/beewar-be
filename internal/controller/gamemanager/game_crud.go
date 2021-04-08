@@ -11,8 +11,10 @@ import (
 // mainly contains controllers for setup-ing game and deleting
 
 var (
-	errMapDoesNotExist  = errors.New("map does not exist")
-	errGameDoesNotExist = errors.New("game does not exist")
+	errMapDoesNotExist   = errors.New("map does not exist")
+	errGameDoesNotExist  = errors.New("game does not exist")
+	errAlreadyRegistered = errors.New("user already registered for this game")
+	errPlayerOrderTaken  = errors.New("that slot/player_order is already taken")
 )
 
 // CreateGame creates a new game with the given map id. If password is provided, it will be bcrypt-ed
@@ -39,8 +41,12 @@ func RegisterForGame(userID, gameID uint64, playerOrder uint8) error {
 	if !access.IsExistGameByID(gameID) {
 		return errGameDoesNotExist
 	}
-	// TODO: check if this user already registered to the game (user_id, game_id)
-	// TODO: check if this playerOrder is already taken (game_id, player_order)
+	if access.IsExistGameUserByLink(userID, gameID) {
+		return errAlreadyRegistered
+	}
+	if access.IsExistGameUserByPlayerOrder(gameID, playerOrder) {
+		return errPlayerOrderTaken
+	}
 	if err := access.CreateGameUser(gameID, userID, playerOrder); err != nil {
 		return err
 	}
