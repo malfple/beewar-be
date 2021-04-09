@@ -10,8 +10,8 @@ import (
 	"net/http"
 )
 
-// HandleGameList handles request to get a list of games from a user
-func HandleGameList(w http.ResponseWriter, r *http.Request) {
+// HandleMyGames handles request to get a list of games from a user
+func HandleMyGames(w http.ResponseWriter, r *http.Request) {
 	accessToken := r.Header.Get(auth.AccessTokenHeaderName)
 	userID, _, err := auth.ValidateJWT(accessToken)
 	if err != nil {
