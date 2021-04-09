@@ -137,5 +137,8 @@ func TestGameAccess() bool {
 		return false
 	}
 
+	// queries
+	_ = access.QueryWaitingGames()
+
 	return true
 }

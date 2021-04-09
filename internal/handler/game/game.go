@@ -8,4 +8,5 @@ import (
 func RegisterGameRouter(router *mux.Router) {
 	router.HandleFunc("/ws", HandleGameWS)
 	router.HandleFunc("/my_games", HandleMyGames).Methods("GET")
+	router.HandleFunc("/list", HandleGameList).Methods("GET")
 }

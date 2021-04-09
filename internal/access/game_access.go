@@ -124,6 +124,45 @@ func QueryGameByID(gameID uint64) *model.Game {
 	return game
 }
 
+// QueryWaitingGames gets all games that are currently not yet started (status = 0)
+func QueryWaitingGames() []*model.Game {
+	rows, err := db.Query(`SELECT * FROM game_tab WHERE status=0 ORDER BY time_created`)
+	if err != nil {
+		logger.GetLogger().Error("db: query error", zap.String("table", "game_tab"), zap.Error(err))
+		return nil
+	}
+	defer rows.Close()
+
+	games := make([]*model.Game, 0)
+	for rows.Next() {
+		game := &model.Game{}
+		err := rows.Scan(
+			&game.ID,
+			&game.Type,
+			&game.Height,
+			&game.Width,
+			&game.PlayerCount,
+			&game.TerrainInfo,
+			&game.UnitInfo,
+			&game.MapID,
+			&game.Password,
+			&game.Status,
+			&game.TurnCount,
+			&game.TurnPlayer,
+			&game.TimeCreated,
+			&game.TimeModified)
+		if err != nil {
+			logger.GetLogger().Error("db: query error", zap.String("table", "game_tab"), zap.Error(err))
+		} else {
+			games = append(games, game)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		logger.GetLogger().Error("db: query error", zap.String("table", "game_tab"), zap.Error(err))
+	}
+	return games
+}
+
 // IsExistGameByID checks for gameID existence
 func IsExistGameByID(gameID uint64) bool {
 	row := db.QueryRow(`SELECT 1 FROM game_tab WHERE id=? LIMIT 1`, gameID)
