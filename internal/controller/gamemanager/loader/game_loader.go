@@ -43,6 +43,8 @@ type GameLoader struct {
 	Terrain           [][]int
 	Units             [][]objects.Unit
 	MapID             uint64
+	Password          string
+	Status            int8
 	TurnCount         int32 // turns start from 1, defined in migration
 	TurnPlayer        int   // players are numbered 1..PlayerCount. If this is 0, game is ended
 	TimeCreated       int64
@@ -70,6 +72,8 @@ func NewGameLoader(gameID uint64) *GameLoader {
 		Terrain:      formatter.ModelToGameTerrain(gameModel.Height, gameModel.Width, gameModel.TerrainInfo),
 		Units:        formatter.ModelToGameUnit(gameModel.Height, gameModel.Width, gameModel.UnitInfo),
 		MapID:        gameModel.MapID,
+		Password:     gameModel.Password,
+		Status:       gameModel.Status,
 		TurnCount:    gameModel.TurnCount,
 		TurnPlayer:   int(gameModel.TurnPlayer),
 		TimeCreated:  gameModel.TimeCreated,
@@ -111,6 +115,8 @@ func (gl *GameLoader) ToModel() *model.Game {
 		TerrainInfo:  formatter.GameTerrainToModel(gl.Height, gl.Width, gl.Terrain),
 		UnitInfo:     formatter.GameUnitToModel(gl.Height, gl.Width, gl.Units),
 		MapID:        gl.MapID,
+		Password:     gl.Password,
+		Status:       gl.Status,
 		TurnCount:    gl.TurnCount,
 		TurnPlayer:   int8(gl.TurnPlayer),
 		TimeCreated:  gl.TimeCreated,
