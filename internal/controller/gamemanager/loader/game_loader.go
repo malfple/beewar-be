@@ -12,6 +12,8 @@ import (
 )
 
 const (
+	// ErrMsgGameNotStarted is returned when a message is received and the game is not yet started
+	ErrMsgGameNotStarted = "game not yet started"
 	// ErrMsgGameEnded is returned when a message is received and the game is already ended
 	ErrMsgGameEnded = "game already ended"
 	// ErrMsgNotYetTurn is returned when it is not yet the turn for the player who sends the message
@@ -30,6 +32,15 @@ const (
 	ErrMsgInvalidAttack = "invalid attack. maybe your target is out of range"
 )
 
+const (
+	// GameStatusPicking is a game state
+	GameStatusPicking = 0
+	// GameStatusOngoing is a game state
+	GameStatusOngoing = 1
+	// GameStatusEnded is a game state
+	GameStatusEnded = 2
+)
+
 // GameLoader loads game from db and perform game tasks.
 // also supports saving back to db on demand (only the game -> game_tab).
 // game loader is not concurrent safe, and the caller needs to handle this with locks
@@ -44,9 +55,9 @@ type GameLoader struct {
 	Units             [][]objects.Unit
 	MapID             uint64
 	Password          string
-	Status            int8
+	Status            int8  // indicates game status
 	TurnCount         int32 // turns start from 1, defined in migration
-	TurnPlayer        int   // players are numbered 1..PlayerCount. If this is 0, game is ended
+	TurnPlayer        int   // players are numbered 1..PlayerCount.
 	TimeCreated       int64
 	TimeModified      int64
 	GridEngine        *GridEngine
@@ -171,7 +182,7 @@ func (gl *GameLoader) checkGameEnd() {
 		for i := range gl.GameUsers {
 			gl.assignPlayerRank(i + 1)
 		}
-		gl.TurnPlayer = 0
+		gl.Status = GameStatusEnded
 	}
 }
 
@@ -253,7 +264,10 @@ func (gl *GameLoader) validateUnitOwned(userID uint64, y, x int) string {
 // HandleMessage handles game related message
 // returns the message and a boolean value whether the message should be broadcasted (true = broadcast)
 func (gl *GameLoader) HandleMessage(msg *message.GameMessage) (*message.GameMessage, bool) {
-	if gl.TurnPlayer == 0 {
+	if gl.Status == GameStatusPicking {
+		return message.GameErrorMessage(ErrMsgGameNotStarted), false
+	}
+	if gl.Status == GameStatusEnded {
 		return message.GameErrorMessage(ErrMsgGameEnded), false
 	}
 
