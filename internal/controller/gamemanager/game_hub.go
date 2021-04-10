@@ -71,6 +71,19 @@ func (hub *GameHub) sendMessageToClient(client *GameClient, msg *message.GameMes
 	}
 }
 
+// handle message. returns (resp, isBroadcast?)
+func (hub *GameHub) handleMessage(msg *message.GameMessage) (*message.GameMessage, bool) {
+	if msg.Cmd == message.CmdGameData { // any user can get game data
+		return hub.GameLoader.GameData(), false
+	} else if _, ok := hub.GameLoader.UserIDToPlayerMap[msg.Sender]; !ok { // non-player
+		return message.GameErrorMessage(ErrMsgNotPlayer), false
+	} else if msg.Cmd == message.CmdChat {
+		return msg, true
+	} else {
+		return hub.GameLoader.HandleMessage(msg)
+	}
+}
+
 // ListenAndBroadcast handles broadcasting
 // pass in wg to wait for hub to shutdown before exiting application
 func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
@@ -85,19 +98,7 @@ func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 
 		hub.Mutex.Lock()
 		// process message
-		var resp *message.GameMessage
-		var isBroadcast = true
-		if msg.Cmd == message.CmdGameData { // any user can get game data
-			resp = hub.GameLoader.GameData()
-			isBroadcast = false
-		} else if _, ok := hub.GameLoader.UserIDToPlayerMap[msg.Sender]; !ok { // non-player
-			resp = message.GameErrorMessage(ErrMsgNotPlayer)
-			isBroadcast = false
-		} else if msg.Cmd == message.CmdChat {
-			resp = msg
-		} else {
-			resp, isBroadcast = hub.GameLoader.HandleMessage(msg)
-		}
+		resp, isBroadcast := hub.handleMessage(msg)
 		// broadcast
 		if isBroadcast {
 			for _, client := range hub.Clients {
