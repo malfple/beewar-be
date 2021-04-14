@@ -3,6 +3,7 @@ package gamemanager
 import (
 	"errors"
 	"gitlab.com/beewar/beewar-be/internal/access"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/loader"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
@@ -11,10 +12,12 @@ import (
 // mainly contains controllers for setup-ing game and deleting
 
 var (
-	errMapDoesNotExist   = errors.New("map does not exist")
-	errGameDoesNotExist  = errors.New("game does not exist")
-	errAlreadyRegistered = errors.New("user already registered for this game")
-	errPlayerOrderTaken  = errors.New("that slot/player_order is already taken")
+	errMapDoesNotExist    = errors.New("map does not exist")
+	errGameDoesNotExist   = errors.New("game does not exist")
+	errGameNotInPicking   = errors.New("game picking phase is over")
+	errAlreadyRegistered  = errors.New("user already registered for this game")
+	errPlayerOrderTaken   = errors.New("that slot/player_order is already taken")
+	errPlayerOrderInvalid = errors.New("invalid slot/player_order given")
 )
 
 // CreateGame creates a new game with the given map id. If password is provided, it will be bcrypt-ed
@@ -38,8 +41,15 @@ func CreateGame(mapID uint64, password string) (uint64, error) {
 // RegisterForGame registers/links user to game
 func RegisterForGame(userID, gameID uint64, playerOrder uint8) error {
 	// we assume user to exist because it is provided from token
-	if !access.IsExistGameByID(gameID) {
+	game := access.QueryGameByID(gameID)
+	if game == nil {
 		return errGameDoesNotExist
+	}
+	if game.Status != loader.GameStatusPicking {
+		return errGameNotInPicking
+	}
+	if playerOrder < 1 || playerOrder > game.PlayerCount {
+		return errPlayerOrderInvalid
 	}
 	if access.IsExistGameUserByLink(userID, gameID) {
 		return errAlreadyRegistered
