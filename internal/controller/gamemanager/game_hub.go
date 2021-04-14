@@ -85,7 +85,7 @@ func (hub *GameHub) handleMessage(msg *message.GameMessage) (*message.GameMessag
 }
 
 // ListenAndBroadcast handles broadcasting
-// pass in wg to wait for hub to shutdown before exiting application
+// pass in a waitgroup to wait for hub to shutdown before exiting application
 func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -145,7 +145,8 @@ func (hub *GameHub) ForceShutdown() {
 	hub.Mutex.Unlock()
 }
 
-// NewGameHub initializes a new game hub with the correct game id
+// NewGameHub initializes a new game hub with the correct game id. Provide an onShutdown function that will be triggered
+// when the game hub decides to shut down.
 func NewGameHub(gameID uint64, onShutdown func()) *GameHub {
 	return &GameHub{
 		GameID:     gameID,

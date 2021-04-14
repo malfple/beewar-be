@@ -9,7 +9,7 @@ import (
 
 var gameHubStore = make(map[uint64]*GameHub)
 var gameHubStoreLock sync.RWMutex
-var wg sync.WaitGroup
+var gameHubWG sync.WaitGroup
 
 // InitGameManager starts the game manager
 func InitGameManager() {
@@ -26,7 +26,7 @@ func ShutdownGameManager() {
 		hub.ForceShutdown()
 		delete(gameHubStore, gameID)
 	}
-	wg.Wait()
+	gameHubWG.Wait()
 	gameHubStoreLock.Unlock()
 	logger.GetLogger().Info("game manager: shutdown")
 }
@@ -53,9 +53,9 @@ func GetGameHub(gameID uint64) *GameHub {
 		delete(gameHubStore, gameID)
 		gameHubStoreLock.Unlock()
 	})
-	wg.Add(1)
+	gameHubWG.Add(1)
 	// goroutine for the hub to do its job
-	go hub.ListenAndBroadcast(&wg)
+	go hub.ListenAndBroadcast(&gameHubWG)
 
 	gameHubStoreLock.Lock()
 	gameHubStore[gameID] = hub
