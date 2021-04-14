@@ -2,6 +2,7 @@ package game
 
 import (
 	"encoding/json"
+	"gitlab.com/beewar/beewar-be/internal/controller/auth"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
@@ -15,6 +16,13 @@ func HandleGameCreate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.GetLogger().Error("error parse form", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	accessToken := r.Header.Get(auth.AccessTokenHeaderName)
+	_, _, err = auth.ValidateJWT(accessToken)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
