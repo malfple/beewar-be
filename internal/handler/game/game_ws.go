@@ -51,7 +51,7 @@ func HandleGameWS(w http.ResponseWriter, r *http.Request) {
 	}
 	game := access.QueryGameByID(uint64(gameID))
 	if game == nil || game.Status == loader.GameStatusPicking {
-		w.WriteHeader(http.StatusNoContent)
+		w.WriteHeader(http.StatusNotAcceptable)
 		return
 	}
 
