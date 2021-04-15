@@ -1,6 +1,7 @@
 package loader
 
 import (
+	"errors"
 	"gitlab.com/beewar/beewar-be/internal/access"
 	"gitlab.com/beewar/beewar-be/internal/access/model"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/combat"
@@ -30,6 +31,11 @@ const (
 	ErrMsgInvalidMove = "invalid move duh"
 	// ErrMsgInvalidAttack is returned when an attack is invalid
 	ErrMsgInvalidAttack = "invalid attack. maybe your target is out of range"
+)
+
+var (
+	errGameDoesNotExist = errors.New("game does not exist")
+	errGameInPicking    = errors.New("game is still in picking phase")
 )
 
 const (
@@ -67,15 +73,13 @@ type GameLoader struct {
 }
 
 // NewGameLoader loads game by gameID and return the GameLoader object
-func NewGameLoader(gameID uint64) *GameLoader {
+func NewGameLoader(gameID uint64) (*GameLoader, error) {
 	gameModel := access.QueryGameByID(gameID)
 	if gameModel == nil {
-		// the websocket handler should already handle this
-		panic("loader: game is supposed to exist")
+		return nil, errGameDoesNotExist
 	}
 	if gameModel.Status == GameStatusPicking {
-		// the websocket handler should already handle this
-		panic("loader: game should not be in picking phase")
+		return nil, errGameInPicking
 	}
 	// load main fields from game model
 	gameLoader := &GameLoader{
@@ -116,7 +120,7 @@ func NewGameLoader(gameID uint64) *GameLoader {
 		gameLoader.UserIDToPlayerMap[user.UserID] = int(user.PlayerOrder)
 	}
 
-	return gameLoader
+	return gameLoader, nil
 }
 
 // ToModel converts the current game object into a model.Game db model

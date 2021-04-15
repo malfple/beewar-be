@@ -147,14 +147,18 @@ func (hub *GameHub) ForceShutdown() {
 
 // NewGameHub initializes a new game hub with the correct game id. Provide an onShutdown function that will be triggered
 // when the game hub decides to shut down.
-func NewGameHub(gameID uint64, onShutdown func()) *GameHub {
+func NewGameHub(gameID uint64, onShutdown func()) (*GameHub, error) {
+	gameLoader, err := loader.NewGameLoader(gameID)
+	if err != nil {
+		return nil, err
+	}
 	return &GameHub{
 		GameID:     gameID,
-		GameLoader: loader.NewGameLoader(gameID),
+		GameLoader: gameLoader,
 		Clients:    make(map[uint64]*GameClient),
 		MessageBus: make(chan *message.GameMessage),
 		Mutex:      sync.Mutex{},
 		IsShutdown: false,
 		OnShutdown: onShutdown,
-	}
+	}, nil
 }
