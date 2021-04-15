@@ -78,8 +78,13 @@ func NewGameLoader(gameID uint64) (*GameLoader, error) {
 	if gameModel == nil {
 		return nil, errGameDoesNotExist
 	}
+	gameUsers := access.QueryGameUsersByGameID(gameID)
 	if gameModel.Status == GameStatusPicking {
-		return nil, errGameInPicking
+		if int(gameModel.PlayerCount) == len(gameUsers) { // auto-start
+			gameModel.Status = GameStatusOngoing
+		} else {
+			return nil, errGameInPicking
+		}
 	}
 	// load main fields from game model
 	gameLoader := &GameLoader{
@@ -105,7 +110,7 @@ func NewGameLoader(gameID uint64) (*GameLoader, error) {
 		&gameLoader.Terrain,
 		&gameLoader.Units)
 	// load players
-	gameLoader.GameUsers = access.QueryGameUsersByGameID(gameLoader.ID)
+	gameLoader.GameUsers = gameUsers
 	userIDs := make([]uint64, len(gameLoader.GameUsers))
 	for i, gu := range gameLoader.GameUsers {
 		userIDs[i] = gu.UserID
