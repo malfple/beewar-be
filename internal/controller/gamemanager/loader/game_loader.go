@@ -73,6 +73,10 @@ func NewGameLoader(gameID uint64) *GameLoader {
 		// the websocket handler should already handle this
 		panic("loader: game is supposed to exist")
 	}
+	if gameModel.Status == GameStatusPicking {
+		// the websocket handler should already handle this
+		panic("loader: game should not be in picking phase")
+	}
 	// load main fields from game model
 	gameLoader := &GameLoader{
 		ID:           gameModel.ID,

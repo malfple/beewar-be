@@ -6,6 +6,7 @@ import (
 	"gitlab.com/beewar/beewar-be/internal/access"
 	"gitlab.com/beewar/beewar-be/internal/controller/auth"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/loader"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 	"net/http"
@@ -48,7 +49,8 @@ func HandleGameWS(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if !access.IsExistGameByID(uint64(gameID)) {
+	game := access.QueryGameByID(uint64(gameID))
+	if game == nil || game.Status == loader.GameStatusPicking {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
