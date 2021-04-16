@@ -4,8 +4,6 @@ import (
 	"errors"
 	"gitlab.com/beewar/beewar-be/internal/access"
 	"gitlab.com/beewar/beewar-be/internal/access/model"
-	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/cmdwhitelist"
-	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/combat"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/formatter"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/loader/gridengine"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/message"
@@ -257,25 +255,6 @@ func (gl *GameLoader) assignPlayerRank(player int) {
 	gl.GameUsers[player-1].FinalTurns = gl.TurnCount
 }
 
-// validate functions return empty string if no errors
-
-// validates of unit is owned by the userID given.
-// also validates position inside map, and if a unit exists in the given position
-func (gl *GameLoader) validateUnitOwned(userID uint64, y, x int) string {
-	if y < 0 || y > gl.Height || x < 0 || x > gl.Width {
-		return ErrMsgInvalidPos
-	}
-	if gl.Units[y][x] == nil {
-		return ErrMsgInvalidPos
-	}
-	// player doesn't own the unit
-	if gl.UserIDToPlayerMap[userID] != gl.Units[y][x].GetUnitOwner() {
-		return ErrMsgUnitNotOwned
-	}
-
-	return ""
-}
-
 // HandleMessage handles game related message
 // returns the message and a boolean value whether the message should be broadcasted (true = broadcast)
 func (gl *GameLoader) HandleMessage(msg *message.GameMessage) (*message.GameMessage, bool) {
@@ -293,92 +272,11 @@ func (gl *GameLoader) HandleMessage(msg *message.GameMessage) (*message.GameMess
 
 	switch msg.Cmd {
 	case message.CmdUnitMove:
-		data := msg.Data.(*message.UnitMoveMessageData)
-		if errMsg := gl.validateUnitOwned(msg.Sender, data.Y1, data.X1); len(errMsg) > 0 {
-			return message.GameErrorMessage(errMsg), false
-		}
-		if _, ok := cmdwhitelist.UnitMoveMap[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
-			return message.GameErrorMessage(ErrMsgUnitCmdNotAllowed), false
-		}
-		if gl.Units[data.Y1][data.X1].GetUnitStateBit(objects.UnitStateBitMoved) { // has this unit moved?
-			return message.GameErrorMessage(ErrMsgUnitAlreadyMoved), false
-		}
-		if !gl.GridEngine.ValidateMove(data.Y1, data.X1, data.Y2, data.X2) {
-			return message.GameErrorMessage(ErrMsgInvalidMove), false
-		}
-		gl.Units[data.Y2][data.X2], gl.Units[data.Y1][data.X1] = gl.Units[data.Y1][data.X1], gl.Units[data.Y2][data.X2]
-		gl.Units[data.Y2][data.X2].ToggleUnitStateBit(objects.UnitStateBitMoved)
-		return msg, true
+		return gl.handleUnitMove(msg)
 	case message.CmdUnitAttack:
-		data := msg.Data.(*message.UnitAttackMessageData)
-		if errMsg := gl.validateUnitOwned(msg.Sender, data.Y1, data.X1); len(errMsg) > 0 {
-			return message.GameErrorMessage(errMsg), false
-		}
-		if _, ok := cmdwhitelist.UnitAttackMap[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
-			return message.GameErrorMessage(ErrMsgUnitCmdNotAllowed), false
-		}
-		if gl.Units[data.Y1][data.X1].GetUnitStateBit(objects.UnitStateBitMoved) { // has this unit moved?
-			return message.GameErrorMessage(ErrMsgUnitAlreadyMoved), false
-		}
-		okAtk, distAtk := gl.GridEngine.ValidateAttack(data.Y1, data.X1, data.YT, data.XT, gl.Units[data.Y1][data.X1])
-		if !okAtk {
-			return message.GameErrorMessage(ErrMsgInvalidAttack), false
-		}
-		gl.Units[data.Y1][data.X1].ToggleUnitStateBit(objects.UnitStateBitMoved)
-		combat.NormalCombat(gl.Units[data.Y1][data.X1], gl.Units[data.YT][data.XT], distAtk)
-		replyMsg := &message.GameMessage{
-			Cmd:    msg.Cmd,
-			Sender: msg.Sender,
-			Data: &message.UnitAttackMessageDataExt{
-				Y1:    data.Y1,
-				X1:    data.X1,
-				YT:    data.YT,
-				XT:    data.XT,
-				HPAtk: gl.Units[data.Y1][data.X1].GetUnitHP(),
-				HPDef: gl.Units[data.YT][data.XT].GetUnitHP(),
-			},
-		}
-		gl.checkUnitAlive(data.Y1, data.X1)
-		gl.checkUnitAlive(data.YT, data.XT)
-		return replyMsg, true
+		return gl.handleUnitAttack(msg)
 	case message.CmdUnitMoveAndAttack:
-		data := msg.Data.(*message.UnitMoveAndAttackMessageData)
-		if errMsg := gl.validateUnitOwned(msg.Sender, data.Y1, data.X1); len(errMsg) > 0 {
-			return message.GameErrorMessage(errMsg), false
-		}
-		if _, ok := cmdwhitelist.UnitMoveAndAttackMap[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
-			return message.GameErrorMessage(ErrMsgUnitCmdNotAllowed), false
-		}
-		if gl.Units[data.Y1][data.X1].GetUnitStateBit(objects.UnitStateBitMoved) { // has this unit moved?
-			return message.GameErrorMessage(ErrMsgUnitAlreadyMoved), false
-		}
-		if !gl.GridEngine.ValidateMove(data.Y1, data.X1, data.Y2, data.X2) {
-			return message.GameErrorMessage(ErrMsgInvalidMove), false
-		}
-		okAtk, distAtk := gl.GridEngine.ValidateAttack(data.Y2, data.X2, data.YT, data.XT, gl.Units[data.Y1][data.X1])
-		if !okAtk {
-			return message.GameErrorMessage(ErrMsgInvalidAttack), false
-		}
-		gl.Units[data.Y2][data.X2], gl.Units[data.Y1][data.X1] = gl.Units[data.Y1][data.X1], gl.Units[data.Y2][data.X2]
-		gl.Units[data.Y2][data.X2].ToggleUnitStateBit(objects.UnitStateBitMoved)
-		combat.NormalCombat(gl.Units[data.Y2][data.X2], gl.Units[data.YT][data.XT], distAtk)
-		replyMsg := &message.GameMessage{
-			Cmd:    msg.Cmd,
-			Sender: msg.Sender,
-			Data: &message.UnitMoveAndAttackMessageDataExt{
-				Y1:    data.Y1,
-				X1:    data.X1,
-				Y2:    data.Y2,
-				X2:    data.X2,
-				YT:    data.YT,
-				XT:    data.XT,
-				HPAtk: gl.Units[data.Y2][data.X2].GetUnitHP(),
-				HPDef: gl.Units[data.YT][data.XT].GetUnitHP(),
-			},
-		}
-		gl.checkUnitAlive(data.Y2, data.X2)
-		gl.checkUnitAlive(data.YT, data.XT)
-		return replyMsg, true
+		return gl.handleUnitMoveAndAttack(msg)
 	case message.CmdEndTurn:
 		gl.nextTurn()
 		return msg, true
