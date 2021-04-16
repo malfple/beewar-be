@@ -35,7 +35,6 @@ const (
 
 var (
 	errGameDoesNotExist = errors.New("game does not exist")
-	errGameInPicking    = errors.New("game is still in picking phase")
 )
 
 const (
@@ -82,8 +81,6 @@ func NewGameLoader(gameID uint64) (*GameLoader, error) {
 	if gameModel.Status == GameStatusPicking {
 		if int(gameModel.PlayerCount) == len(gameUsers) { // auto-start
 			gameModel.Status = GameStatusOngoing
-		} else {
-			return nil, errGameInPicking
 		}
 	}
 	// load main fields from game model
@@ -110,14 +107,16 @@ func NewGameLoader(gameID uint64) (*GameLoader, error) {
 		&gameLoader.Terrain,
 		&gameLoader.Units)
 	// load players
-	gameLoader.GameUsers = gameUsers
+	gameLoader.GameUsers = padGameUsers(gameUsers, gameLoader.PlayerCount)
 	userIDs := make([]uint64, len(gameLoader.GameUsers))
 	for i, gu := range gameLoader.GameUsers {
 		userIDs[i] = gu.UserID
 	}
 	gameLoader.Users = access.QueryUsersByID(userIDs)
 	for i := range gameLoader.Users {
-		gameLoader.Users[i].Password = "nope."
+		if gameLoader.Users[i] != nil {
+			gameLoader.Users[i].Password = "nope."
+		}
 	}
 	// make reverse map
 	gameLoader.UserIDToPlayerMap = make(map[uint64]int)
