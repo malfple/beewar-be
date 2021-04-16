@@ -4,8 +4,10 @@ import (
 	"errors"
 	"gitlab.com/beewar/beewar-be/internal/access"
 	"gitlab.com/beewar/beewar-be/internal/access/model"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/cmdwhitelist"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/combat"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/formatter"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/loader/gridengine"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/message"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/objects"
 	"gitlab.com/beewar/beewar-be/internal/logger"
@@ -66,7 +68,7 @@ type GameLoader struct {
 	TurnPlayer        int   // players are numbered 1..PlayerCount.
 	TimeCreated       int64
 	TimeModified      int64
-	GridEngine        *GridEngine
+	GridEngine        *gridengine.GridEngine
 	GameUsers         []*model.GameUser
 	Users             []*model.User
 	UserIDToPlayerMap map[uint64]int
@@ -104,7 +106,7 @@ func NewGameLoader(gameID uint64) (*GameLoader, error) {
 		TimeModified: gameModel.TimeModified,
 	}
 	// create grid engine
-	gameLoader.GridEngine = NewGridEngine(
+	gameLoader.GridEngine = gridengine.NewGridEngine(
 		gameLoader.Width,
 		gameLoader.Height,
 		&gameLoader.Terrain,
@@ -295,7 +297,7 @@ func (gl *GameLoader) HandleMessage(msg *message.GameMessage) (*message.GameMess
 		if errMsg := gl.validateUnitOwned(msg.Sender, data.Y1, data.X1); len(errMsg) > 0 {
 			return message.GameErrorMessage(errMsg), false
 		}
-		if _, ok := CmdWhitelistUnitMove[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
+		if _, ok := cmdwhitelist.UnitMoveMap[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
 			return message.GameErrorMessage(ErrMsgUnitCmdNotAllowed), false
 		}
 		if gl.Units[data.Y1][data.X1].GetUnitStateBit(objects.UnitStateBitMoved) { // has this unit moved?
@@ -312,7 +314,7 @@ func (gl *GameLoader) HandleMessage(msg *message.GameMessage) (*message.GameMess
 		if errMsg := gl.validateUnitOwned(msg.Sender, data.Y1, data.X1); len(errMsg) > 0 {
 			return message.GameErrorMessage(errMsg), false
 		}
-		if _, ok := CmdWhiteListUnitAttack[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
+		if _, ok := cmdwhitelist.UnitAttackMap[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
 			return message.GameErrorMessage(ErrMsgUnitCmdNotAllowed), false
 		}
 		if gl.Units[data.Y1][data.X1].GetUnitStateBit(objects.UnitStateBitMoved) { // has this unit moved?
@@ -344,7 +346,7 @@ func (gl *GameLoader) HandleMessage(msg *message.GameMessage) (*message.GameMess
 		if errMsg := gl.validateUnitOwned(msg.Sender, data.Y1, data.X1); len(errMsg) > 0 {
 			return message.GameErrorMessage(errMsg), false
 		}
-		if _, ok := CmdWhiteListUnitMoveAndAttack[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
+		if _, ok := cmdwhitelist.UnitMoveAndAttackMap[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
 			return message.GameErrorMessage(ErrMsgUnitCmdNotAllowed), false
 		}
 		if gl.Units[data.Y1][data.X1].GetUnitStateBit(objects.UnitStateBitMoved) { // has this unit moved?

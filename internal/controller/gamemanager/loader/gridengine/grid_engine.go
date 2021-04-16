@@ -1,4 +1,4 @@
-package loader
+package gridengine
 
 import (
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/objects"

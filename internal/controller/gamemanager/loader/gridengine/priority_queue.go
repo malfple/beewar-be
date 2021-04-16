@@ -1,4 +1,4 @@
-package loader
+package gridengine
 
 // PriorityQueue is a specific priority queue for grid engine. It has fixed types
 // d = dist, is ordered descending. Smallest d on top.

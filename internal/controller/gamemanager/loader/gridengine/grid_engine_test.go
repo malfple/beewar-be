@@ -1,4 +1,4 @@
-package loader
+package gridengine
 
 import (
 	"github.com/stretchr/testify/assert"
