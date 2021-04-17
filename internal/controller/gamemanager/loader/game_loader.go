@@ -197,9 +197,26 @@ func (gl *GameLoader) handleJoin(msg *message.GameMessage) (*message.GameMessage
 		return message.GameErrorMessage(errMsgAlreadyJoined), false
 	}
 	// pass join validation
-	// TODO: implement join
-	// probably should implement createorupdate for game users first
-	return message.GameErrorMessage("yay"), false
+	if err := access.CreateGameUser(gl.ID, msg.Sender, data.PlayerOrder); err != nil {
+		return message.GameErrorMessage(err.Error()), false
+	}
+	gl.GameUsers[data.PlayerOrder-1] = access.QueryGameUser(gl.ID, msg.Sender)
+	gl.Users[data.PlayerOrder-1] = access.QueryUsersByID([]uint64{msg.Sender})[0]
+	gl.Users[data.PlayerOrder-1].Password = "nope..."
+	gl.UserIDToPlayerMap[msg.Sender] = int(data.PlayerOrder)
+	return &message.GameMessage{
+		Cmd:    msg.Cmd,
+		Sender: msg.Sender,
+		Data: &message.JoinMessageDataExt{
+			Player: &message.Player{
+				UserID:      msg.Sender,
+				PlayerOrder: data.PlayerOrder,
+				FinalRank:   0,
+				FinalTurns:  0,
+				User:        gl.Users[data.PlayerOrder-1],
+			},
+		},
+	}, true
 }
 
 func (gl *GameLoader) checkGameEnd() {
