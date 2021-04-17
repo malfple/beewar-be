@@ -90,6 +90,15 @@ func TestGameAccess() bool {
 		return false
 	}
 
+	if gu := access.QueryGameUser(gameID, user1.ID); gu == nil {
+		logger.GetLogger().Error("game user should exist")
+		return false
+	}
+	if gu := access.QueryGameUser(gameID, 69696969); gu != nil {
+		logger.GetLogger().Error("game user should not exist")
+		return false
+	}
+
 	if !access.IsExistGameByID(gameID) {
 		logger.GetLogger().Error("game doesn't exist")
 		return false

@@ -114,6 +114,28 @@ func QueryGameUsersByUserID(userID uint64) []*model.GameUser {
 	return res
 }
 
+// QueryGameUser queries game user by (game_id, user_id)
+func QueryGameUser(gameID, userID uint64) *model.GameUser {
+	row := db.QueryRow(`SELECT * FROM game_user_tab WHERE user_id=? AND game_id=? LIMIT 1`, userID, gameID)
+
+	gameUser := &model.GameUser{}
+	err := row.Scan(
+		&gameUser.ID,
+		&gameUser.GameID,
+		&gameUser.UserID,
+		&gameUser.PlayerOrder,
+		&gameUser.FinalRank,
+		&gameUser.FinalTurns)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			logger.GetLogger().Error("db: query error", zap.String("table", "game_user_tab"), zap.Error(err))
+		}
+		return nil
+	}
+
+	return gameUser
+}
+
 // IsExistGameUserByLink checks if a game user exists by (user_id, game_id) link,
 // which means check if a user is registered to a game.
 func IsExistGameUserByLink(userID, gameID uint64) bool {
