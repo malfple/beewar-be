@@ -13,29 +13,22 @@ import (
 )
 
 const (
-	// ErrMsgGameNotStarted is returned when a message is received and the game is not yet started
-	ErrMsgGameNotStarted = "game not yet started"
-	// ErrMsgGameEnded is returned when a message is received and the game is already ended
-	ErrMsgGameEnded = "game already ended"
 	// joining error messages
-	errMsgGameNotInPicking = "game picking phase is over"
+	errMsgGameNotInPicking   = "game picking phase is over"
 	errMsgPlayerOrderInvalid = "invalid slot/player_order given"
-	errMsgPlayerOrderTaken = "that slot/player_order is already taken"
-	errMsgAlreadyJoined = "you have already joined this game"
-	// ErrMsgNotYetTurn is returned when it is not yet the turn for the player who sends the message
-	ErrMsgNotYetTurn = "not your turn yet"
-	// ErrMsgInvalidPos is returned if given position does not have a unit or is out of bound
-	ErrMsgInvalidPos = "you tried to move a non-existent unit or position is out of map"
-	// ErrMsgUnitNotOwned is returned when the player tries to move a unit they do not own
-	ErrMsgUnitNotOwned = "you tried to move a unit you do not own"
-	// ErrMsgUnitCmdNotAllowed is returned if a cmd cannot be used on the unit. See CmdWhitelist
-	ErrMsgUnitCmdNotAllowed = "the cmd cannot be used on that unit"
-	// ErrMsgUnitAlreadyMoved is returned when the unit already moved or attacked
-	ErrMsgUnitAlreadyMoved = "unit already moved or attacked"
-	// ErrMsgInvalidMove is returned when a move is invalid
-	ErrMsgInvalidMove = "invalid move duh"
-	// ErrMsgInvalidAttack is returned when an attack is invalid
-	ErrMsgInvalidAttack = "invalid attack. maybe your target is out of range"
+	errMsgPlayerOrderTaken   = "that slot/player_order is already taken"
+	errMsgAlreadyJoined      = "you have already joined this game"
+	// general validation errors
+	errMsgGameNotStarted = "game not yet started"
+	errMsgGameEnded      = "game already ended"
+	errMsgNotYetTurn     = "not your turn yet"
+	// unit cmd validation errors
+	errMsgInvalidPos        = "you tried to move a non-existent unit or position is out of map"
+	errMsgUnitNotOwned      = "you tried to move a unit you do not own"
+	errMsgUnitCmdNotAllowed = "the cmd cannot be used on that unit" // check cmdwhitelist
+	errMsgUnitAlreadyMoved  = "unit already moved or attacked"
+	errMsgInvalidMove       = "invalid move duh"
+	errMsgInvalidAttack     = "invalid attack. maybe your target is out of range"
 )
 
 var (
@@ -286,7 +279,7 @@ func (gl *GameLoader) assignPlayerRank(player int) {
 // returns the message and a boolean value whether the message should be broadcasted (true = broadcast)
 func (gl *GameLoader) HandleMessage(msg *message.GameMessage) (*message.GameMessage, bool) {
 	if gl.Status == GameStatusEnded {
-		return message.GameErrorMessage(ErrMsgGameEnded), false
+		return message.GameErrorMessage(errMsgGameEnded), false
 	}
 
 	if msg.Cmd == message.CmdJoin {
@@ -294,12 +287,12 @@ func (gl *GameLoader) HandleMessage(msg *message.GameMessage) (*message.GameMess
 	}
 
 	if gl.Status == GameStatusPicking {
-		return message.GameErrorMessage(ErrMsgGameNotStarted), false
+		return message.GameErrorMessage(errMsgGameNotStarted), false
 	}
 
 	// only current player can do stuff
 	if msg.Sender != gl.GameUsers[gl.TurnPlayer-1].UserID {
-		return message.GameErrorMessage(ErrMsgNotYetTurn), false
+		return message.GameErrorMessage(errMsgNotYetTurn), false
 	}
 
 	switch msg.Cmd {

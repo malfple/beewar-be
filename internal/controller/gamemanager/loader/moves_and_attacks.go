@@ -13,13 +13,13 @@ func (gl *GameLoader) handleUnitMove(msg *message.GameMessage) (*message.GameMes
 		return message.GameErrorMessage(errMsg), false
 	}
 	if _, ok := cmdwhitelist.UnitMoveMap[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
-		return message.GameErrorMessage(ErrMsgUnitCmdNotAllowed), false
+		return message.GameErrorMessage(errMsgUnitCmdNotAllowed), false
 	}
 	if gl.Units[data.Y1][data.X1].GetUnitStateBit(objects.UnitStateBitMoved) { // has this unit moved?
-		return message.GameErrorMessage(ErrMsgUnitAlreadyMoved), false
+		return message.GameErrorMessage(errMsgUnitAlreadyMoved), false
 	}
 	if !gl.GridEngine.ValidateMove(data.Y1, data.X1, data.Y2, data.X2) {
-		return message.GameErrorMessage(ErrMsgInvalidMove), false
+		return message.GameErrorMessage(errMsgInvalidMove), false
 	}
 	gl.Units[data.Y2][data.X2], gl.Units[data.Y1][data.X1] = gl.Units[data.Y1][data.X1], gl.Units[data.Y2][data.X2]
 	gl.Units[data.Y2][data.X2].ToggleUnitStateBit(objects.UnitStateBitMoved)
@@ -32,14 +32,14 @@ func (gl *GameLoader) handleUnitAttack(msg *message.GameMessage) (*message.GameM
 		return message.GameErrorMessage(errMsg), false
 	}
 	if _, ok := cmdwhitelist.UnitAttackMap[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
-		return message.GameErrorMessage(ErrMsgUnitCmdNotAllowed), false
+		return message.GameErrorMessage(errMsgUnitCmdNotAllowed), false
 	}
 	if gl.Units[data.Y1][data.X1].GetUnitStateBit(objects.UnitStateBitMoved) { // has this unit moved?
-		return message.GameErrorMessage(ErrMsgUnitAlreadyMoved), false
+		return message.GameErrorMessage(errMsgUnitAlreadyMoved), false
 	}
 	okAtk, distAtk := gl.GridEngine.ValidateAttack(data.Y1, data.X1, data.YT, data.XT, gl.Units[data.Y1][data.X1])
 	if !okAtk {
-		return message.GameErrorMessage(ErrMsgInvalidAttack), false
+		return message.GameErrorMessage(errMsgInvalidAttack), false
 	}
 	gl.Units[data.Y1][data.X1].ToggleUnitStateBit(objects.UnitStateBitMoved)
 	combat.NormalCombat(gl.Units[data.Y1][data.X1], gl.Units[data.YT][data.XT], distAtk)
@@ -66,17 +66,17 @@ func (gl *GameLoader) handleUnitMoveAndAttack(msg *message.GameMessage) (*messag
 		return message.GameErrorMessage(errMsg), false
 	}
 	if _, ok := cmdwhitelist.UnitMoveAndAttackMap[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
-		return message.GameErrorMessage(ErrMsgUnitCmdNotAllowed), false
+		return message.GameErrorMessage(errMsgUnitCmdNotAllowed), false
 	}
 	if gl.Units[data.Y1][data.X1].GetUnitStateBit(objects.UnitStateBitMoved) { // has this unit moved?
-		return message.GameErrorMessage(ErrMsgUnitAlreadyMoved), false
+		return message.GameErrorMessage(errMsgUnitAlreadyMoved), false
 	}
 	if !gl.GridEngine.ValidateMove(data.Y1, data.X1, data.Y2, data.X2) {
-		return message.GameErrorMessage(ErrMsgInvalidMove), false
+		return message.GameErrorMessage(errMsgInvalidMove), false
 	}
 	okAtk, distAtk := gl.GridEngine.ValidateAttack(data.Y2, data.X2, data.YT, data.XT, gl.Units[data.Y1][data.X1])
 	if !okAtk {
-		return message.GameErrorMessage(ErrMsgInvalidAttack), false
+		return message.GameErrorMessage(errMsgInvalidAttack), false
 	}
 	gl.Units[data.Y2][data.X2], gl.Units[data.Y1][data.X1] = gl.Units[data.Y1][data.X1], gl.Units[data.Y2][data.X2]
 	gl.Units[data.Y2][data.X2].ToggleUnitStateBit(objects.UnitStateBitMoved)
