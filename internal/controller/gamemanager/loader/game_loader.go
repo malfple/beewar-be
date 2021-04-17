@@ -17,6 +17,11 @@ const (
 	ErrMsgGameNotStarted = "game not yet started"
 	// ErrMsgGameEnded is returned when a message is received and the game is already ended
 	ErrMsgGameEnded = "game already ended"
+	// joining error messages
+	errMsgGameNotInPicking = "game picking phase is over"
+	errMsgPlayerOrderInvalid = "invalid slot/player_order given"
+	errMsgPlayerOrderTaken = "that slot/player_order is already taken"
+	errMsgAlreadyJoined = "you have already joined this game"
 	// ErrMsgNotYetTurn is returned when it is not yet the turn for the player who sends the message
 	ErrMsgNotYetTurn = "not your turn yet"
 	// ErrMsgInvalidPos is returned if given position does not have a unit or is out of bound
@@ -183,6 +188,27 @@ func (gl *GameLoader) GameData() *message.GameMessage {
 	}
 }
 
+// handles player join
+func (gl *GameLoader) handleJoin(msg *message.GameMessage) (*message.GameMessage, bool) {
+	if gl.Status != GameStatusPicking {
+		return message.GameErrorMessage(errMsgGameNotInPicking), false
+	}
+	data := msg.Data.(*message.JoinMessageData)
+	if data.PlayerOrder < 1 || int(data.PlayerOrder) > gl.PlayerCount {
+		return message.GameErrorMessage(errMsgPlayerOrderInvalid), false
+	}
+	if gl.GameUsers[data.PlayerOrder-1].UserID != 0 { // taken haha
+		return message.GameErrorMessage(errMsgPlayerOrderTaken), false
+	}
+	if _, ok := gl.UserIDToPlayerMap[msg.Sender]; ok {
+		return message.GameErrorMessage(errMsgAlreadyJoined), false
+	}
+	// pass join validation
+	// TODO: implement join
+	// probably should implement createorupdate for game users first
+	return message.GameErrorMessage("yay"), false
+}
+
 func (gl *GameLoader) checkGameEnd() {
 	playersLeft := 0
 	for _, gu := range gl.GameUsers {
@@ -259,11 +285,16 @@ func (gl *GameLoader) assignPlayerRank(player int) {
 // HandleMessage handles game related message
 // returns the message and a boolean value whether the message should be broadcasted (true = broadcast)
 func (gl *GameLoader) HandleMessage(msg *message.GameMessage) (*message.GameMessage, bool) {
-	if gl.Status == GameStatusPicking {
-		return message.GameErrorMessage(ErrMsgGameNotStarted), false
-	}
 	if gl.Status == GameStatusEnded {
 		return message.GameErrorMessage(ErrMsgGameEnded), false
+	}
+
+	if msg.Cmd == message.CmdJoin {
+		return gl.handleJoin(msg)
+	}
+
+	if gl.Status == GameStatusPicking {
+		return message.GameErrorMessage(ErrMsgGameNotStarted), false
 	}
 
 	// only current player can do stuff
