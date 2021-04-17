@@ -10,5 +10,4 @@ func RegisterGameRouter(router *mux.Router) {
 	router.HandleFunc("/my_games", HandleMyGames).Methods("GET")
 	router.HandleFunc("/list", HandleGameList).Methods("GET")
 	router.HandleFunc("/create", HandleGameCreate).Methods("POST")
-	router.HandleFunc("/register", HandleGameRegister).Methods("POST")
 }
