@@ -81,6 +81,7 @@ func NewGameLoader(gameID uint64) (*GameLoader, error) {
 	if gameModel.Status == GameStatusPicking {
 		if int(gameModel.PlayerCount) == len(gameUsers) { // auto-start
 			gameModel.Status = GameStatusOngoing
+			gameModel.TurnPlayer = 1
 		}
 	}
 	// load main fields from game model
@@ -195,6 +196,7 @@ func (gl *GameLoader) checkGameEnd() {
 			gl.assignPlayerRank(i + 1)
 		}
 		gl.Status = GameStatusEnded
+		gl.TurnPlayer = 0
 	}
 }
 

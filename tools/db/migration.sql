@@ -46,7 +46,7 @@ CREATE TABLE game_tab(
     password VARCHAR(64) NOT NULL,
     status TINYINT NOT NULL DEFAULT 0,
     turn_count INT NOT NULL DEFAULT 1,
-    turn_player TINYINT NOT NULL DEFAULT 1,
+    turn_player TINYINT NOT NULL DEFAULT 0,
     time_created BIGINT NOT NULL,
     time_modified BIGINT NOT NULL,
     PRIMARY KEY (id),
