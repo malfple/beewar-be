@@ -75,9 +75,10 @@ func (hub *GameHub) sendMessageToClient(client *GameClient, msg *message.GameMes
 func (hub *GameHub) handleMessage(msg *message.GameMessage) (*message.GameMessage, bool) {
 	if msg.Cmd == message.CmdGameData { // any user can get game data
 		return hub.GameLoader.GameData(), false
-	} else if _, ok := hub.GameLoader.UserIDToPlayerMap[msg.Sender]; !ok { // non-player
-		return message.GameErrorMessage(ErrMsgNotPlayer), false
 	} else if msg.Cmd == message.CmdChat {
+		if _, ok := hub.GameLoader.UserIDToPlayerMap[msg.Sender]; !ok { // non-player
+			return message.GameErrorMessage(ErrMsgNotPlayer), false
+		}
 		return msg, true
 	} else {
 		return hub.GameLoader.HandleMessage(msg)

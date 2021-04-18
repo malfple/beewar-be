@@ -75,13 +75,6 @@ func NewGameLoader(gameID uint64) (*GameLoader, error) {
 	if gameModel == nil {
 		return nil, errGameDoesNotExist
 	}
-	gameUsers := access.QueryGameUsersByGameID(gameID)
-	if gameModel.Status == GameStatusPicking {
-		if int(gameModel.PlayerCount) == len(gameUsers) { // auto-start
-			gameModel.Status = GameStatusOngoing
-			gameModel.TurnPlayer = 1
-		}
-	}
 	// load main fields from game model
 	gameLoader := &GameLoader{
 		ID:           gameModel.ID,
@@ -106,6 +99,7 @@ func NewGameLoader(gameID uint64) (*GameLoader, error) {
 		&gameLoader.Terrain,
 		&gameLoader.Units)
 	// load players
+	gameUsers := access.QueryGameUsersByGameID(gameID)
 	gameLoader.GameUsers = padGameUsers(gameUsers, gameLoader.PlayerCount)
 	userIDs := make([]uint64, len(gameLoader.GameUsers))
 	for i, gu := range gameLoader.GameUsers {
@@ -122,6 +116,8 @@ func NewGameLoader(gameID uint64) (*GameLoader, error) {
 	for _, user := range gameLoader.GameUsers {
 		gameLoader.UserIDToPlayerMap[user.UserID] = int(user.PlayerOrder)
 	}
+
+	gameLoader.checkGameStart()
 
 	return gameLoader, nil
 }
@@ -204,6 +200,7 @@ func (gl *GameLoader) handleJoin(msg *message.GameMessage) (*message.GameMessage
 	gl.Users[data.PlayerOrder-1] = access.QueryUsersByID([]uint64{msg.Sender})[0]
 	gl.Users[data.PlayerOrder-1].Password = "nope..."
 	gl.UserIDToPlayerMap[msg.Sender] = int(data.PlayerOrder)
+	gl.checkGameStart()
 	return &message.GameMessage{
 		Cmd:    msg.Cmd,
 		Sender: msg.Sender,
@@ -219,7 +216,25 @@ func (gl *GameLoader) handleJoin(msg *message.GameMessage) (*message.GameMessage
 	}, true
 }
 
+func (gl *GameLoader) checkGameStart() {
+	if gl.Status != GameStatusPicking {
+		return
+	}
+	for _, gu := range gl.GameUsers {
+		if gu.UserID == 0 {
+			// empty slot
+			return
+		}
+	}
+	logger.GetLogger().Debug("loader: game started", zap.Uint64("game_id", gl.ID))
+	gl.Status = GameStatusOngoing
+	gl.TurnPlayer = 1
+}
+
 func (gl *GameLoader) checkGameEnd() {
+	if gl.Status != GameStatusOngoing {
+		return
+	}
 	playersLeft := 0
 	for _, gu := range gl.GameUsers {
 		if gu.FinalTurns == 0 {
@@ -231,6 +246,7 @@ func (gl *GameLoader) checkGameEnd() {
 		for i := range gl.GameUsers {
 			gl.assignPlayerRank(i + 1)
 		}
+		logger.GetLogger().Debug("loader: game ended", zap.Uint64("game_id", gl.ID))
 		gl.Status = GameStatusEnded
 		gl.TurnPlayer = 0
 	}
