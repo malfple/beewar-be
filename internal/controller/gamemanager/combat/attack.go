@@ -1,7 +1,7 @@
 package combat
 
 import (
-	"gitlab.com/beewar/beewar-be/internal/access/formatter/objects"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/objects"
 	"gitlab.com/beewar/beewar-be/internal/utils"
 )
 

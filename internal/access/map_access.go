@@ -3,8 +3,8 @@ package access
 import (
 	"database/sql"
 	"errors"
-	"gitlab.com/beewar/beewar-be/internal/access/formatter"
 	"gitlab.com/beewar/beewar-be/internal/access/model"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/formatter"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 )
@@ -27,6 +27,7 @@ const (
 )
 
 // CreateEmptyMap creates an empty map with the specified type and size, and returns the id
+// TODO: remove validations
 func CreateEmptyMap(mapType uint8, height, width int, name string, authorUserID uint64) (uint64, error) {
 	if height < 1 || height > mapMaxHeight {
 		return 0, ErrMapHeight
@@ -56,6 +57,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 }
 
 // UpdateMap updates a map
+// TODO: remove validations
 func UpdateMap(id uint64, mapType uint8, height, width int, name string, playerCount uint8, terrainInfo, unitInfo []byte) error {
 	if height < 1 || height > mapMaxHeight {
 		return ErrMapHeight

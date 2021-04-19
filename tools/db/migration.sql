@@ -7,7 +7,7 @@ CREATE TABLE user_tab(
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     email VARCHAR(255) NOT NULL,
     username VARCHAR(255) NOT NULL,
-    password VARCHAR(255) NOT NULL,
+    password VARCHAR(64) NOT NULL,
     rating SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     moves_made BIGINT UNSIGNED NOT NULL DEFAULT 0,
     games_played INT UNSIGNED NOT NULL DEFAULT 0,
@@ -43,11 +43,14 @@ CREATE TABLE game_tab(
     terrain_info BLOB,
     unit_info BLOB,
     map_id BIGINT UNSIGNED NOT NULL,
+    password VARCHAR(64) NOT NULL,
+    status TINYINT NOT NULL DEFAULT 0,
     turn_count INT NOT NULL DEFAULT 1,
-    turn_player TINYINT NOT NULL DEFAULT 1,
+    turn_player TINYINT NOT NULL DEFAULT 0,
     time_created BIGINT NOT NULL,
     time_modified BIGINT NOT NULL,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    INDEX idx_status_created (status, time_created)
 );
 
 CREATE TABLE game_user_tab(
@@ -59,5 +62,5 @@ CREATE TABLE game_user_tab(
     final_turns INT NOT NULL DEFAULT 0,
     PRIMARY KEY (id),
     INDEX idx_game_id (game_id, player_order),
-    INDEX idx_user_id (user_id)
+    INDEX idx_user_game_id (user_id, game_id)
 );

@@ -3,7 +3,6 @@ package game
 import (
 	"github.com/gorilla/websocket"
 	"gitlab.com/beewar/beewar-be/configs"
-	"gitlab.com/beewar/beewar-be/internal/access"
 	"gitlab.com/beewar/beewar-be/internal/controller/auth"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager"
 	"gitlab.com/beewar/beewar-be/internal/logger"
@@ -15,7 +14,7 @@ import (
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		origin := r.Header.Get("Origin")
-		for _, allowedOrigin := range configs.GetConfig().AllowedOrigins {
+		for _, allowedOrigin := range configs.GetServerConfig().AllowedOrigins {
 			if origin == allowedOrigin {
 				return true
 			}
@@ -48,8 +47,12 @@ func HandleGameWS(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if !access.IsExistGameByID(uint64(gameID)) {
-		w.WriteHeader(http.StatusNoContent)
+
+	// setup HUB
+	hub, err := gamemanager.GetGameHub(uint64(gameID))
+	if err != nil {
+		logger.GetLogger().Debug("error making game hub", zap.Error(err))
+		w.WriteHeader(http.StatusNotAcceptable)
 		return
 	}
 
@@ -64,7 +67,8 @@ func HandleGameWS(w http.ResponseWriter, r *http.Request) {
 		_ = c.Close()
 	}()
 
-	client := gamemanager.NewGameClientByID(userID, c, uint64(gameID))
+	// setup CLIENT
+	client := gamemanager.NewGameClient(userID, c, hub)
 	logger.GetLogger().Debug("client start listening", zap.Uint64("user_id", userID), zap.Int64("game_id", gameID))
 	client.Listen()
 	logger.GetLogger().Debug("client stop listening", zap.Uint64("user_id", userID), zap.Int64("game_id", gameID))

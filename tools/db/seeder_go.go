@@ -6,12 +6,52 @@ import (
 	"gitlab.com/beewar/beewar-be/internal/access"
 	"gitlab.com/beewar/beewar-be/internal/controller/auth"
 	"gitlab.com/beewar/beewar-be/internal/logger"
+	"go.uber.org/zap"
+	"io/ioutil"
+	"strings"
 )
+
+func runMigration() bool {
+	logger.GetLogger().Info("run db migration to prepare tables")
+	// load migration file
+	migrationFile, err := ioutil.ReadFile("tools/db/migration.sql")
+	if err != nil {
+		logger.GetLogger().Error("error open migration file", zap.Error(err))
+		return false
+	}
+	// split statements
+	migrationStmts := strings.Split(string(migrationFile), ";\n")
+	// exclude the last one, which is empty
+	migrationStmts = migrationStmts[:len(migrationStmts)-1]
+	// run migration
+	for _, stmt := range migrationStmts {
+		_, err := access.GetDBClient().Exec(stmt)
+		if err != nil {
+			logger.GetLogger().Error("error running migration", zap.Error(err))
+			return false
+		}
+	}
+	return true
+}
 
 func main() {
 	logger.InitLogger()
+	defer logger.ShutdownLogger()
 	configs.InitConfigs()
 	access.InitAccess()
+	defer access.ShutdownAccess()
+
+	fmt.Println("run migration? (y/n)")
+	var response string
+	if _, err := fmt.Scanln(&response); err != nil {
+		fmt.Println(err)
+		return
+	}
+	if response == "y" {
+		if !runMigration() {
+			return
+		}
+	}
 
 	// users
 	_ = auth.Register("malfple@user.com", "malfple", "malfplesecret")
@@ -55,7 +95,10 @@ func main() {
 
 	// game 1
 	if access.QueryGameByID(1) == nil {
-		gameID, _ := access.CreateGameFromMap(1, []uint64{2, 4})
+		map1 := access.QueryMapByID(1)
+		gameID, _ := access.CreateGameFromMap(map1, "")
+		_ = access.CreateGameUser(gameID, 2, 1)
+		_ = access.CreateGameUser(gameID, 4, 2)
 		fmt.Printf("create game with id %d \n", gameID)
 	}
 
@@ -116,10 +159,12 @@ func main() {
 			terrainInfo, unitInfo)
 	}
 	if access.QueryGameByID(2) == nil {
-		gameID, _ := access.CreateGameFromMap(2, []uint64{4, 3, 2, 1})
+		map2 := access.QueryMapByID(2)
+		gameID, _ := access.CreateGameFromMap(map2, "")
+		_ = access.CreateGameUser(gameID, 4, 1)
+		_ = access.CreateGameUser(gameID, 3, 2)
+		_ = access.CreateGameUser(gameID, 2, 3)
+		_ = access.CreateGameUser(gameID, 1, 4)
 		fmt.Printf("create game with id %d \n", gameID)
 	}
-
-	access.ShutdownAccess()
-	logger.ShutdownLogger()
 }

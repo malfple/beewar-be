@@ -71,8 +71,22 @@ func (hub *GameHub) sendMessageToClient(client *GameClient, msg *message.GameMes
 	}
 }
 
+// handle message. returns (resp, isBroadcast?)
+func (hub *GameHub) handleMessage(msg *message.GameMessage) (*message.GameMessage, bool) {
+	if msg.Cmd == message.CmdGameData { // any user can get game data
+		return hub.GameLoader.GameData(), false
+	} else if msg.Cmd == message.CmdChat {
+		if _, ok := hub.GameLoader.UserIDToPlayerMap[msg.Sender]; !ok { // non-player
+			return message.GameErrorMessage(ErrMsgNotPlayer), false
+		}
+		return msg, true
+	} else {
+		return hub.GameLoader.HandleMessage(msg)
+	}
+}
+
 // ListenAndBroadcast handles broadcasting
-// pass in wg to wait for hub to shutdown before exiting application
+// pass in a waitgroup to wait for hub to shutdown before exiting application
 func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -85,19 +99,7 @@ func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 
 		hub.Mutex.Lock()
 		// process message
-		var resp *message.GameMessage
-		var isBroadcast = true
-		if msg.Cmd == message.CmdGameData { // any user can get game data
-			resp = hub.GameLoader.GameData()
-			isBroadcast = false
-		} else if _, ok := hub.GameLoader.UserIDToPlayerMap[msg.Sender]; !ok { // non-player
-			resp = message.GameErrorMessage(ErrMsgNotPlayer)
-			isBroadcast = false
-		} else if msg.Cmd == message.CmdChat {
-			resp = msg
-		} else {
-			resp, isBroadcast = hub.GameLoader.HandleMessage(msg)
-		}
+		resp, isBroadcast := hub.handleMessage(msg)
 		// broadcast
 		if isBroadcast {
 			for _, client := range hub.Clients {
@@ -144,15 +146,20 @@ func (hub *GameHub) ForceShutdown() {
 	hub.Mutex.Unlock()
 }
 
-// NewGameHub initializes a new game hub with the correct game id
-func NewGameHub(gameID uint64, onShutdown func()) *GameHub {
+// NewGameHub initializes a new game hub with the correct game id. Provide an onShutdown function that will be triggered
+// when the game hub decides to shut down.
+func NewGameHub(gameID uint64, onShutdown func()) (*GameHub, error) {
+	gameLoader, err := loader.NewGameLoader(gameID)
+	if err != nil {
+		return nil, err
+	}
 	return &GameHub{
 		GameID:     gameID,
-		GameLoader: loader.NewGameLoader(gameID),
+		GameLoader: gameLoader,
 		Clients:    make(map[uint64]*GameClient),
 		MessageBus: make(chan *message.GameMessage),
 		Mutex:      sync.Mutex{},
 		IsShutdown: false,
 		OnShutdown: onShutdown,
-	}
+	}, nil
 }

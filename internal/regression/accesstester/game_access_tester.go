@@ -16,6 +16,7 @@ func TestGameAccess() bool {
 	if err != nil {
 		return false
 	}
+	mapModel := access.QueryMapByID(mapID)
 
 	terrain1 := make([]byte, 100)
 	for i := 0; i < 10; i++ {
@@ -44,10 +45,17 @@ func TestGameAccess() bool {
 	}
 
 	// game
-	gameID, err := access.CreateGameFromMap(mapID, []uint64{user1.ID, user2.ID})
+	gameID, err := access.CreateGameFromMap(mapModel, "")
 	if err != nil {
 		logger.GetLogger().Error("error create game from map", zap.Error(err))
 		return false
+	}
+	for i, userID := range []uint64{user2.ID, user1.ID} {
+		err = access.CreateGameUser(gameID, userID, uint8(i+1))
+		if err != nil {
+			logger.GetLogger().Error("error link game", zap.Error(err), zap.Uint64("user_id", userID))
+			return false
+		}
 	}
 	game := access.QueryGameByID(gameID)
 	if game == nil {
@@ -57,7 +65,7 @@ func TestGameAccess() bool {
 	game.TurnPlayer = 2
 	game.TurnCount = 1
 	game.UnitInfo = append(game.UnitInfo, []byte{1, 2, 1, 1, 10, 0}...)
-	err = access.UpdateGame(game)
+	err = access.UpdateGameUsingTx(nil, game)
 	if err != nil {
 		logger.GetLogger().Error("error update game", zap.Error(err))
 		return false
@@ -71,7 +79,7 @@ func TestGameAccess() bool {
 		logger.GetLogger().Error("should be empty array, not nil")
 	}
 	players := access.QueryGameUsersByGameID(gameID)
-	if len(players) != 2 || players[0].UserID != user1.ID || players[1].UserID != user2.ID {
+	if len(players) != 2 || players[0].UserID != user2.ID || players[1].UserID != user1.ID {
 		logger.GetLogger().Error("error query users linked to game")
 		return false
 	}
@@ -79,6 +87,15 @@ func TestGameAccess() bool {
 	games2 := access.QueryGameUsersByUserID(user1.ID)
 	if games1[0].GameID != gameID || games1[0].GameID != games2[0].GameID {
 		logger.GetLogger().Error("error query games linked to user")
+		return false
+	}
+
+	if gu := access.QueryGameUser(gameID, user1.ID); gu == nil {
+		logger.GetLogger().Error("game user should exist")
+		return false
+	}
+	if gu := access.QueryGameUser(gameID, 69696969); gu != nil {
+		logger.GetLogger().Error("game user should not exist")
 		return false
 	}
 
@@ -91,11 +108,28 @@ func TestGameAccess() bool {
 		return false
 	}
 
+	if !access.IsExistGameUserByLink(user1.ID, gameID) {
+		logger.GetLogger().Error("game user not found")
+		return false
+	}
+	if access.IsExistGameUserByLink(696969, gameID) {
+		logger.GetLogger().Error("game user isn't supposed to exist")
+		return false
+	}
+	if !access.IsExistGameUserByPlayerOrder(gameID, 2) {
+		logger.GetLogger().Error("slot 2 taken")
+		return false
+	}
+	if access.IsExistGameUserByPlayerOrder(gameID, 3) {
+		logger.GetLogger().Error("slot 3 doesn't exist haha")
+		return false
+	}
+
 	// update game user
 	gameUserToUpdate := games1[0]
 	gameUserToUpdate.FinalTurns = 69
 	gameUserToUpdate.FinalRank = 1
-	if err := access.UpdateGameUser(gameUserToUpdate); err != nil {
+	if err := access.UpdateGameUserUsingTx(nil, gameUserToUpdate); err != nil {
 		return false
 	}
 	games1again := access.QueryGameUsersByUserID(user1.ID)
@@ -104,6 +138,16 @@ func TestGameAccess() bool {
 			zap.Int32("actual final turns", games1again[0].FinalTurns),
 			zap.Uint8("actual final rank", games1again[0].FinalRank))
 	}
+
+	// combined updates
+	game = access.QueryGameByID(gameID)
+	players = access.QueryGameUsersByGameID(gameID)
+	if err := access.UpdateGameAndGameUser(game, players); err != nil {
+		return false
+	}
+
+	// queries
+	_ = access.QueryWaitingGames()
 
 	return true
 }

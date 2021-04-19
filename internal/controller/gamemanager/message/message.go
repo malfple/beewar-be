@@ -15,6 +15,8 @@ const (
 	// CmdGameData is a cmd for sending game data. no restriction.
 	// If sent by client, it means client is requesting game data.
 	CmdGameData = "GAME_DATA"
+	// CmdJoin is a cmd for joining game. no restriction
+	CmdJoin = "JOIN"
 	// CmdError is a cmd for sending server error. server-only
 	CmdError = "ERROR"
 
@@ -31,7 +33,7 @@ const (
 
 var (
 	// ErrCmdNotAllowed is returned when client sends a restricted cmd
-	ErrCmdNotAllowed = errors.New("that cmd is not allowed")
+	ErrCmdNotAllowed = errors.New("message validation: that cmd is not allowed")
 )
 
 // GameMessageTemporary is the container struct when unmarshalling from json
@@ -73,6 +75,12 @@ func UnmarshalAndValidateGameMessage(rawPayload []byte, senderID uint64) (*GameM
 		message.Data = data
 	case CmdGameData:
 		// do nothing
+	case CmdJoin:
+		var data *JoinMessageData
+		if err := json.Unmarshal(temp.Data, &data); err != nil {
+			return nil, err
+		}
+		message.Data = data
 	case CmdUnitMove:
 		var data *UnitMoveMessageData
 		if err := json.Unmarshal(temp.Data, &data); err != nil {

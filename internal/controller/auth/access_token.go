@@ -10,6 +10,9 @@ import (
 
 // we use jwt for access token
 
+// AccessTokenHeaderName is the header name of the access token
+const AccessTokenHeaderName = "Beewar-A-Token"
+
 var jwtSecret = []byte{184, 208, 147, 205, 37, 218, 186, 230, 51, 67, 100, 192, 190, 207, 108, 26, 136, 235, 173, 57, 198, 159, 15, 75, 166, 148, 108, 239, 12, 77, 164, 9}
 
 const jwtExpiry = 15 * time.Minute

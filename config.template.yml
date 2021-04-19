@@ -1,0 +1,6 @@
+database:
+  username: root
+  password: malfplemac
+  address: ":3306"
+  name: beewar
+allowed_origins: ["http://localhost:3000"]

@@ -10,17 +10,17 @@ import (
 	"net/http"
 )
 
-// HandleGameList handles request to get open/waiting games
-func HandleGameList(w http.ResponseWriter, r *http.Request) {
+// HandleMyGames handles request to get a list of games from a user
+func HandleMyGames(w http.ResponseWriter, r *http.Request) {
 	accessToken := r.Header.Get(auth.AccessTokenHeaderName)
-	_, _, err := auth.ValidateJWT(accessToken)
+	userID, _, err := auth.ValidateJWT(accessToken)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	resp := &ListResponse{
-		Games: access.QueryWaitingGames(),
+	resp := &MyGamesResponse{
+		GameUsers: access.QueryGameUsersByUserID(userID),
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -32,7 +32,7 @@ func HandleGameList(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// ListResponse is a response for game list handler
-type ListResponse struct {
-	Games []*model.Game `json:"games"`
+// MyGamesResponse is response struct for my_games handler
+type MyGamesResponse struct {
+	GameUsers []*model.GameUser `json:"game_users"`
 }

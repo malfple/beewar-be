@@ -14,7 +14,7 @@ func HandleToken(w http.ResponseWriter, r *http.Request) {
 
 	// take refresh token from cookie
 	refreshToken := ""
-	if refreshTokenCookie, err := r.Cookie(RefreshTokenCookieName); err == nil {
+	if refreshTokenCookie, err := r.Cookie(auth.RefreshTokenCookieName); err == nil {
 		refreshToken = refreshTokenCookie.Value
 	}
 

@@ -36,7 +36,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	// and access token will be returned directly in the body
 
 	http.SetCookie(w, &http.Cookie{
-		Name:     RefreshTokenCookieName,
+		Name:     auth.RefreshTokenCookieName,
 		Value:    refreshToken,
 		MaxAge:   864000, // 10 day cookie expiry. The expiry time for refresh token should be lower
 		Path:     "/api/auth",

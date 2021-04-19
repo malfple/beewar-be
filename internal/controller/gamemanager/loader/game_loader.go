@@ -1,33 +1,47 @@
 package loader
 
 import (
+	"errors"
 	"gitlab.com/beewar/beewar-be/internal/access"
-	"gitlab.com/beewar/beewar-be/internal/access/formatter"
-	"gitlab.com/beewar/beewar-be/internal/access/formatter/objects"
 	"gitlab.com/beewar/beewar-be/internal/access/model"
-	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/combat"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/formatter"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/loader/gridengine"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/message"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/objects"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 )
 
 const (
-	// ErrMsgGameEnded is returned when a message is received and the game is already ended
-	ErrMsgGameEnded = "game already ended"
-	// ErrMsgNotYetTurn is returned when it is not yet the turn for the player who sends the message
-	ErrMsgNotYetTurn = "not your turn yet"
-	// ErrMsgInvalidPos is returned if given position does not have a unit or is out of bound
-	ErrMsgInvalidPos = "you tried to move a non-existent unit or position is out of map"
-	// ErrMsgUnitNotOwned is returned when the player tries to move a unit they do not own
-	ErrMsgUnitNotOwned = "you tried to move a unit you do not own"
-	// ErrMsgUnitCmdNotAllowed is returned if a cmd cannot be used on the unit. See CmdWhitelist
-	ErrMsgUnitCmdNotAllowed = "the cmd cannot be used on that unit"
-	// ErrMsgUnitAlreadyMoved is returned when the unit already moved or attacked
-	ErrMsgUnitAlreadyMoved = "unit already moved or attacked"
-	// ErrMsgInvalidMove is returned when a move is invalid
-	ErrMsgInvalidMove = "invalid move duh"
-	// ErrMsgInvalidAttack is returned when an attack is invalid
-	ErrMsgInvalidAttack = "invalid attack. maybe your target is out of range"
+	// joining error messages
+	errMsgGameNotInPicking   = "game picking phase is over"
+	errMsgPlayerOrderInvalid = "invalid slot/player_order given"
+	errMsgPlayerOrderTaken   = "that slot/player_order is already taken"
+	errMsgAlreadyJoined      = "you have already joined this game"
+	// general validation errors
+	errMsgGameNotStarted = "game not yet started"
+	errMsgGameEnded      = "game already ended"
+	errMsgNotYetTurn     = "not your turn yet"
+	// unit cmd validation errors
+	errMsgInvalidPos        = "you tried to move a non-existent unit or position is out of map"
+	errMsgUnitNotOwned      = "you tried to move a unit you do not own"
+	errMsgUnitCmdNotAllowed = "the cmd cannot be used on that unit" // check cmdwhitelist
+	errMsgUnitAlreadyMoved  = "unit already moved or attacked"
+	errMsgInvalidMove       = "invalid move duh"
+	errMsgInvalidAttack     = "invalid attack. maybe your target is out of range"
+)
+
+var (
+	errGameDoesNotExist = errors.New("game does not exist")
+)
+
+const (
+	// GameStatusPicking is a game state
+	GameStatusPicking = 0
+	// GameStatusOngoing is a game state
+	GameStatusOngoing = 1
+	// GameStatusEnded is a game state
+	GameStatusEnded = 2
 )
 
 // GameLoader loads game from db and perform game tasks.
@@ -43,22 +57,23 @@ type GameLoader struct {
 	Terrain           [][]int
 	Units             [][]objects.Unit
 	MapID             uint64
+	Password          string
+	Status            int8  // indicates game status
 	TurnCount         int32 // turns start from 1, defined in migration
-	TurnPlayer        int   // players are numbered 1..PlayerCount. If this is 0, game is ended
+	TurnPlayer        int   // players are numbered 1..PlayerCount.
 	TimeCreated       int64
 	TimeModified      int64
-	GridEngine        *GridEngine
+	GridEngine        *gridengine.GridEngine
 	GameUsers         []*model.GameUser
 	Users             []*model.User
 	UserIDToPlayerMap map[uint64]int
 }
 
 // NewGameLoader loads game by gameID and return the GameLoader object
-func NewGameLoader(gameID uint64) *GameLoader {
+func NewGameLoader(gameID uint64) (*GameLoader, error) {
 	gameModel := access.QueryGameByID(gameID)
 	if gameModel == nil {
-		// the websocket handler should already handle this
-		panic("loader: game is supposed to exist")
+		return nil, errGameDoesNotExist
 	}
 	// load main fields from game model
 	gameLoader := &GameLoader{
@@ -70,26 +85,31 @@ func NewGameLoader(gameID uint64) *GameLoader {
 		Terrain:      formatter.ModelToGameTerrain(gameModel.Height, gameModel.Width, gameModel.TerrainInfo),
 		Units:        formatter.ModelToGameUnit(gameModel.Height, gameModel.Width, gameModel.UnitInfo),
 		MapID:        gameModel.MapID,
+		Password:     gameModel.Password,
+		Status:       gameModel.Status,
 		TurnCount:    gameModel.TurnCount,
 		TurnPlayer:   int(gameModel.TurnPlayer),
 		TimeCreated:  gameModel.TimeCreated,
 		TimeModified: gameModel.TimeModified,
 	}
 	// create grid engine
-	gameLoader.GridEngine = NewGridEngine(
+	gameLoader.GridEngine = gridengine.NewGridEngine(
 		gameLoader.Width,
 		gameLoader.Height,
 		&gameLoader.Terrain,
 		&gameLoader.Units)
 	// load players
-	gameLoader.GameUsers = access.QueryGameUsersByGameID(gameLoader.ID)
+	gameUsers := access.QueryGameUsersByGameID(gameID)
+	gameLoader.GameUsers = padGameUsers(gameUsers, gameLoader.PlayerCount)
 	userIDs := make([]uint64, len(gameLoader.GameUsers))
 	for i, gu := range gameLoader.GameUsers {
 		userIDs[i] = gu.UserID
 	}
 	gameLoader.Users = access.QueryUsersByID(userIDs)
 	for i := range gameLoader.Users {
-		gameLoader.Users[i].Password = ""
+		if gameLoader.Users[i] != nil {
+			gameLoader.Users[i].Password = "nope."
+		}
 	}
 	// make reverse map
 	gameLoader.UserIDToPlayerMap = make(map[uint64]int)
@@ -97,7 +117,9 @@ func NewGameLoader(gameID uint64) *GameLoader {
 		gameLoader.UserIDToPlayerMap[user.UserID] = int(user.PlayerOrder)
 	}
 
-	return gameLoader
+	gameLoader.checkGameStart()
+
+	return gameLoader, nil
 }
 
 // ToModel converts the current game object into a model.Game db model
@@ -111,6 +133,8 @@ func (gl *GameLoader) ToModel() *model.Game {
 		TerrainInfo:  formatter.GameTerrainToModel(gl.Height, gl.Width, gl.Terrain),
 		UnitInfo:     formatter.GameUnitToModel(gl.Height, gl.Width, gl.Units),
 		MapID:        gl.MapID,
+		Password:     gl.Password,
+		Status:       gl.Status,
 		TurnCount:    gl.TurnCount,
 		TurnPlayer:   int8(gl.TurnPlayer),
 		TimeCreated:  gl.TimeCreated,
@@ -121,15 +145,13 @@ func (gl *GameLoader) ToModel() *model.Game {
 // SaveToDB saves the current game object to db
 func (gl *GameLoader) SaveToDB() error {
 	gameModel := gl.ToModel()
-	if err := access.UpdateGame(gameModel); err != nil {
-		logger.GetLogger().Error("loader: error save game to db", zap.Error(err))
+	if err := formatter.ValidateUnitInfo(gameModel.Height, gameModel.Width, gameModel.UnitInfo); err != nil {
+		logger.GetLogger().Error("loader: fail unit info validation when saving", zap.Error(err))
 		return err
 	}
-	for _, gu := range gl.GameUsers {
-		if err := access.UpdateGameUser(gu); err != nil {
-			logger.GetLogger().Error("loader: error save game_user to db", zap.Error(err))
-			return err
-		}
+	if err := access.UpdateGameAndGameUser(gameModel, gl.GameUsers); err != nil {
+		logger.GetLogger().Error("loader: error save game to db", zap.Error(err))
+		return err
 	}
 	return nil
 }
@@ -155,7 +177,64 @@ func (gl *GameLoader) GameData() *message.GameMessage {
 	}
 }
 
+// handles player join
+func (gl *GameLoader) handleJoin(msg *message.GameMessage) (*message.GameMessage, bool) {
+	if gl.Status != GameStatusPicking {
+		return message.GameErrorMessage(errMsgGameNotInPicking), false
+	}
+	data := msg.Data.(*message.JoinMessageData)
+	if data.PlayerOrder < 1 || int(data.PlayerOrder) > gl.PlayerCount {
+		return message.GameErrorMessage(errMsgPlayerOrderInvalid), false
+	}
+	if gl.GameUsers[data.PlayerOrder-1].UserID != 0 { // taken haha
+		return message.GameErrorMessage(errMsgPlayerOrderTaken), false
+	}
+	if _, ok := gl.UserIDToPlayerMap[msg.Sender]; ok {
+		return message.GameErrorMessage(errMsgAlreadyJoined), false
+	}
+	// pass join validation
+	if err := access.CreateGameUser(gl.ID, msg.Sender, data.PlayerOrder); err != nil {
+		return message.GameErrorMessage(err.Error()), false
+	}
+	gl.GameUsers[data.PlayerOrder-1] = access.QueryGameUser(gl.ID, msg.Sender)
+	gl.Users[data.PlayerOrder-1] = access.QueryUsersByID([]uint64{msg.Sender})[0]
+	gl.Users[data.PlayerOrder-1].Password = "nope..."
+	gl.UserIDToPlayerMap[msg.Sender] = int(data.PlayerOrder)
+	gl.checkGameStart()
+	return &message.GameMessage{
+		Cmd:    msg.Cmd,
+		Sender: msg.Sender,
+		Data: &message.JoinMessageDataExt{
+			Player: &message.Player{
+				UserID:      msg.Sender,
+				PlayerOrder: data.PlayerOrder,
+				FinalRank:   0,
+				FinalTurns:  0,
+				User:        gl.Users[data.PlayerOrder-1],
+			},
+		},
+	}, true
+}
+
+func (gl *GameLoader) checkGameStart() {
+	if gl.Status != GameStatusPicking {
+		return
+	}
+	for _, gu := range gl.GameUsers {
+		if gu.UserID == 0 {
+			// empty slot
+			return
+		}
+	}
+	logger.GetLogger().Debug("loader: game started", zap.Uint64("game_id", gl.ID))
+	gl.Status = GameStatusOngoing
+	gl.TurnPlayer = 1
+}
+
 func (gl *GameLoader) checkGameEnd() {
+	if gl.Status != GameStatusOngoing {
+		return
+	}
 	playersLeft := 0
 	for _, gu := range gl.GameUsers {
 		if gu.FinalTurns == 0 {
@@ -167,6 +246,8 @@ func (gl *GameLoader) checkGameEnd() {
 		for i := range gl.GameUsers {
 			gl.assignPlayerRank(i + 1)
 		}
+		logger.GetLogger().Debug("loader: game ended", zap.Uint64("game_id", gl.ID))
+		gl.Status = GameStatusEnded
 		gl.TurnPlayer = 0
 	}
 }
@@ -227,125 +308,33 @@ func (gl *GameLoader) assignPlayerRank(player int) {
 	gl.GameUsers[player-1].FinalTurns = gl.TurnCount
 }
 
-// validate functions return empty string if no errors
-
-// validates of unit is owned by the userID given.
-// also validates position inside map, and if a unit exists in the given position
-func (gl *GameLoader) validateUnitOwned(userID uint64, y, x int) string {
-	if y < 0 || y > gl.Height || x < 0 || x > gl.Width {
-		return ErrMsgInvalidPos
-	}
-	if gl.Units[y][x] == nil {
-		return ErrMsgInvalidPos
-	}
-	// player doesn't own the unit
-	if gl.UserIDToPlayerMap[userID] != gl.Units[y][x].GetUnitOwner() {
-		return ErrMsgUnitNotOwned
-	}
-
-	return ""
-}
-
 // HandleMessage handles game related message
 // returns the message and a boolean value whether the message should be broadcasted (true = broadcast)
 func (gl *GameLoader) HandleMessage(msg *message.GameMessage) (*message.GameMessage, bool) {
-	if gl.TurnPlayer == 0 {
-		return message.GameErrorMessage(ErrMsgGameEnded), false
+	if gl.Status == GameStatusEnded {
+		return message.GameErrorMessage(errMsgGameEnded), false
+	}
+
+	if msg.Cmd == message.CmdJoin {
+		return gl.handleJoin(msg)
+	}
+
+	if gl.Status == GameStatusPicking {
+		return message.GameErrorMessage(errMsgGameNotStarted), false
 	}
 
 	// only current player can do stuff
 	if msg.Sender != gl.GameUsers[gl.TurnPlayer-1].UserID {
-		return message.GameErrorMessage(ErrMsgNotYetTurn), false
+		return message.GameErrorMessage(errMsgNotYetTurn), false
 	}
 
 	switch msg.Cmd {
 	case message.CmdUnitMove:
-		data := msg.Data.(*message.UnitMoveMessageData)
-		if errMsg := gl.validateUnitOwned(msg.Sender, data.Y1, data.X1); len(errMsg) > 0 {
-			return message.GameErrorMessage(errMsg), false
-		}
-		if _, ok := CmdWhitelistUnitMove[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
-			return message.GameErrorMessage(ErrMsgUnitCmdNotAllowed), false
-		}
-		if gl.Units[data.Y1][data.X1].GetUnitStateBit(objects.UnitStateBitMoved) { // has this unit moved?
-			return message.GameErrorMessage(ErrMsgUnitAlreadyMoved), false
-		}
-		if !gl.GridEngine.ValidateMove(data.Y1, data.X1, data.Y2, data.X2) {
-			return message.GameErrorMessage(ErrMsgInvalidMove), false
-		}
-		gl.Units[data.Y2][data.X2], gl.Units[data.Y1][data.X1] = gl.Units[data.Y1][data.X1], gl.Units[data.Y2][data.X2]
-		gl.Units[data.Y2][data.X2].ToggleUnitStateBit(objects.UnitStateBitMoved)
-		return msg, true
+		return gl.handleUnitMove(msg)
 	case message.CmdUnitAttack:
-		data := msg.Data.(*message.UnitAttackMessageData)
-		if errMsg := gl.validateUnitOwned(msg.Sender, data.Y1, data.X1); len(errMsg) > 0 {
-			return message.GameErrorMessage(errMsg), false
-		}
-		if _, ok := CmdWhiteListUnitAttack[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
-			return message.GameErrorMessage(ErrMsgUnitCmdNotAllowed), false
-		}
-		if gl.Units[data.Y1][data.X1].GetUnitStateBit(objects.UnitStateBitMoved) { // has this unit moved?
-			return message.GameErrorMessage(ErrMsgUnitAlreadyMoved), false
-		}
-		okAtk, distAtk := gl.GridEngine.ValidateAttack(data.Y1, data.X1, data.YT, data.XT, gl.Units[data.Y1][data.X1])
-		if !okAtk {
-			return message.GameErrorMessage(ErrMsgInvalidAttack), false
-		}
-		gl.Units[data.Y1][data.X1].ToggleUnitStateBit(objects.UnitStateBitMoved)
-		combat.NormalCombat(gl.Units[data.Y1][data.X1], gl.Units[data.YT][data.XT], distAtk)
-		replyMsg := &message.GameMessage{
-			Cmd:    msg.Cmd,
-			Sender: msg.Sender,
-			Data: &message.UnitAttackMessageDataExt{
-				Y1:    data.Y1,
-				X1:    data.X1,
-				YT:    data.YT,
-				XT:    data.XT,
-				HPAtk: gl.Units[data.Y1][data.X1].GetUnitHP(),
-				HPDef: gl.Units[data.YT][data.XT].GetUnitHP(),
-			},
-		}
-		gl.checkUnitAlive(data.Y1, data.X1)
-		gl.checkUnitAlive(data.YT, data.XT)
-		return replyMsg, true
+		return gl.handleUnitAttack(msg)
 	case message.CmdUnitMoveAndAttack:
-		data := msg.Data.(*message.UnitMoveAndAttackMessageData)
-		if errMsg := gl.validateUnitOwned(msg.Sender, data.Y1, data.X1); len(errMsg) > 0 {
-			return message.GameErrorMessage(errMsg), false
-		}
-		if _, ok := CmdWhiteListUnitMoveAndAttack[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
-			return message.GameErrorMessage(ErrMsgUnitCmdNotAllowed), false
-		}
-		if gl.Units[data.Y1][data.X1].GetUnitStateBit(objects.UnitStateBitMoved) { // has this unit moved?
-			return message.GameErrorMessage(ErrMsgUnitAlreadyMoved), false
-		}
-		if !gl.GridEngine.ValidateMove(data.Y1, data.X1, data.Y2, data.X2) {
-			return message.GameErrorMessage(ErrMsgInvalidMove), false
-		}
-		okAtk, distAtk := gl.GridEngine.ValidateAttack(data.Y2, data.X2, data.YT, data.XT, gl.Units[data.Y1][data.X1])
-		if !okAtk {
-			return message.GameErrorMessage(ErrMsgInvalidAttack), false
-		}
-		gl.Units[data.Y2][data.X2], gl.Units[data.Y1][data.X1] = gl.Units[data.Y1][data.X1], gl.Units[data.Y2][data.X2]
-		gl.Units[data.Y2][data.X2].ToggleUnitStateBit(objects.UnitStateBitMoved)
-		combat.NormalCombat(gl.Units[data.Y2][data.X2], gl.Units[data.YT][data.XT], distAtk)
-		replyMsg := &message.GameMessage{
-			Cmd:    msg.Cmd,
-			Sender: msg.Sender,
-			Data: &message.UnitMoveAndAttackMessageDataExt{
-				Y1:    data.Y1,
-				X1:    data.X1,
-				Y2:    data.Y2,
-				X2:    data.X2,
-				YT:    data.YT,
-				XT:    data.XT,
-				HPAtk: gl.Units[data.Y2][data.X2].GetUnitHP(),
-				HPDef: gl.Units[data.YT][data.XT].GetUnitHP(),
-			},
-		}
-		gl.checkUnitAlive(data.Y2, data.X2)
-		gl.checkUnitAlive(data.YT, data.XT)
-		return replyMsg, true
+		return gl.handleUnitMoveAndAttack(msg)
 	case message.CmdEndTurn:
 		gl.nextTurn()
 		return msg, true

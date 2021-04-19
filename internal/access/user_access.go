@@ -45,6 +45,9 @@ func QueryUserByUsername(username string) *model.User {
 
 // QueryUsersByID gets a list of users by id
 func QueryUsersByID(userIDs []uint64) []*model.User {
+	if len(userIDs) == 0 {
+		return make([]*model.User, 0)
+	}
 	stmt, args, err := sqlx.In(`SELECT * FROM user_tab WHERE id IN (?)`, userIDs)
 	if err != nil {
 		logger.GetLogger().Error("db: build sqlx query error", zap.String("table", "user_tab"), zap.Error(err))

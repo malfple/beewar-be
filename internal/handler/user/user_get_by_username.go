@@ -20,7 +20,7 @@ func HandleUserGetByUsername(w http.ResponseWriter, r *http.Request) {
 	resp := &GetResponse{User: nil}
 	if user != nil {
 		resp.User = user
-		resp.User.Password = ""
+		resp.User.Password = "it's a secret haha"
 	}
 
 	err := json.NewEncoder(w).Encode(resp)
