@@ -229,6 +229,8 @@ func (gl *GameLoader) checkGameStart() {
 	logger.GetLogger().Debug("loader: game started", zap.Uint64("game_id", gl.ID))
 	gl.Status = GameStatusOngoing
 	gl.TurnPlayer = 1
+	// immediately save to db
+	gl.SaveToDB()
 }
 
 func (gl *GameLoader) checkGameEnd() {
@@ -249,6 +251,8 @@ func (gl *GameLoader) checkGameEnd() {
 		logger.GetLogger().Debug("loader: game ended", zap.Uint64("game_id", gl.ID))
 		gl.Status = GameStatusEnded
 		gl.TurnPlayer = 0
+		// immediately save to db
+		gl.SaveToDB()
 	}
 }
 
