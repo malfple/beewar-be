@@ -126,7 +126,7 @@ func NewGameLoader(gameID uint64) (*GameLoader, error) {
 
 // ToModel converts the current game object into a model.Game db model
 func (gl *GameLoader) ToModel() *model.Game {
-	return &model.Game{
+	game := &model.Game{
 		ID:           gl.ID,
 		Type:         gl.Type,
 		Height:       gl.Height,
@@ -142,6 +142,10 @@ func (gl *GameLoader) ToModel() *model.Game {
 		TimeCreated:  gl.TimeCreated,
 		TimeModified: gl.TimeModified,
 	}
+	if game.Password != "" { // only mask if password exists
+		game.Password = "masked haha" // doesn't matter even on db save because cannot update password anyway
+	}
+	return game
 }
 
 // SaveToDB saves the current game object to db
@@ -194,7 +198,7 @@ func (gl *GameLoader) handleJoin(msg *message.GameMessage) (*message.GameMessage
 	if _, ok := gl.UserIDToPlayerMap[msg.Sender]; ok {
 		return message.GameErrorMessage(errMsgAlreadyJoined), false
 	}
-	if data.Password != "" {
+	if gl.Password != "" {
 		if err := bcrypt.CompareHashAndPassword([]byte(gl.Password), []byte(data.Password)); err != nil {
 			return message.GameErrorMessage(errMsgWrongPassword), false
 		}
