@@ -32,6 +32,11 @@ func TestUserAccess() bool {
 		logger.GetLogger().Error("expected 2 users", zap.Int("actual", len(users)))
 		return false
 	}
+	users2 := access.QueryUsers(10, 0)
+	if len(users2) != 2 {
+		logger.GetLogger().Error("expected 2 users", zap.Int("actual", len(users2)))
+		return false
+	}
 	if users[0].ID != user2.ID || users[1].ID != user.ID {
 		logger.GetLogger().Error("wrong order when batch query user")
 		return false

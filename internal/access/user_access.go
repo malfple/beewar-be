@@ -90,6 +90,39 @@ func QueryUsersByID(userIDs []uint64) []*model.User {
 	return users
 }
 
+// QueryUsers gets a list of users (slow because of limit offset. feel free to optimize)
+func QueryUsers(limit, offset int) []*model.User {
+	rows, err := db.Query(`SELECT * FROM user_tab LIMIT ? OFFSET ?`, limit, offset)
+	if err != nil {
+		logger.GetLogger().Error("db: query error", zap.String("table", "user_tab"), zap.Error(err))
+		return nil
+	}
+	defer rows.Close()
+
+	users := make([]*model.User, 0)
+	for rows.Next() {
+		user := &model.User{}
+		err := rows.Scan(
+			&user.ID,
+			&user.Email,
+			&user.Username,
+			&user.Password,
+			&user.Rating,
+			&user.MovesMade,
+			&user.GamesPlayed,
+			&user.TimeCreated)
+		if err != nil {
+			logger.GetLogger().Error("db: query error", zap.String("table", "user_tab"), zap.Error(err))
+		} else {
+			users = append(users, user)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		logger.GetLogger().Error("db: query error", zap.String("table", "user_tab"), zap.Error(err))
+	}
+	return users
+}
+
 // IsExistUserByID checks for userID existence
 func IsExistUserByID(userID uint64) bool {
 	row := db.QueryRow(`SELECT 1 FROM user_tab WHERE id=? LIMIT 1`, userID)
