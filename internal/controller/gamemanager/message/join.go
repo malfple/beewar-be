@@ -2,7 +2,8 @@ package message
 
 // JoinMessageData is a message struct for client to send to server
 type JoinMessageData struct {
-	PlayerOrder uint8 `json:"player_order"`
+	PlayerOrder uint8  `json:"player_order"`
+	Password    string `json:"password"`
 }
 
 // JoinMessageDataExt is an event message by server to notify if a player joined the game.
