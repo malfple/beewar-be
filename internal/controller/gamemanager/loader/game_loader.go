@@ -4,7 +4,7 @@ import (
 	"errors"
 	"gitlab.com/beewar/beewar-be/internal/access"
 	"gitlab.com/beewar/beewar-be/internal/access/model"
-	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/formatter"
+	"gitlab.com/beewar/beewar-be/internal/controller/formatter"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/loader/gridengine"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/message"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/objects"
