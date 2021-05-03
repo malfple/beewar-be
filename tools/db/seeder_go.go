@@ -5,6 +5,7 @@ import (
 	"gitlab.com/beewar/beewar-be/configs"
 	"gitlab.com/beewar/beewar-be/internal/access"
 	"gitlab.com/beewar/beewar-be/internal/controller/auth"
+	"gitlab.com/beewar/beewar-be/internal/controller/mapmanager"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 	"io/ioutil"
@@ -61,7 +62,7 @@ func main() {
 
 	// map 1
 	if access.QueryMapByID(1) == nil {
-		mapID, _ := access.CreateEmptyMap(0, 10, 10, "some seeded map", 1)
+		mapID := mapmanager.CreateEmptyMap(1)
 		fmt.Printf("create map with id: %d\n", mapID)
 
 		terrainInfo := []byte{
@@ -104,7 +105,7 @@ func main() {
 
 	// map 2 and game 2
 	if access.QueryMapByID(2) == nil {
-		mapID, _ := access.CreateEmptyMap(0, 10, 10, "some seeded map", 1)
+		mapID := mapmanager.CreateEmptyMap(1)
 		fmt.Printf("create map with id: %d\n", mapID)
 
 		terrainInfo := []byte{

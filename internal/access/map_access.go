@@ -27,18 +27,7 @@ const (
 )
 
 // CreateEmptyMap creates an empty map with the specified type and size, and returns the id
-// TODO: remove validations
 func CreateEmptyMap(mapType uint8, height, width int, name string, authorUserID uint64) (uint64, error) {
-	if height < 1 || height > mapMaxHeight {
-		return 0, ErrMapHeight
-	}
-	if width < 1 || width > mapMaxWidth {
-		return 0, ErrMapWidth
-	}
-	if len(name) > mapMaxNameLength {
-		return 0, ErrMapNameLength
-	}
-
 	terrainInfo := make([]byte, width*height)
 	unitInfo := make([]byte, 0)
 

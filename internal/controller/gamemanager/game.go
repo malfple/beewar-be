@@ -14,7 +14,7 @@ import (
 
 var (
 	errMapDoesNotExist = errors.New("map does not exist")
-	errMapNotReady = errors.New("the map is not ready to be played. add more units")
+	errMapNotReady     = errors.New("the map is not ready to be played. add more units")
 )
 
 // CreateGame creates a new game with the given map id. If password is provided, it will be bcrypt-ed
