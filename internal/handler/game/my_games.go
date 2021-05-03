@@ -2,9 +2,9 @@ package game
 
 import (
 	"encoding/json"
-	"gitlab.com/beewar/beewar-be/internal/access"
 	"gitlab.com/beewar/beewar-be/internal/access/model"
 	"gitlab.com/beewar/beewar-be/internal/controller/auth"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 	"net/http"
@@ -19,8 +19,10 @@ func HandleMyGames(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	gameUsers, games := gamemanager.GetMyGames(userID)
 	resp := &MyGamesResponse{
-		GameUsers: access.QueryGameUsersByUserID(userID),
+		GameUsers: gameUsers,
+		Games:     games,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -35,4 +37,5 @@ func HandleMyGames(w http.ResponseWriter, r *http.Request) {
 // MyGamesResponse is response struct for my_games handler
 type MyGamesResponse struct {
 	GameUsers []*model.GameUser `json:"game_users"`
+	Games     []*model.Game     `json:"games"`
 }
