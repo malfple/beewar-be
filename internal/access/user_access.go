@@ -43,7 +43,8 @@ func QueryUserByUsername(username string) *model.User {
 	return user
 }
 
-// QueryUsersByID gets a list of users by id
+// QueryUsersByID gets a list of users by id.
+// The returned slice will always have the same length as the given user ids, and users are placed in the order given.
 func QueryUsersByID(userIDs []uint64) []*model.User {
 	if len(userIDs) == 0 {
 		return make([]*model.User, 0)

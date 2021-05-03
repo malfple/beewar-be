@@ -2,6 +2,7 @@ package access
 
 import (
 	"database/sql"
+	"github.com/jmoiron/sqlx"
 	"gitlab.com/beewar/beewar-be/internal/access/model"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
@@ -122,6 +123,60 @@ func QueryGameByID(gameID uint64) *model.Game {
 	}
 
 	return game
+}
+
+// QueryGamesByID gets a list of games by id.
+// The returned slice will always have the same length as the given game ids, and games are placed in the order given.
+func QueryGamesByID(gameIDs []uint64) []*model.Game {
+	if len(gameIDs) == 0 {
+		return make([]*model.Game, 0)
+	}
+	stmt, args, err := sqlx.In(`SELECT * FROM game_tab WHERE id IN (?)`, gameIDs)
+	if err != nil {
+		logger.GetLogger().Error("db: build sqlx query error", zap.String("table", "game_tab"), zap.Error(err))
+		return nil
+	}
+	rows, err := db.Query(stmt, args...)
+	if err != nil {
+		logger.GetLogger().Error("db: query error", zap.String("table", "game_tab"), zap.Error(err))
+		return nil
+	}
+	defer rows.Close()
+
+	games := make([]*model.Game, len(gameIDs))
+	for rows.Next() {
+		game := &model.Game{}
+		err := rows.Scan(
+			&game.ID,
+			&game.Type,
+			&game.Height,
+			&game.Width,
+			&game.PlayerCount,
+			&game.TerrainInfo,
+			&game.UnitInfo,
+			&game.MapID,
+			&game.Password,
+			&game.Status,
+			&game.TurnCount,
+			&game.TurnPlayer,
+			&game.TimeCreated,
+			&game.TimeModified)
+		if err != nil {
+			logger.GetLogger().Error("db: query error", zap.String("table", "game_tab"), zap.Error(err))
+		} else {
+			// find index to insert
+			for i, id := range gameIDs {
+				if id == game.ID {
+					games[i] = game
+					break
+				}
+			}
+		}
+	}
+	if err := rows.Err(); err != nil {
+		logger.GetLogger().Error("db: query error", zap.String("table", "game_tab"), zap.Error(err))
+	}
+	return games
 }
 
 // QueryWaitingGames gets all games that are currently not yet started (status = 0)

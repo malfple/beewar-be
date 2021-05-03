@@ -71,12 +71,28 @@ func TestGameAccess() bool {
 		return false
 	}
 
+	games := access.QueryGamesByID([]uint64{gameID, 99999999})
+	if len(games) != 2 {
+		logger.GetLogger().Error("games should have length 2")
+		return false
+	}
+	if games[0].ID != gameID {
+		logger.GetLogger().Error("games[0] id not match")
+		return false
+	}
+	if games[1] != nil {
+		logger.GetLogger().Error("games[1] is not nil")
+		return false
+	}
+
 	// game users
 	if access.QueryGameUsersByGameID(999999999) == nil {
 		logger.GetLogger().Error("should be empty array, not nil")
+		return false
 	}
 	if access.QueryGameUsersByUserID(999999999) == nil {
 		logger.GetLogger().Error("should be empty array, not nil")
+		return false
 	}
 	players := access.QueryGameUsersByGameID(gameID)
 	if len(players) != 2 || players[0].UserID != user2.ID || players[1].UserID != user1.ID {
