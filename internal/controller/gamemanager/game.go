@@ -4,6 +4,7 @@ import (
 	"errors"
 	"gitlab.com/beewar/beewar-be/internal/access"
 	"gitlab.com/beewar/beewar-be/internal/access/model"
+	"gitlab.com/beewar/beewar-be/internal/controller/mapmanager"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
@@ -13,6 +14,7 @@ import (
 
 var (
 	errMapDoesNotExist = errors.New("map does not exist")
+	errMapNotReady = errors.New("the map is not ready to be played. add more units")
 )
 
 // CreateGame creates a new game with the given map id. If password is provided, it will be bcrypt-ed
@@ -20,6 +22,9 @@ func CreateGame(mapID uint64, password string) (uint64, error) {
 	mapModel := access.QueryMapByID(mapID)
 	if mapModel == nil {
 		return 0, errMapDoesNotExist
+	}
+	if !mapmanager.MapToGameValidation(mapModel) {
+		return 0, errMapNotReady
 	}
 	var passwordHash = ""
 	if password != "" {
