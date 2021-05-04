@@ -5,23 +5,26 @@ import (
 	"gitlab.com/beewar/beewar-be/internal/controller/auth"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
+	"io/ioutil"
 	"net/http"
 )
 
 // HandleRegister handles new user registration
 func HandleRegister(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		logger.GetLogger().Error("error parse form", zap.Error(err))
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	req := &RegisterRequest{}
+	err = json.Unmarshal(body, req)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	email := r.Form.Get("email")
-	username := r.Form.Get("username")
-	password := r.Form.Get("password")
 	errMsg := ""
-	if err := auth.Register(email, username, password); err != nil {
+	if err := auth.Register(req.Email, req.Username, req.Password); err != nil {
 		errMsg = err.Error()
 	}
 
@@ -35,6 +38,13 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.GetLogger().Error("error encode", zap.Error(err))
 	}
+}
+
+// RegisterRequest is a request struct
+type RegisterRequest struct {
+	Email    string `json:"email"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 // RegisterResponse is a response for register handler

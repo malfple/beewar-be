@@ -6,36 +6,34 @@ import (
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
+	"io/ioutil"
 	"net/http"
-	"strconv"
 )
 
 // HandleGameCreate handles game creation
 func HandleGameCreate(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	if err != nil {
-		logger.GetLogger().Error("error parse form", zap.Error(err))
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
 	accessToken := r.Header.Get(auth.AccessTokenHeaderName)
-	_, _, err = auth.ValidateJWT(accessToken)
+	_, _, err := auth.ValidateJWT(accessToken)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	mapID, err := strconv.ParseInt(r.Form.Get("map_id"), 10, 64)
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	password := r.Form.Get("password")
+	req := &CreateRequest{}
+	err = json.Unmarshal(body, req)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	resp := &CreateResponse{}
 
-	gameID, err := gamemanager.CreateGame(uint64(mapID), password)
+	gameID, err := gamemanager.CreateGame(req.MapID, req.Password)
 	if err != nil {
 		resp.ErrMsg = err.Error()
 	} else {
@@ -49,6 +47,12 @@ func HandleGameCreate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.GetLogger().Error("error encode", zap.Error(err))
 	}
+}
+
+// CreateRequest is a response struct
+type CreateRequest struct {
+	MapID    uint64 `json:"map_id"`
+	Password string `json:"password"`
 }
 
 // CreateResponse is a response struct
