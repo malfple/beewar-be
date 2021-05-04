@@ -8,6 +8,7 @@ import (
 
 var (
 	errMapNotFound   = errors.New("map not found")
+	errNotAuthor     = errors.New("only author can update map")
 	errMapWidth      = errors.New("width must be at least 1 and at most 50")
 	errMapHeight     = errors.New("height must be at least 1 and at most 50")
 	errMapNameLength = errors.New("name must be at most 255")
@@ -29,7 +30,15 @@ func CreateEmptyMap(userID uint64) (uint64, error) {
 }
 
 // UpdateMap updates the map
-func UpdateMap(mapID uint64, mapType uint8, height, width int, name string, playerCount uint8, terrainInfo, unitInfo []byte) error {
+func UpdateMap(userID uint64, mapID uint64, mapType uint8, height, width int, name string, playerCount uint8, terrainInfo, unitInfo []byte) error {
+	mapModel := access.QueryMapByID(mapID)
+	if mapModel == nil {
+		return errMapNotFound
+	}
+	if userID != mapModel.AuthorUserID {
+		return errNotAuthor
+	}
+
 	if height < 1 || height > mapMaxHeight {
 		return errMapHeight
 	}
