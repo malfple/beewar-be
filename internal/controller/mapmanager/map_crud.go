@@ -1,6 +1,23 @@
 package mapmanager
 
-import "gitlab.com/beewar/beewar-be/internal/access"
+import (
+	"errors"
+	"gitlab.com/beewar/beewar-be/internal/access"
+	"gitlab.com/beewar/beewar-be/internal/controller/formatter"
+)
+
+var (
+	errMapNotFound   = errors.New("map not found")
+	errMapWidth      = errors.New("width must be at least 1 and at most 50")
+	errMapHeight     = errors.New("height must be at least 1 and at most 50")
+	errMapNameLength = errors.New("name must be at most 255")
+)
+
+const (
+	mapMaxHeight     = 50
+	mapMaxWidth      = 50
+	mapMaxNameLength = 255
+)
 
 // CreateEmptyMap creates an empty map of fixed size and name
 func CreateEmptyMap(userID uint64) uint64 {
@@ -9,4 +26,25 @@ func CreateEmptyMap(userID uint64) uint64 {
 		panic("unexpected error when creating empty map")
 	}
 	return mapID
+}
+
+// UpdateMap updates the map
+func UpdateMap(mapID uint64, mapType uint8, height, width int, name string, playerCount uint8, terrainInfo, unitInfo []byte) error {
+	if height < 1 || height > mapMaxHeight {
+		return errMapHeight
+	}
+	if width < 1 || width > mapMaxWidth {
+		return errMapWidth
+	}
+	if len(name) > mapMaxNameLength {
+		return errMapNameLength
+	}
+	if err := formatter.ValidateTerrainInfo(height, width, terrainInfo); err != nil {
+		return err
+	}
+	if err := formatter.ValidateUnitInfo(height, width, unitInfo); err != nil {
+		return err
+	}
+
+	return access.UpdateMap(mapID, mapType, height, width, name, playerCount, terrainInfo, unitInfo)
 }

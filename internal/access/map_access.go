@@ -2,28 +2,9 @@ package access
 
 import (
 	"database/sql"
-	"errors"
 	"gitlab.com/beewar/beewar-be/internal/access/model"
-	"gitlab.com/beewar/beewar-be/internal/controller/formatter"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
-)
-
-// terrain info and unit info description is in formatter package
-
-var (
-	// ErrMapWidth is returned when width is out of constraint
-	ErrMapWidth = errors.New("width must be at least 1 and at most 50")
-	// ErrMapHeight is returned when height is out of constraint
-	ErrMapHeight = errors.New("height must be at least 1 and at most 50")
-	// ErrMapNameLength is returned when name exceeds maximum length
-	ErrMapNameLength = errors.New("name must be at most 255")
-)
-
-const (
-	mapMaxHeight     = 50
-	mapMaxWidth      = 50
-	mapMaxNameLength = 255
 )
 
 // CreateEmptyMap creates an empty map with the specified type and size, and returns the id
@@ -45,25 +26,19 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 	return uint64(lastInsertID), err
 }
 
-// UpdateMap updates a map
-// TODO: remove validations
-func UpdateMap(id uint64, mapType uint8, height, width int, name string, playerCount uint8, terrainInfo, unitInfo []byte) error {
-	if height < 1 || height > mapMaxHeight {
-		return ErrMapHeight
-	}
-	if width < 1 || width > mapMaxWidth {
-		return ErrMapWidth
-	}
-	if len(name) > mapMaxNameLength {
-		return ErrMapNameLength
-	}
-	if err := formatter.ValidateTerrainInfo(height, width, terrainInfo); err != nil {
-		return err
-	}
-	if err := formatter.ValidateUnitInfo(height, width, unitInfo); err != nil {
-		return err
-	}
+/*
+UpdateMap updates a map
 
+only updates user-updatable fields:
+ - type
+ - height
+ - width
+ - name
+ - player_count
+ - terrain_info
+ - unit_info
+*/
+func UpdateMap(id uint64, mapType uint8, height, width int, name string, playerCount uint8, terrainInfo, unitInfo []byte) error {
 	const stmtUpdateMap = `UPDATE map_tab
 SET type=?, height=?, width=?, name=?, player_count=?, terrain_info=?, unit_info=?, time_modified=UNIX_TIMESTAMP()
 WHERE id=?`
