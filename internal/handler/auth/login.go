@@ -5,26 +5,30 @@ import (
 	"gitlab.com/beewar/beewar-be/internal/controller/auth"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
+	"io/ioutil"
 	"net/http"
 )
 
 // HandleLogin handles user login
 func HandleLogin(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		logger.GetLogger().Error("error parse form", zap.Error(err))
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	req := &LoginRequest{}
+	err = json.Unmarshal(body, req)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	username := r.Form.Get("username")
-	password := r.Form.Get("password")
-	refreshToken, accessToken, statusCode := auth.Login(username, password)
+	refreshToken, accessToken, statusCode := auth.Login(req.Username, req.Password)
 
 	w.Header().Set("Content-Type", "application/json")
 
 	logger.GetLogger().Debug("login",
-		zap.String("username", username),
+		zap.String("username", req.Username),
 		zap.Int("status_code", statusCode))
 
 	if statusCode != http.StatusOK {
@@ -51,6 +55,12 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.GetLogger().Error("error encode", zap.Error(err))
 	}
+}
+
+// LoginRequest is a request struct for login handler
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 // LoginResponse is a response for login handler
