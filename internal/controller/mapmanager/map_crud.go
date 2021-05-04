@@ -20,12 +20,12 @@ const (
 )
 
 // CreateEmptyMap creates an empty map of fixed size and name
-func CreateEmptyMap(userID uint64) uint64 {
+func CreateEmptyMap(userID uint64) (uint64, error) {
 	mapID, err := access.CreateEmptyMap(0, 10, 10, "Untitled", userID)
 	if err != nil {
-		panic("unexpected error when creating empty map")
+		return 0, err
 	}
-	return mapID
+	return mapID, nil
 }
 
 // UpdateMap updates the map

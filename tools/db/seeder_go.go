@@ -62,7 +62,7 @@ func main() {
 
 	// map 1
 	if access.QueryMapByID(1) == nil {
-		mapID := mapmanager.CreateEmptyMap(1)
+		mapID, _ := mapmanager.CreateEmptyMap(1)
 		fmt.Printf("create map with id: %d\n", mapID)
 
 		terrainInfo := []byte{
@@ -105,7 +105,7 @@ func main() {
 
 	// map 2 and game 2
 	if access.QueryMapByID(2) == nil {
-		mapID := mapmanager.CreateEmptyMap(1)
+		mapID, _ := mapmanager.CreateEmptyMap(1)
 		fmt.Printf("create map with id: %d\n", mapID)
 
 		terrainInfo := []byte{
