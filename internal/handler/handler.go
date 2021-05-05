@@ -27,6 +27,7 @@ func RootRouter() *mux.Router {
 	apiRouter.HandleFunc("/server_stats", HandleServerStats).Methods("GET")
 
 	router.Use(middleware.AccessLogMiddleware)
+	//router.Use(middleware.DelayMiddleware)
 
 	return router
 }
