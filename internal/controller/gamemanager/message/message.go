@@ -17,6 +17,8 @@ const (
 	CmdGameData = "GAME_DATA"
 	// CmdJoin is a cmd for joining game. no restriction
 	CmdJoin = "JOIN"
+	// CmdPing is a cmd for regular ping to avoid disconnection, server-only
+	CmdPing = "PING"
 	// CmdError is a cmd for sending server error. server-only
 	CmdError = "ERROR"
 
@@ -81,6 +83,8 @@ func UnmarshalAndValidateGameMessage(rawPayload []byte, senderID uint64) (*GameM
 			return nil, err
 		}
 		message.Data = data
+	case CmdPing:
+		return nil, ErrCmdNotAllowed
 	case CmdUnitMove:
 		var data *UnitMoveMessageData
 		if err := json.Unmarshal(temp.Data, &data); err != nil {

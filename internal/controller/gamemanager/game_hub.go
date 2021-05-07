@@ -6,6 +6,7 @@ import (
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/loader"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/message"
 	"sync"
+	"time"
 )
 
 var (
@@ -16,6 +17,8 @@ var (
 const (
 	// ErrMsgNotPlayer is returned when a non-player sends message to game hub
 	ErrMsgNotPlayer = "you are not a player in this game"
+
+	pingInterval = 20 * time.Second
 )
 
 // the hub is responsible for broadcasting messages to the clients
@@ -29,6 +32,24 @@ type GameHub struct {
 	Mutex      sync.Mutex // this lock is used to make sure broadcast and client register/unreg is synced
 	IsShutdown bool
 	OnShutdown func() // called when not forced to shutdown
+}
+
+// NewGameHub initializes a new game hub with the correct game id. Provide an onShutdown function that will be triggered
+// when the game hub decides to shut down.
+func NewGameHub(gameID uint64, onShutdown func()) (*GameHub, error) {
+	gameLoader, err := loader.NewGameLoader(gameID)
+	if err != nil {
+		return nil, err
+	}
+	return &GameHub{
+		GameID:     gameID,
+		GameLoader: gameLoader,
+		Clients:    make(map[uint64]*GameClient),
+		MessageBus: make(chan *message.GameMessage),
+		Mutex:      sync.Mutex{},
+		IsShutdown: false,
+		OnShutdown: onShutdown,
+	}, nil
 }
 
 // RegisterClient registers the client to this hub
@@ -90,28 +111,40 @@ func (hub *GameHub) handleMessage(msg *message.GameMessage) (*message.GameMessag
 func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 	defer wg.Done()
 
+	pingTicker := time.NewTicker(pingInterval)
+
 	for !hub.IsShutdown {
-		msg := <-hub.MessageBus
-
-		if msg.Cmd == message.CmdShutdown {
-			break
-		}
-
-		hub.Mutex.Lock()
-		// process message
-		resp, isBroadcast := hub.handleMessage(msg)
-		// broadcast
-		if isBroadcast {
+		select {
+		case <-pingTicker.C:
+			// ping
+			hub.Mutex.Lock()
 			for _, client := range hub.Clients {
-				hub.sendMessageToClient(client, resp)
+				hub.sendMessageToClient(client, &message.GameMessage{Cmd: message.CmdPing})
 			}
-		} else {
-			hub.sendMessageToClient(hub.Clients[msg.Sender], resp)
-		}
-		hub.Mutex.Unlock()
+			hub.Mutex.Unlock()
+		case msg := <-hub.MessageBus:
+			if msg.Cmd == message.CmdShutdown {
+				break
+			}
 
-		hub.checkClients()
+			hub.Mutex.Lock()
+			// process message
+			resp, isBroadcast := hub.handleMessage(msg)
+			// broadcast
+			if isBroadcast {
+				for _, client := range hub.Clients {
+					hub.sendMessageToClient(client, resp)
+				}
+			} else {
+				hub.sendMessageToClient(hub.Clients[msg.Sender], resp)
+			}
+			hub.Mutex.Unlock()
+
+			hub.checkClients()
+		}
 	}
+
+	pingTicker.Stop()
 }
 
 // if no clients left, game hub will shutdown
@@ -144,22 +177,4 @@ func (hub *GameHub) ForceShutdown() {
 		// if called, it will deadlock anyway
 	}
 	hub.Mutex.Unlock()
-}
-
-// NewGameHub initializes a new game hub with the correct game id. Provide an onShutdown function that will be triggered
-// when the game hub decides to shut down.
-func NewGameHub(gameID uint64, onShutdown func()) (*GameHub, error) {
-	gameLoader, err := loader.NewGameLoader(gameID)
-	if err != nil {
-		return nil, err
-	}
-	return &GameHub{
-		GameID:     gameID,
-		GameLoader: gameLoader,
-		Clients:    make(map[uint64]*GameClient),
-		MessageBus: make(chan *message.GameMessage),
-		Mutex:      sync.Mutex{},
-		IsShutdown: false,
-		OnShutdown: onShutdown,
-	}, nil
 }
