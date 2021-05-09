@@ -40,8 +40,8 @@ type Unit interface {
 
 // these are the unit types
 const (
-	// UnitTypeYou defines the unit type number of You
-	UnitTypeYou = 1
+	// UnitTypeQueen defines the unit type number of Queen
+	UnitTypeQueen = 1
 	// UnitTypeInfantry defines the unit type number of Infantry
 	UnitTypeInfantry = 3
 )
@@ -60,16 +60,16 @@ const (
 // weight is used to determine whether a unit can pass another unit.
 // 2 units can pass through each other if the sum of their weight <= 1 AND they have the same owner
 const (
-	// UnitWeightYou defines weight stat of You
-	UnitWeightYou = 0
+	// UnitWeightQueen defines weight stat of Queen
+	UnitWeightQueen = 0
 	// UnitWeightInfantry defines weight stat of Infantry
 	UnitWeightInfantry = 0
 )
 
 // unit move range
 const (
-	// UnitMoveRangeYou defines movement range stat of You
-	UnitMoveRangeYou = 1
+	// UnitMoveRangeQueen defines movement range stat of Queen
+	UnitMoveRangeQueen = 1
 	// UnitMoveRangeInfantry defines movement range stat of Infantry
 	UnitMoveRangeInfantry = 3
 )
@@ -85,8 +85,8 @@ const (
 
 // unit attack range
 const (
-	// UnitAttackRangeYou defines attack range stat of You
-	UnitAttackRangeYou = 0
+	// UnitAttackRangeQueen defines attack range stat of Queen
+	UnitAttackRangeQueen = 0
 	// UnitAttackRangeInfantry defines attack range stat of Infantry
 	UnitAttackRangeInfantry = 1
 )
@@ -94,8 +94,8 @@ const (
 // unit attack power
 // this is multiplied by 10 to avoid floating point. So 5 is actually 0.5
 const (
-	// UnitAttackPowerYou doesn't mean anything because You cannot attack
-	UnitAttackPowerYou = 0
+	// UnitAttackPowerQueen doesn't mean anything because Queen cannot attack
+	UnitAttackPowerQueen = 0
 	// UnitAttackPowerInfantry defines attack power stat of Infantry
 	UnitAttackPowerInfantry = 5
 )

@@ -61,7 +61,7 @@ func ValidateUnitInfo(height, width int, unitInfo []byte) error {
 		posMap[y*width+x] = true
 		t := unitInfo[i+3]
 		switch t {
-		case objects.UnitTypeYou:
+		case objects.UnitTypeQueen:
 			i += 6
 		case objects.UnitTypeInfantry:
 			i += 6
@@ -90,8 +90,8 @@ func ModelToGameUnit(height, width int, unitInfo []byte) [][]objects.Unit {
 		hp := int(unitInfo[i+4])
 		s := int(unitInfo[i+5])
 		switch t {
-		case objects.UnitTypeYou:
-			_units[y][x] = objects.NewYou(p, hp, s)
+		case objects.UnitTypeQueen:
+			_units[y][x] = objects.NewQueen(p, hp, s)
 			i += 6
 		case objects.UnitTypeInfantry:
 			_units[y][x] = objects.NewInfantry(p, hp, s)
@@ -114,9 +114,9 @@ func GameUnitToModel(height, width int, _units [][]objects.Unit) []byte {
 
 			unit := _units[i][j]
 			switch unit.GetUnitType() {
-			case objects.UnitTypeYou:
-				you := unit.(*objects.You)
-				unitInfo = append(unitInfo, byte(i), byte(j), byte(you.Owner), byte(unit.GetUnitType()), byte(you.HP), byte(unit.GetUnitState()))
+			case objects.UnitTypeQueen:
+				queen := unit.(*objects.Queen)
+				unitInfo = append(unitInfo, byte(i), byte(j), byte(queen.Owner), byte(unit.GetUnitType()), byte(queen.HP), byte(unit.GetUnitState()))
 			case objects.UnitTypeInfantry:
 				inf := unit.(*objects.Infantry)
 				unitInfo = append(unitInfo, byte(i), byte(j), byte(inf.Owner), byte(unit.GetUnitType()), byte(inf.HP), byte(unit.GetUnitState()))

@@ -300,7 +300,7 @@ func (gl *GameLoader) nextTurn() {
 // check if a unit is still alive. Also checks player defeat condition. If you dies, you are defeated.
 func (gl *GameLoader) checkUnitAlive(y, x int) {
 	if gl.Units[y][x].GetUnitHP() == 0 {
-		if gl.Units[y][x].GetUnitType() == objects.UnitTypeYou {
+		if gl.Units[y][x].GetUnitType() == objects.UnitTypeQueen {
 			// player is defeated -> assign rank and turns lasted
 			gl.assignPlayerRank(gl.Units[y][x].GetUnitOwner())
 			// immediately check if game ends

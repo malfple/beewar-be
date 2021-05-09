@@ -16,7 +16,7 @@ var testUnitInfo2 = []byte{
 	2, 1, 1, 1, 10, 0,
 	2, 1, 1, 3, 8, 1,
 }
-var testUnitYou = &objects.You{
+var testUnitQueen = &objects.Queen{
 	Owner: 1,
 	HP:    10,
 	State: 0,
@@ -27,7 +27,7 @@ var testUnitInfantry = &objects.Infantry{
 	State: 1,
 }
 var testUnits = [][]objects.Unit{
-	{testUnitYou, nil, nil, nil, nil, nil, nil, nil, nil, nil},
+	{testUnitQueen, nil, nil, nil, nil, nil, nil, nil, nil, nil},
 	{nil, nil, nil, nil, nil, nil, nil, nil, nil, nil},
 	{nil, testUnitInfantry, nil, nil, nil, nil, nil, nil, nil, nil},
 	{nil, nil, nil, nil, nil, nil, nil, nil, nil, nil},

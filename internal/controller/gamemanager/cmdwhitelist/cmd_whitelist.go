@@ -6,7 +6,7 @@ import (
 
 // UnitMoveMap indicates which unit types can use message.CmdUnitMove
 var UnitMoveMap = map[int]bool{
-	objects.UnitTypeYou:      true,
+	objects.UnitTypeQueen:    true,
 	objects.UnitTypeInfantry: true,
 }
 
