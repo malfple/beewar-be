@@ -31,6 +31,7 @@ type GameHub struct {
 	MessageBus chan *message.GameMessage
 	Mutex      sync.Mutex // this lock is used to make sure broadcast and client register/unreg is synced
 	IsShutdown bool
+	ShutdownC  chan bool
 }
 
 // NewGameHub initializes a new game hub with the correct game id. Provide an onShutdown function that will be triggered
@@ -47,6 +48,7 @@ func NewGameHub(gameID uint64) (*GameHub, error) {
 		MessageBus: make(chan *message.GameMessage),
 		Mutex:      sync.Mutex{},
 		IsShutdown: false,
+		ShutdownC:  make(chan bool),
 	}, nil
 }
 
@@ -114,6 +116,8 @@ func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 
 	for !hub.IsShutdown {
 		select {
+		case <-hub.ShutdownC: // YES! SHUTDOWN!!!
+			return
 		case <-pingTicker.C:
 			// ping
 			hub.Mutex.Lock()
@@ -122,10 +126,6 @@ func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 			}
 			hub.Mutex.Unlock()
 		case msg := <-hub.MessageBus:
-			if msg.Cmd == message.CmdShutdown {
-				return
-			}
-
 			hub.Mutex.Lock()
 			// process message
 			resp, isBroadcast := hub.handleMessage(msg)
@@ -148,7 +148,7 @@ func (hub *GameHub) Shutdown() {
 	if !hub.IsShutdown {
 		hub.IsShutdown = true
 		hub.GameLoader.SaveToDB()
-		hub.MessageBus <- &message.GameMessage{Cmd: message.CmdShutdown} // trigger shutdown for the listening goroutine
+		hub.ShutdownC <- true // trigger shutdown for the listening goroutine
 		for _, client := range hub.Clients {
 			client.WS.Close()
 			delete(hub.Clients, client.UserID)
