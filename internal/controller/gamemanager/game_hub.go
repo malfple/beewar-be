@@ -2,7 +2,6 @@ package gamemanager
 
 import (
 	"errors"
-	"github.com/gorilla/websocket"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/loader"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/message"
 	"sync"
@@ -27,7 +26,7 @@ const (
 type GameHub struct {
 	GameID     uint64
 	GameLoader *loader.GameLoader
-	Clients    map[uint64]*GameClient
+	Clients    map[uint64]GameClient
 	MessageBus chan *message.GameMessage
 	Mutex      sync.Mutex // this lock is used to make sure broadcast and client register/unreg is synced
 	IsShutdown bool
@@ -44,7 +43,7 @@ func NewGameHub(gameID uint64) (*GameHub, error) {
 	return &GameHub{
 		GameID:     gameID,
 		GameLoader: gameLoader,
-		Clients:    make(map[uint64]*GameClient),
+		Clients:    make(map[uint64]GameClient),
 		MessageBus: make(chan *message.GameMessage),
 		Mutex:      sync.Mutex{},
 		IsShutdown: false,
@@ -53,14 +52,14 @@ func NewGameHub(gameID uint64) (*GameHub, error) {
 }
 
 // RegisterClient registers the client to this hub
-func (hub *GameHub) RegisterClient(client *GameClient) error {
+func (hub *GameHub) RegisterClient(client GameClient) error {
 	var err error = nil
 	hub.Mutex.Lock()
 	if !hub.IsShutdown {
-		if _, ok := hub.Clients[client.UserID]; ok { // client found
+		if _, ok := hub.Clients[client.GetUserID()]; ok { // client found
 			err = ErrClientDuplicate
 		} else {
-			hub.Clients[client.UserID] = client
+			hub.Clients[client.GetUserID()] = client
 		}
 	}
 	hub.Mutex.Unlock()
@@ -68,25 +67,21 @@ func (hub *GameHub) RegisterClient(client *GameClient) error {
 }
 
 // UnregisterClient unregisters the client
-func (hub *GameHub) UnregisterClient(client *GameClient) {
+func (hub *GameHub) UnregisterClient(client GameClient) {
 	hub.Mutex.Lock()
 	if !hub.IsShutdown {
-		delete(hub.Clients, client.UserID)
+		delete(hub.Clients, client.GetUserID())
 	}
 	hub.Mutex.Unlock()
 }
 
 // sends message to a client.
 // WARNING: hub.Mutex should already be locked
-func (hub *GameHub) sendMessageToClient(client *GameClient, msg *message.GameMessage) {
-	rawMsg, err := message.MarshalGameMessage(msg)
+func (hub *GameHub) sendMessageToClient(client GameClient, msg *message.GameMessage) {
+	err := client.SendMessageBack(msg)
 	if err != nil {
-		panic("shouldn't have errored when marshaling")
-	}
-	err = client.WS.WriteMessage(websocket.TextMessage, rawMsg)
-	if err != nil {
-		client.WS.Close()
-		delete(hub.Clients, client.UserID)
+		client.Close()
+		delete(hub.Clients, client.GetUserID())
 	}
 }
 
@@ -150,8 +145,8 @@ func (hub *GameHub) Shutdown() {
 		hub.GameLoader.SaveToDB()
 		hub.ShutdownC <- true // trigger shutdown for the listening goroutine
 		for _, client := range hub.Clients {
-			client.WS.Close()
-			delete(hub.Clients, client.UserID)
+			client.Close()
+			delete(hub.Clients, client.GetUserID())
 		}
 	}
 	hub.Mutex.Unlock()

@@ -38,7 +38,7 @@ func GetHubCount() int {
 // StartClientSession will register a given client to the game hub with the given gameID.
 // it will initialize the hub if it is not yet initialized.
 // returns error if initialization or registration fails.
-func StartClientSession(client *GameClient, gameID uint64) error {
+func StartClientSession(client GameClient, gameID uint64) error {
 	gameHubStoreLock.Lock()
 	defer gameHubStoreLock.Unlock()
 
@@ -65,17 +65,17 @@ func StartClientSession(client *GameClient, gameID uint64) error {
 		return err
 	}
 
-	client.Hub = hub
+	client.SetHub(hub)
 	return nil
 }
 
 // EndClientSession will unregister a given client from its game hub.
 // It also checks game hub conditions to allow hub shutdown.
-func EndClientSession(client *GameClient) {
+func EndClientSession(client GameClient) {
 	gameHubStoreLock.Lock()
 	defer gameHubStoreLock.Unlock()
 
-	hub := client.Hub
+	hub := client.GetHub()
 	hub.UnregisterClient(client)
 
 	// shutdown hub and remove from store if no clients left

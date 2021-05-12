@@ -49,7 +49,7 @@ func HandleGameWS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// setup client-hub connection
-	client := &gamemanager.GameClient{
+	client := &gamemanager.DefaultGameClient{
 		UserID: userID,
 	}
 	err = gamemanager.StartClientSession(client, uint64(gameID))
