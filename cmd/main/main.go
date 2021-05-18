@@ -5,6 +5,7 @@ import (
 	"gitlab.com/beewar/beewar-be/configs"
 	"gitlab.com/beewar/beewar-be/internal/access"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/beebot"
 	"gitlab.com/beewar/beewar-be/internal/handler"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
@@ -16,9 +17,13 @@ import (
 
 func main() {
 	logger.InitLogger()
+	defer logger.ShutdownLogger()
 	configs.InitConfigs()
 	access.InitAccess()
+	defer access.ShutdownAccess()
 	gamemanager.InitGameManager()
+	defer gamemanager.ShutdownGameManager()
+	beebot.InitBeebotRoutines()
 
 	server := &http.Server{
 		Addr:         configs.GetServerAddress(),
@@ -49,10 +54,4 @@ func main() {
 	// wait for connections to close or until deadline
 	_ = server.Shutdown(ctx)
 	logger.GetLogger().Info("shutting down...")
-
-	gamemanager.ShutdownGameManager()
-	access.ShutdownAccess()
-	logger.ShutdownLogger()
-
-	os.Exit(0)
 }

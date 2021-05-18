@@ -59,6 +59,7 @@ func main() {
 	_ = auth.Register("rapel@user.com", "rapel", "rapelsecret")
 	_ = auth.Register("sebas@user.com", "sebas", "sebassecret")
 	_ = auth.Register("kyon@user.com", "kyon", "kyonsecret")
+	_ = auth.Register("beebot", "beebot", "beebotbeebot")
 
 	// map 1
 	if access.QueryMapByID(1) == nil {

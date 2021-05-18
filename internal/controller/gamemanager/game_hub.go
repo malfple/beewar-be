@@ -28,9 +28,9 @@ type GameHub struct {
 	GameLoader *loader.GameLoader
 	Clients    map[uint64]GameClient
 	MessageBus chan *message.GameMessage
-	Mutex      sync.Mutex // this lock is used to make sure broadcast and client register/unreg is synced
-	IsShutdown bool
-	ShutdownC  chan bool
+	mutex      sync.Mutex // this lock is used to make sure broadcast and client register/unreg is synced
+	isShutdown bool
+	shutdownC  chan bool
 }
 
 // NewGameHub initializes a new game hub with the correct game id. Provide an onShutdown function that will be triggered
@@ -45,38 +45,38 @@ func NewGameHub(gameID uint64) (*GameHub, error) {
 		GameLoader: gameLoader,
 		Clients:    make(map[uint64]GameClient),
 		MessageBus: make(chan *message.GameMessage),
-		Mutex:      sync.Mutex{},
-		IsShutdown: false,
-		ShutdownC:  make(chan bool),
+		mutex:      sync.Mutex{},
+		isShutdown: false,
+		shutdownC:  make(chan bool),
 	}, nil
 }
 
 // RegisterClient registers the client to this hub
 func (hub *GameHub) RegisterClient(client GameClient) error {
 	var err error = nil
-	hub.Mutex.Lock()
-	if !hub.IsShutdown {
+	hub.mutex.Lock()
+	if !hub.isShutdown {
 		if _, ok := hub.Clients[client.GetUserID()]; ok { // client found
 			err = ErrClientDuplicate
 		} else {
 			hub.Clients[client.GetUserID()] = client
 		}
 	}
-	hub.Mutex.Unlock()
+	hub.mutex.Unlock()
 	return err
 }
 
 // UnregisterClient unregisters the client
 func (hub *GameHub) UnregisterClient(client GameClient) {
-	hub.Mutex.Lock()
-	if !hub.IsShutdown {
+	hub.mutex.Lock()
+	if !hub.isShutdown {
 		delete(hub.Clients, client.GetUserID())
 	}
-	hub.Mutex.Unlock()
+	hub.mutex.Unlock()
 }
 
 // sends message to a client.
-// WARNING: hub.Mutex should already be locked
+// WARNING: hub.mutex should already be locked
 func (hub *GameHub) sendMessageToClient(client GameClient, msg *message.GameMessage) {
 	err := client.SendMessageBack(msg)
 	if err != nil {
@@ -86,7 +86,7 @@ func (hub *GameHub) sendMessageToClient(client GameClient, msg *message.GameMess
 }
 
 // handle message. returns (resp, isBroadcast?)
-// WARNING: hub.Mutex should already be locked
+// WARNING: hub.mutex should already be locked
 func (hub *GameHub) handleMessage(msg *message.GameMessage) (*message.GameMessage, bool) {
 	if msg.Cmd == message.CmdGameData { // any user can get game data
 		return hub.GameLoader.GameData(), false
@@ -109,19 +109,19 @@ func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 	pingTicker := time.NewTicker(pingInterval)
 	defer pingTicker.Stop()
 
-	for !hub.IsShutdown {
+	for !hub.isShutdown {
 		select {
-		case <-hub.ShutdownC: // YES! SHUTDOWN!!!
+		case <-hub.shutdownC: // YES! SHUTDOWN!!!
 			return
 		case <-pingTicker.C:
 			// ping
-			hub.Mutex.Lock()
+			hub.mutex.Lock()
 			for _, client := range hub.Clients {
 				hub.sendMessageToClient(client, &message.GameMessage{Cmd: message.CmdPing})
 			}
-			hub.Mutex.Unlock()
+			hub.mutex.Unlock()
 		case msg := <-hub.MessageBus:
-			hub.Mutex.Lock()
+			hub.mutex.Lock()
 			// process message
 			resp, isBroadcast := hub.handleMessage(msg)
 			// broadcast
@@ -132,22 +132,22 @@ func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 			} else {
 				hub.sendMessageToClient(hub.Clients[msg.Sender], resp)
 			}
-			hub.Mutex.Unlock()
+			hub.mutex.Unlock()
 		}
 	}
 }
 
 // Shutdown closes all client connection and stops the hub
 func (hub *GameHub) Shutdown() {
-	hub.Mutex.Lock()
-	if !hub.IsShutdown {
-		hub.IsShutdown = true
+	hub.mutex.Lock()
+	if !hub.isShutdown {
+		hub.isShutdown = true
 		hub.GameLoader.SaveToDB()
-		hub.ShutdownC <- true // trigger shutdown for the listening goroutine
+		hub.shutdownC <- true // trigger shutdown for the listening goroutine
 		for _, client := range hub.Clients {
 			client.Close()
 			delete(hub.Clients, client.GetUserID())
 		}
 	}
-	hub.Mutex.Unlock()
+	hub.mutex.Unlock()
 }
