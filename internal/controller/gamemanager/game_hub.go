@@ -4,6 +4,8 @@ import (
 	"errors"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/loader"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/message"
+	"gitlab.com/beewar/beewar-be/internal/logger"
+	"go.uber.org/zap"
 	"sync"
 	"time"
 )
@@ -122,6 +124,7 @@ func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 			hub.mutex.Unlock()
 		case msg := <-hub.MessageBus:
 			hub.mutex.Lock()
+			logger.GetLogger().Debug("game hub: receive message", zap.String("cmd", msg.Cmd), zap.Uint64("sender", msg.Sender))
 			// process message
 			resp, isBroadcast := hub.handleMessage(msg)
 			// broadcast

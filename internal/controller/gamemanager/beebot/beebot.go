@@ -2,6 +2,7 @@ package beebot
 
 import (
 	"gitlab.com/beewar/beewar-be/internal/access"
+	"gitlab.com/beewar/beewar-be/internal/access/model"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/message"
 	"gitlab.com/beewar/beewar-be/internal/logger"
@@ -12,10 +13,12 @@ const (
 	errMsgBeebotUserMissing = "beebot user missing"
 )
 
+var beebotUser *model.User
+
 // InitBeebotRoutines initializes bots. Only init after game manager is initialized.
 // Does not need shutdown (it does automatically when gamemanager is shutdown)
 func InitBeebotRoutines() {
-	beebotUser := access.QueryUserByUsername("beebot")
+	beebotUser = access.QueryUserByUsername("beebot")
 	if beebotUser == nil {
 		logger.GetLogger().Fatal("beebot user not found")
 		return
@@ -24,13 +27,12 @@ func InitBeebotRoutines() {
 	gameUsers := access.QueryGameUsersByUserID(beebotUser.ID)
 	for _, gu := range gameUsers {
 		// start for existing games. game state doesn't matter, it will auto-close when necessary anyway.
-		go startBeebotRoutine(beebotUser.ID, gu.GameID)
+		go startBeebotRoutine(gu.GameID)
 	}
 }
 
 // AskBeebotToJoinGame invites beebot to join a game
 func AskBeebotToJoinGame(gameID uint64, playerOrder uint8, password string) string {
-	beebotUser := access.QueryUserByUsername("beebot")
 	if beebotUser == nil {
 		return errMsgBeebotUserMissing
 	}
@@ -66,14 +68,17 @@ func AskBeebotToJoinGame(gameID uint64, playerOrder uint8, password string) stri
 	}
 
 	// otherwise, start a goroutine
-	go startBeebotRoutine(beebotUser.ID, gameID)
+	go startBeebotRoutine(gameID)
 
 	return ""
 }
 
 // This function setups the client and starts session.
-func startBeebotRoutine(botUserID, gameID uint64) {
-	client := NewBotGameClient(botUserID)
+func startBeebotRoutine(gameID uint64) {
+	if beebotUser == nil {
+		return
+	}
+	client := NewBotGameClient(beebotUser.ID)
 	err := gamemanager.StartClientSession(client, gameID)
 	if err != nil {
 		logger.GetLogger().Debug("error start beebot routine", zap.Error(err))

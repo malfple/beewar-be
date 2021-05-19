@@ -1,9 +1,10 @@
 package beebot
 
 import (
-	"fmt"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/message"
+	"gitlab.com/beewar/beewar-be/internal/logger"
+	"go.uber.org/zap"
 )
 
 // BotGameClient is a modified client for internal bot use.
@@ -64,7 +65,7 @@ func (client *BotGameClient) Listen() {
 			client.isShutDown = true
 			return
 		case msg := <-client.Replies:
-			fmt.Printf("beebot game id: %v, receive message cmd: %v\n", client.Hub.GameID, msg.Cmd)
+			logger.GetLogger().Debug("beebot: receive message", zap.Uint64("game_id", client.Hub.GameID), zap.String("cmd", msg.Cmd))
 		}
 	}
 }
