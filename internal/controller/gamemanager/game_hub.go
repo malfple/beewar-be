@@ -111,7 +111,7 @@ func (hub *GameHub) ListenAndBroadcast(wg *sync.WaitGroup) {
 	pingTicker := time.NewTicker(pingInterval)
 	defer pingTicker.Stop()
 
-	for !hub.isShutdown {
+	for {
 		select {
 		case <-hub.shutdownC: // YES! SHUTDOWN!!!
 			return

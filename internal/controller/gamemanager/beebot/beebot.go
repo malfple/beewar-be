@@ -27,7 +27,7 @@ func InitBeebotRoutines() {
 	gameUsers := access.QueryGameUsersByUserID(beebotUser.ID)
 	for _, gu := range gameUsers {
 		// start for existing games. game state doesn't matter, it will auto-close when necessary anyway.
-		go startBeebotRoutine(gu.GameID)
+		go startBeebotRoutine(gu.GameID, gu.PlayerOrder)
 	}
 }
 
@@ -37,7 +37,7 @@ func AskBeebotToJoinGame(gameID uint64, playerOrder uint8, password string) stri
 		return errMsgBeebotUserMissing
 	}
 
-	client := NewBotGameClient(beebotUser.ID)
+	client := NewBotGameClient(beebotUser.ID, playerOrder)
 	err := gamemanager.StartClientSession(client, gameID)
 	if err != nil {
 		return err.Error()
@@ -68,17 +68,17 @@ func AskBeebotToJoinGame(gameID uint64, playerOrder uint8, password string) stri
 	}
 
 	// otherwise, start a goroutine
-	go startBeebotRoutine(gameID)
+	go startBeebotRoutine(gameID, playerOrder)
 
 	return ""
 }
 
 // This function setups the client and starts session.
-func startBeebotRoutine(gameID uint64) {
+func startBeebotRoutine(gameID uint64, playerOrder uint8) {
 	if beebotUser == nil {
 		return
 	}
-	client := NewBotGameClient(beebotUser.ID)
+	client := NewBotGameClient(beebotUser.ID, playerOrder)
 	err := gamemanager.StartClientSession(client, gameID)
 	if err != nil {
 		logger.GetLogger().Debug("error start beebot routine", zap.Error(err))
