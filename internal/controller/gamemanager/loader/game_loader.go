@@ -299,6 +299,8 @@ func (gl *GameLoader) HandleMessage(msg *message.GameMessage) (*message.GameMess
 	}
 
 	switch msg.Cmd {
+	case message.CmdUnitStay:
+		return gl.handleUnitStay(msg)
 	case message.CmdUnitMove:
 		return gl.handleUnitMove(msg)
 	case message.CmdUnitAttack:

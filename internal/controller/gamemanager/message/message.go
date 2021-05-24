@@ -20,6 +20,8 @@ const (
 	// CmdError is a cmd for sending server error. server-only
 	CmdError = "ERROR"
 
+	// CmdUnitStay is a unit cmd for doing nothing. no restriction.
+	CmdUnitStay = "UNIT_STAY"
 	// CmdUnitMove is a unit cmd for general moving. no restriction.
 	CmdUnitMove = "UNIT_MOVE"
 	// CmdUnitAttack is a unit cmd for general attack. no restriction
@@ -81,6 +83,12 @@ func UnmarshalAndValidateGameMessage(rawPayload []byte, senderID uint64) (*GameM
 		message.Data = data
 	case CmdPing:
 		return nil, ErrCmdNotAllowed
+	case CmdUnitStay:
+		var data *UnitStayMessageData
+		if err := json.Unmarshal(temp.Data, &data); err != nil {
+			return nil, err
+		}
+		message.Data = data
 	case CmdUnitMove:
 		var data *UnitMoveMessageData
 		if err := json.Unmarshal(temp.Data, &data); err != nil {

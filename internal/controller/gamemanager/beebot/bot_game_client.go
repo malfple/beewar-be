@@ -4,6 +4,7 @@ import (
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/loader"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/message"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/objects"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
 	"time"
@@ -94,6 +95,10 @@ func (client *BotGameClient) Listen() {
 					client.isShutDown = true
 					return
 				}
+			} else if msg.Cmd == message.CmdError {
+				errMsg := msg.Data.(string)
+				logger.GetLogger().Error("beebot error from hub", zap.String("error", errMsg))
+				// bot will stall
 			} else if client.nextTrigger == "" {
 				// it's currently not my turn
 				if msg.Cmd == message.CmdJoin || msg.Cmd == message.CmdEndTurn {
@@ -140,9 +145,32 @@ func (client *BotGameClient) sendMessageToHub(cmd string, data interface{}) {
 // the main function that sends actions to game hub
 func (client *BotGameClient) doNextMove() {
 	// safe delay before every move
-	time.Sleep(time.Second)
+	time.Sleep(500 * time.Millisecond)
 
-	client.sendMessageToHub(message.CmdEndTurn, nil)
+	gameLoader := client.Hub.GameLoader
+
+	// scan next un-moved unit
+	for i := 0; i < gameLoader.Height; i++ {
+		for j := 0; j < gameLoader.Width; j++ {
+			unit := gameLoader.Units[i][j]
+			if unit == nil {
+				continue
+			}
+			if unit.GetUnitOwner() != client.PlayerOrder {
+				continue
+			}
+			if unit.GetUnitStateBit(objects.UnitStateBitMoved) {
+				continue
+			}
+			client.nextTrigger = message.CmdUnitStay
+			client.sendMessageToHub(message.CmdUnitStay, &message.UnitStayMessageData{
+				Y1: i,
+				X1: j,
+			})
+			return
+		}
+	}
 
 	client.nextTrigger = "" // if end turn, set the next trigger to empty string
+	client.sendMessageToHub(message.CmdEndTurn, nil)
 }
