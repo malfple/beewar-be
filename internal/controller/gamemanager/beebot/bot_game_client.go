@@ -75,10 +75,7 @@ func (client *BotGameClient) Close() {
 // Listen listens for incoming message and does the bot stuff
 func (client *BotGameClient) Listen() {
 	// pre-checks and kickstart if possible
-	if client.isGameover() {
-		client.isShutDown = true
-		return
-	} else if client.isMyTurn() {
+	if client.isMyTurn() {
 		client.doNextMove()
 	}
 
@@ -91,10 +88,15 @@ func (client *BotGameClient) Listen() {
 		case msg := <-client.Replies:
 			logger.GetLogger().Debug("beebot: receive message", zap.Uint64("game_id", client.Hub.GameID), zap.String("cmd", msg.Cmd))
 			// handle replies
-			if client.nextTrigger == "" {
+			if msg.Cmd == message.CmdPing {
+				// periodically check if need to shutdown
+				if client.isGameover() {
+					client.isShutDown = true
+					return
+				}
+			} else if client.nextTrigger == "" {
 				// it's currently not my turn
 				if msg.Cmd == message.CmdJoin || msg.Cmd == message.CmdEndTurn {
-					// TODO: handle if game ended
 					// it could be my turn now!
 					if client.isMyTurn() {
 						client.doNextMove()
@@ -119,6 +121,7 @@ func (client *BotGameClient) isGameover() bool {
 
 // checks if it's currently beebot's turn to move
 func (client *BotGameClient) isMyTurn() bool {
+	// if game is already over, this will always return false
 	if client.Hub.GameLoader.Status != loader.GameStatusOngoing {
 		return false
 	}
@@ -128,7 +131,7 @@ func (client *BotGameClient) isMyTurn() bool {
 
 func (client *BotGameClient) sendMessageToHub(cmd string, data interface{}) {
 	client.Hub.MessageBus <- &message.GameMessage{
-		Cmd:    message.CmdEndTurn,
+		Cmd:    cmd,
 		Sender: client.UserID,
 		Data:   data,
 	}

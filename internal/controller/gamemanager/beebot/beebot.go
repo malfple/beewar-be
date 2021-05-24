@@ -26,7 +26,11 @@ func InitBeebotRoutines() {
 
 	gameUsers := access.QueryGameUsersByUserID(beebotUser.ID)
 	for _, gu := range gameUsers {
-		// start for existing games. game state doesn't matter, it will auto-close when necessary anyway.
+		// small optimization to prevent starting up games where beebot already lost.
+		if gu.FinalTurns != 0 {
+			continue
+		}
+		// start for existing games.
 		go startBeebotRoutine(gu.GameID, gu.PlayerOrder)
 	}
 }
