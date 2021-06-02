@@ -16,6 +16,14 @@ func MaxInt(a, b int) int {
 	return b
 }
 
+// MinInt returns min of 2 integers
+func MinInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 // CeilDivInt return Ceil(a / b), but integer.
 // a and b has to be non-negative. No handling for negative yet
 func CeilDivInt(a, b int) int {

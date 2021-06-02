@@ -3,6 +3,7 @@ package beebot
 import (
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/loader"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/loader/gridengine"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/message"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/objects"
 	"gitlab.com/beewar/beewar-be/internal/logger"
@@ -28,6 +29,8 @@ type BotGameClient struct {
 	isShutDown  bool
 	shutdownC   chan bool
 	nextTrigger string
+	// helper variables for calculating moves
+	otherQueenPositions []gridengine.Pos
 }
 
 // NewBotGameClient creates a new bot client.
@@ -77,6 +80,7 @@ func (client *BotGameClient) Close() {
 func (client *BotGameClient) Listen() {
 	// pre-checks and kickstart if possible
 	if client.isMyTurn() {
+		client.startTurn()
 		client.doNextMove()
 	}
 
@@ -104,6 +108,7 @@ func (client *BotGameClient) Listen() {
 				if msg.Cmd == message.CmdJoin || msg.Cmd == message.CmdEndTurn {
 					// it could be my turn now!
 					if client.isMyTurn() {
+						client.startTurn()
 						client.doNextMove()
 						break
 					}
@@ -142,6 +147,26 @@ func (client *BotGameClient) sendMessageToHub(cmd string, data interface{}) {
 	}
 }
 
+// does anything required at the start of turn
+func (client *BotGameClient) startTurn() {
+	// find queen positions
+	gameLoader := client.Hub.GameLoader
+	client.otherQueenPositions = make([]gridengine.Pos, 0, gameLoader.PlayerCount-1)
+	for i := 0; i < gameLoader.Height; i++ {
+		for j := 0; j < gameLoader.Width; j++ {
+			unit := gameLoader.Units[i][j]
+			if unit == nil {
+				continue
+			}
+			if unit.GetUnitType() != objects.UnitTypeQueen || unit.GetUnitOwner() == client.PlayerOrder {
+				continue
+			}
+			// now only enemy queens are left
+			client.otherQueenPositions = append(client.otherQueenPositions, gridengine.Pos{Y: i, X: j})
+		}
+	}
+}
+
 // the main function that sends actions to game hub
 func (client *BotGameClient) doNextMove() {
 	// safe delay before every move
@@ -162,15 +187,15 @@ func (client *BotGameClient) doNextMove() {
 			if unit.GetUnitStateBit(objects.UnitStateBitMoved) {
 				continue
 			}
-			client.nextTrigger = message.CmdUnitStay
-			client.sendMessageToHub(message.CmdUnitStay, &message.UnitStayMessageData{
-				Y1: i,
-				X1: j,
-			})
+			// do next unit move
+			msg := client.doNextUnitMove(i, j, unit)
+			client.nextTrigger = msg.Cmd
+			client.Hub.MessageBus <- msg
 			return
 		}
 	}
 
+	// nothing left, end turn
 	client.nextTrigger = "" // if end turn, set the next trigger to empty string
 	client.sendMessageToHub(message.CmdEndTurn, nil)
 }
