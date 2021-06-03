@@ -16,7 +16,7 @@ func MapToGameValidation(mapModel *model.Map) bool {
 		p := int(mapModel.UnitInfo[i+2])
 		t := mapModel.UnitInfo[i+3]
 		switch t {
-		case objects.UnitTypeYou:
+		case objects.UnitTypeQueen:
 			if playerExist[p-1] {
 				return false
 			}

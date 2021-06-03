@@ -1,7 +1,7 @@
 package gridengine
 
 // PriorityQueue is a specific priority queue for grid engine. It has fixed types
-// d = dist, is ordered descending. Smallest d on top.
+// d = distance, is ordered descending. Smallest d on top.
 // this implementation uses usual min-heap
 type PriorityQueue struct {
 	heap []struct {

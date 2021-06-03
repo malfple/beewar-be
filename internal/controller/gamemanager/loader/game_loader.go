@@ -10,7 +10,6 @@ import (
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/objects"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"go.uber.org/zap"
-	"golang.org/x/crypto/bcrypt"
 )
 
 const (
@@ -183,50 +182,6 @@ func (gl *GameLoader) GameData() *message.GameMessage {
 	}
 }
 
-// handles player join
-func (gl *GameLoader) handleJoin(msg *message.GameMessage) (*message.GameMessage, bool) {
-	if gl.Status != GameStatusPicking {
-		return message.GameErrorMessage(errMsgGameNotInPicking), false
-	}
-	data := msg.Data.(*message.JoinMessageData)
-	if data.PlayerOrder < 1 || int(data.PlayerOrder) > gl.PlayerCount {
-		return message.GameErrorMessage(errMsgPlayerOrderInvalid), false
-	}
-	if gl.GameUsers[data.PlayerOrder-1].UserID != 0 { // taken haha
-		return message.GameErrorMessage(errMsgPlayerOrderTaken), false
-	}
-	if _, ok := gl.UserIDToPlayerMap[msg.Sender]; ok {
-		return message.GameErrorMessage(errMsgAlreadyJoined), false
-	}
-	if gl.Password != "" {
-		if err := bcrypt.CompareHashAndPassword([]byte(gl.Password), []byte(data.Password)); err != nil {
-			return message.GameErrorMessage(errMsgWrongPassword), false
-		}
-	}
-	// pass join validation
-	if err := access.CreateGameUser(gl.ID, msg.Sender, data.PlayerOrder); err != nil {
-		return message.GameErrorMessage(err.Error()), false
-	}
-	gl.GameUsers[data.PlayerOrder-1] = access.QueryGameUser(gl.ID, msg.Sender)
-	gl.Users[data.PlayerOrder-1] = access.QueryUsersByID([]uint64{msg.Sender})[0]
-	gl.Users[data.PlayerOrder-1].Password = "nope..."
-	gl.UserIDToPlayerMap[msg.Sender] = int(data.PlayerOrder)
-	gl.checkGameStart()
-	return &message.GameMessage{
-		Cmd:    msg.Cmd,
-		Sender: msg.Sender,
-		Data: &message.JoinMessageDataExt{
-			Player: &message.Player{
-				UserID:      msg.Sender,
-				PlayerOrder: data.PlayerOrder,
-				FinalRank:   0,
-				FinalTurns:  0,
-				User:        gl.Users[data.PlayerOrder-1],
-			},
-		},
-	}, true
-}
-
 func (gl *GameLoader) checkGameStart() {
 	if gl.Status != GameStatusPicking {
 		return
@@ -300,7 +255,7 @@ func (gl *GameLoader) nextTurn() {
 // check if a unit is still alive. Also checks player defeat condition. If you dies, you are defeated.
 func (gl *GameLoader) checkUnitAlive(y, x int) {
 	if gl.Units[y][x].GetUnitHP() == 0 {
-		if gl.Units[y][x].GetUnitType() == objects.UnitTypeYou {
+		if gl.Units[y][x].GetUnitType() == objects.UnitTypeQueen {
 			// player is defeated -> assign rank and turns lasted
 			gl.assignPlayerRank(gl.Units[y][x].GetUnitOwner())
 			// immediately check if game ends
@@ -344,6 +299,8 @@ func (gl *GameLoader) HandleMessage(msg *message.GameMessage) (*message.GameMess
 	}
 
 	switch msg.Cmd {
+	case message.CmdUnitStay:
+		return gl.handleUnitStay(msg)
 	case message.CmdUnitMove:
 		return gl.handleUnitMove(msg)
 	case message.CmdUnitAttack:

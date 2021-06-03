@@ -48,10 +48,13 @@ func HandleGameWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// setup HUB
-	hub, err := gamemanager.GetGameHub(uint64(gameID))
+	// setup client-hub connection
+	client := &gamemanager.DefaultGameClient{
+		UserID: userID,
+	}
+	err = gamemanager.StartClientSession(client, uint64(gameID))
 	if err != nil {
-		logger.GetLogger().Debug("error making game hub", zap.Error(err))
+		logger.GetLogger().Debug("error start client session", zap.Error(err))
 		w.WriteHeader(http.StatusNotAcceptable)
 		return
 	}
@@ -67,9 +70,10 @@ func HandleGameWS(w http.ResponseWriter, r *http.Request) {
 		_ = c.Close()
 	}()
 
-	// setup CLIENT
-	client := gamemanager.NewGameClient(userID, c, hub)
+	client.WS = c
 	logger.GetLogger().Debug("client start listening", zap.Uint64("user_id", userID), zap.Int64("game_id", gameID))
 	client.Listen()
 	logger.GetLogger().Debug("client stop listening", zap.Uint64("user_id", userID), zap.Int64("game_id", gameID))
+
+	gamemanager.EndClientSession(client)
 }

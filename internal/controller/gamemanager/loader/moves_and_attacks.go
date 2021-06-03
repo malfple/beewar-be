@@ -7,9 +7,24 @@ import (
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/objects"
 )
 
+func (gl *GameLoader) handleUnitStay(msg *message.GameMessage) (*message.GameMessage, bool) {
+	data := msg.Data.(*message.UnitStayMessageData)
+	if errMsg := gl.validateUnitOwned(data.Y1, data.X1); len(errMsg) > 0 {
+		return message.GameErrorMessage(errMsg), false
+	}
+	if _, ok := cmdwhitelist.UnitStayMap[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
+		return message.GameErrorMessage(errMsgUnitCmdNotAllowed), false
+	}
+	if gl.Units[data.Y1][data.X1].GetUnitStateBit(objects.UnitStateBitMoved) { // has this unit moved?
+		return message.GameErrorMessage(errMsgUnitAlreadyMoved), false
+	}
+	gl.Units[data.Y1][data.X1].ToggleUnitStateBit(objects.UnitStateBitMoved)
+	return msg, true
+}
+
 func (gl *GameLoader) handleUnitMove(msg *message.GameMessage) (*message.GameMessage, bool) {
 	data := msg.Data.(*message.UnitMoveMessageData)
-	if errMsg := gl.validateUnitOwned(msg.Sender, data.Y1, data.X1); len(errMsg) > 0 {
+	if errMsg := gl.validateUnitOwned(data.Y1, data.X1); len(errMsg) > 0 {
 		return message.GameErrorMessage(errMsg), false
 	}
 	if _, ok := cmdwhitelist.UnitMoveMap[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
@@ -28,7 +43,7 @@ func (gl *GameLoader) handleUnitMove(msg *message.GameMessage) (*message.GameMes
 
 func (gl *GameLoader) handleUnitAttack(msg *message.GameMessage) (*message.GameMessage, bool) {
 	data := msg.Data.(*message.UnitAttackMessageData)
-	if errMsg := gl.validateUnitOwned(msg.Sender, data.Y1, data.X1); len(errMsg) > 0 {
+	if errMsg := gl.validateUnitOwned(data.Y1, data.X1); len(errMsg) > 0 {
 		return message.GameErrorMessage(errMsg), false
 	}
 	if _, ok := cmdwhitelist.UnitAttackMap[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {
@@ -62,7 +77,7 @@ func (gl *GameLoader) handleUnitAttack(msg *message.GameMessage) (*message.GameM
 
 func (gl *GameLoader) handleUnitMoveAndAttack(msg *message.GameMessage) (*message.GameMessage, bool) {
 	data := msg.Data.(*message.UnitMoveAndAttackMessageData)
-	if errMsg := gl.validateUnitOwned(msg.Sender, data.Y1, data.X1); len(errMsg) > 0 {
+	if errMsg := gl.validateUnitOwned(data.Y1, data.X1); len(errMsg) > 0 {
 		return message.GameErrorMessage(errMsg), false
 	}
 	if _, ok := cmdwhitelist.UnitMoveAndAttackMap[gl.Units[data.Y1][data.X1].GetUnitType()]; !ok {

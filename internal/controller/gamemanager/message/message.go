@@ -8,8 +8,6 @@ import (
 // some Cmd is restricted to client-sent only or server-sent only
 // let's just simplify these as client-only and server-only
 const (
-	// CmdShutdown is a cmd for shutting down game hub's listener. server-only
-	CmdShutdown = "SHUTDOWN"
 	// CmdChat is a cmd for text chat. no restriction
 	CmdChat = "CHAT"
 	// CmdGameData is a cmd for sending game data. no restriction.
@@ -22,6 +20,8 @@ const (
 	// CmdError is a cmd for sending server error. server-only
 	CmdError = "ERROR"
 
+	// CmdUnitStay is a unit cmd for doing nothing. no restriction.
+	CmdUnitStay = "UNIT_STAY"
 	// CmdUnitMove is a unit cmd for general moving. no restriction.
 	CmdUnitMove = "UNIT_MOVE"
 	// CmdUnitAttack is a unit cmd for general attack. no restriction
@@ -67,8 +67,6 @@ func UnmarshalAndValidateGameMessage(rawPayload []byte, senderID uint64) (*GameM
 	}
 
 	switch temp.Cmd {
-	case CmdShutdown:
-		return nil, ErrCmdNotAllowed
 	case CmdChat:
 		var data string
 		if err := json.Unmarshal(temp.Data, &data); err != nil {
@@ -85,6 +83,12 @@ func UnmarshalAndValidateGameMessage(rawPayload []byte, senderID uint64) (*GameM
 		message.Data = data
 	case CmdPing:
 		return nil, ErrCmdNotAllowed
+	case CmdUnitStay:
+		var data *UnitStayMessageData
+		if err := json.Unmarshal(temp.Data, &data); err != nil {
+			return nil, err
+		}
+		message.Data = data
 	case CmdUnitMove:
 		var data *UnitMoveMessageData
 		if err := json.Unmarshal(temp.Data, &data); err != nil {

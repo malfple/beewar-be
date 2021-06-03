@@ -67,10 +67,10 @@ func TestGridEngine_FillMoveGround(t *testing.T) {
 
 	self := (*ge.Units)[3][1]
 	ge.FillMoveGround(3, 1, 100, self.GetUnitOwner(), self.GetWeight())
-	assert.Equal(t, expectedDist, ge.dist)
+	assert.Equal(t, expectedDist, ge.Dist)
 
 	ge.FillMoveGroundReset(3, 1)
-	assert.Equal(t, cleanDist, ge.dist)
+	assert.Equal(t, cleanDist, ge.Dist)
 }
 
 func BenchmarkGridEngine_FillMoveGround(b *testing.B) {
@@ -87,9 +87,9 @@ func TestGridEngine_ValidateMoveGround(t *testing.T) {
 	ge := NewGridEngine(testHeight, testWidth, &testTerrain, &testUnits)
 
 	assert.Equal(t, true, ge.ValidateMoveGround(3, 1, 4, 7, 8))
-	assert.Equal(t, cleanDist, ge.dist)
+	assert.Equal(t, cleanDist, ge.Dist)
 	assert.Equal(t, false, ge.ValidateMoveGround(3, 1, 4, 7, 7))
-	assert.Equal(t, cleanDist, ge.dist)
+	assert.Equal(t, cleanDist, ge.Dist)
 }
 
 func TestGridEngine_ValidateMove(t *testing.T) {
@@ -122,7 +122,7 @@ func TestHexDistance(t *testing.T) {
 
 	for i := 0; i < testHeight; i++ {
 		for j := 0; j < testWidth; j++ {
-			assert.Equal(t, ge.dist[i][j], utils.HexDistance(5, 5, i, j))
+			assert.Equal(t, ge.Dist[i][j], utils.HexDistance(5, 5, i, j))
 		}
 	}
 }

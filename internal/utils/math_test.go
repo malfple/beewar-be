@@ -15,6 +15,11 @@ func TestMaxInt(t *testing.T) {
 	assert.Equal(t, 96, MaxInt(96, 69))
 }
 
+func TestMinInt(t *testing.T) {
+	assert.Equal(t, 69, MinInt(69, 96))
+	assert.Equal(t, 69, MinInt(96, 69))
+}
+
 func TestCeilDivInt(t *testing.T) {
 	assert.Equal(t, 5, CeilDivInt(10, 2))
 	assert.Equal(t, 5, CeilDivInt(9, 2))

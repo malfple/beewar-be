@@ -42,7 +42,7 @@ type GridEngine struct {
 	Width   int
 	Terrain *[][]int
 	Units   *[][]objects.Unit
-	dist    [][]int        // distance matrix, used temporarily
+	Dist    [][]int        // distance matrix, used temporarily
 	pqueue  *PriorityQueue // the priority_queue used for dijkstra
 	queue   []Pos          // the queue for bfs (to reset the dijkstra)
 }
@@ -54,13 +54,13 @@ func NewGridEngine(height, width int, terrain *[][]int, units *[][]objects.Unit)
 		Width:   width,
 		Terrain: terrain,
 		Units:   units,
-		dist:    make([][]int, height),
+		Dist:    make([][]int, height),
 		pqueue:  NewPriorityQueue(),
 	}
 	for i := 0; i < height; i++ {
-		engine.dist[i] = make([]int, width)
+		engine.Dist[i] = make([]int, width)
 		for j := 0; j < width; j++ {
-			engine.dist[i][j] = -1
+			engine.Dist[i][j] = -1
 		}
 	}
 
@@ -81,10 +81,10 @@ func (ge *GridEngine) FillMoveGround(y, x, steps, owner, weight int) {
 		d, now := ge.pqueue.Top()
 		ge.pqueue.Pop()
 
-		if ge.dist[now.Y][now.X] != -1 { // already visited
+		if ge.Dist[now.Y][now.X] != -1 { // already visited
 			continue
 		}
-		ge.dist[now.Y][now.X] = d
+		ge.Dist[now.Y][now.X] = d
 		if d == steps { // end of steps. break to optimize
 			continue
 		}
@@ -96,7 +96,7 @@ func (ge *GridEngine) FillMoveGround(y, x, steps, owner, weight int) {
 			if !ge.insideMap(ty, tx) {
 				continue
 			}
-			if ge.dist[ty][tx] != -1 {
+			if ge.Dist[ty][tx] != -1 {
 				continue
 			}
 			if (*ge.Terrain)[ty][tx] != objects.TerrainTypePlains {
@@ -122,7 +122,7 @@ func (ge *GridEngine) FillMoveGround(y, x, steps, owner, weight int) {
 // It also uses BFS instead of Dijkstra (because we don't need dijkstra to clear).
 // WARNING: this function does not do validation checks.
 func (ge *GridEngine) FillMoveGroundReset(y, x int) {
-	ge.dist[y][x] = -1
+	ge.Dist[y][x] = -1
 	ge.queue = append(ge.queue, Pos{y, x})
 	for len(ge.queue) > 0 {
 		now := ge.queue[0]
@@ -135,10 +135,10 @@ func (ge *GridEngine) FillMoveGroundReset(y, x int) {
 			if !ge.insideMap(ty, tx) {
 				continue
 			}
-			if ge.dist[ty][tx] == -1 {
+			if ge.Dist[ty][tx] == -1 {
 				continue
 			}
-			ge.dist[ty][tx] = -1
+			ge.Dist[ty][tx] = -1
 			ge.queue = append(ge.queue, Pos{ty, tx})
 		}
 	}
@@ -150,7 +150,7 @@ func (ge *GridEngine) ValidateMoveGround(y1, x1, y2, x2, steps int) bool {
 	var reach bool
 	self := (*ge.Units)[y1][x1]
 	ge.FillMoveGround(y1, x1, steps, self.GetUnitOwner(), self.GetWeight())
-	reach = ge.dist[y2][x2] != -1
+	reach = ge.Dist[y2][x2] != -1
 	ge.FillMoveGroundReset(y1, x1)
 	return reach
 }
