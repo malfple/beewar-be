@@ -9,6 +9,7 @@ import (
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/message"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/objects"
 	"gitlab.com/beewar/beewar-be/internal/logger"
+	"gitlab.com/beewar/beewar-be/internal/utils"
 	"go.uber.org/zap"
 )
 
@@ -245,6 +246,12 @@ func (gl *GameLoader) nextTurn() {
 				gl.Units[i][j].EndTurn()
 			} else if gl.Units[i][j].GetUnitOwner() == gl.TurnPlayer {
 				gl.Units[i][j].StartTurn()
+				// ice field terrain effect
+				if gl.Terrain[i][j] == objects.TerrainTypeIceField {
+					dmg := 1 + gl.Units[i][j].GetWeight()
+					gl.Units[i][j].SetUnitHP(utils.MaxInt(0, gl.Units[i][j].GetUnitHP()-dmg))
+					gl.checkUnitAlive(i, j)
+				}
 			}
 		}
 	}

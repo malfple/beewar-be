@@ -99,9 +99,6 @@ func (ge *GridEngine) FillMoveGround(y, x, steps, owner, weight int) {
 			if ge.Dist[ty][tx] != -1 {
 				continue
 			}
-			if (*ge.Terrain)[ty][tx] != objects.TerrainTypePlains {
-				continue
-			}
 			if unit := (*ge.Units)[ty][tx]; unit != nil {
 				if unit.GetUnitOwner() != owner {
 					continue
@@ -110,8 +107,8 @@ func (ge *GridEngine) FillMoveGround(y, x, steps, owner, weight int) {
 					continue
 				}
 			}
-			if d+1 <= steps {
-				ge.pqueue.Push(d+1, Pos{ty, tx})
+			if dnext := d + CalcMoveCost((*ge.Terrain)[ty][tx], weight); dnext <= steps {
+				ge.pqueue.Push(dnext, Pos{ty, tx})
 			}
 		}
 	}

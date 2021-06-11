@@ -10,6 +10,7 @@ import (
 const testHeight = 10
 const testWidth = 10
 
+// test case 1 -> normal map, validate the whole dist array
 var testTerrain = formatter.ModelToGameTerrain(testHeight, testWidth, []byte{
 	1, 0, 1, 1, 1, 1, 1, 1, 0, 0,
 	1, 0, 1, 1, 1, 1, 1, 1, 1, 0,
@@ -101,6 +102,7 @@ func TestGridEngine_ValidateMove(t *testing.T) {
 	assert.Equal(t, true, ge.ValidateMove(3, 1, 6, 2))
 }
 
+// test case 2 -> tests hex distance, has to be equal to dist array
 var testTerrain2 = formatter.ModelToGameTerrain(testHeight, testWidth, []byte{
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -125,4 +127,19 @@ func TestHexDistance(t *testing.T) {
 			assert.Equal(t, ge.Dist[i][j], utils.HexDistance(5, 5, i, j))
 		}
 	}
+}
+
+// test case 3 -> simple shortest path
+var testTerrain3 = formatter.ModelToGameTerrain(2, 10, []byte{
+	1, 1, 1, 3, 3, 1, 1, 1, 1, 1,
+	3, 3, 3, 1, 1, 1, 3, 3, 3, 3,
+})
+var testUnits3 = formatter.ModelToGameUnit(2, 10, []byte{})
+
+func TestGridEngine_FillMoveGround2(t *testing.T) {
+	ge := NewGridEngine(2, 10, &testTerrain3, &testUnits3)
+
+	ge.FillMoveGround(1, 0, 100, 0, 0)
+
+	assert.Equal(t, 12, ge.Dist[1][9])
 }
