@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -42,8 +43,8 @@ func main() {
 
 	// graceful shutdown
 	c := make(chan os.Signal, 1)
-	// quit when SIGINT (ctrl + c)
-	signal.Notify(c, os.Interrupt)
+	// quit when SIGINT (ctrl + c), or SIGTERM
+	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 
 	// block until receive signal
 	<-c
