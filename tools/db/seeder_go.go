@@ -67,16 +67,16 @@ func main() {
 		fmt.Printf("create map with id: %d\n", mapID)
 
 		terrainInfo := []byte{
-			1, 0, 1, 1, 1, 1, 1, 1, 0, 0,
-			1, 0, 1, 1, 1, 1, 1, 1, 1, 0,
-			0, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-			0, 1, 1, 1, 1, 0, 1, 1, 1, 1,
-			1, 1, 1, 0, 0, 0, 0, 1, 1, 1,
-			1, 1, 1, 0, 0, 0, 0, 1, 1, 1,
-			1, 1, 1, 1, 0, 1, 1, 1, 1, 0,
-			0, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-			0, 1, 1, 1, 1, 1, 1, 1, 0, 1,
-			0, 0, 1, 1, 1, 1, 1, 1, 0, 1,
+			1, 0, 1, 1, 3, 3, 1, 1, 0, 0,
+			1, 0, 1, 1, 1, 3, 4, 1, 1, 0,
+			0, 1, 1, 1, 1, 3, 3, 1, 1, 0,
+			0, 1, 1, 1, 1, 2, 1, 1, 1, 1,
+			1, 1, 1, 2, 0, 0, 2, 1, 1, 1,
+			1, 1, 1, 2, 0, 0, 2, 1, 1, 1,
+			1, 1, 1, 1, 2, 1, 1, 1, 1, 0,
+			0, 1, 1, 5, 4, 1, 1, 1, 1, 0,
+			0, 1, 1, 1, 5, 4, 1, 1, 0, 1,
+			0, 0, 1, 1, 5, 5, 1, 1, 0, 1,
 		}
 		unitInfo := []byte{
 			5, 1, 1, 1, 10, 0,
@@ -95,16 +95,7 @@ func main() {
 			terrainInfo, unitInfo)
 	}
 
-	// game 1
-	if access.QueryGameByID(1) == nil {
-		map1 := access.QueryMapByID(1)
-		gameID, _ := access.CreateGameFromMap(map1, "")
-		_ = access.CreateGameUser(gameID, 2, 1)
-		_ = access.CreateGameUser(gameID, 4, 2)
-		fmt.Printf("create game with id %d \n", gameID)
-	}
-
-	// map 2 and game 2
+	// map 2
 	if access.QueryMapByID(2) == nil {
 		mapID, _ := mapmanager.CreateEmptyMap(1)
 		fmt.Printf("create map with id: %d\n", mapID)
@@ -159,14 +150,5 @@ func main() {
 
 		_ = access.UpdateMap(2, 0, 15, 15, "cross", 4,
 			terrainInfo, unitInfo)
-	}
-	if access.QueryGameByID(2) == nil {
-		map2 := access.QueryMapByID(2)
-		gameID, _ := access.CreateGameFromMap(map2, "")
-		_ = access.CreateGameUser(gameID, 4, 1)
-		_ = access.CreateGameUser(gameID, 3, 2)
-		_ = access.CreateGameUser(gameID, 2, 3)
-		_ = access.CreateGameUser(gameID, 1, 4)
-		fmt.Printf("create game with id %d \n", gameID)
 	}
 }
