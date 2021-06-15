@@ -18,12 +18,9 @@ import (
 
 func main() {
 	logger.InitLogger()
-	defer logger.ShutdownLogger()
 	configs.InitConfigs()
 	access.InitAccess()
-	defer access.ShutdownAccess()
 	gamemanager.InitGameManager()
-	defer gamemanager.ShutdownGameManager()
 	beebot.InitBeebotRoutines()
 
 	server := &http.Server{
@@ -49,10 +46,17 @@ func main() {
 	// block until receive signal
 	<-c
 
+	logger.GetLogger().Info("shutting down...")
+
 	// create deadline to wait for
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
 	defer cancel()
 	// wait for connections to close or until deadline
 	_ = server.Shutdown(ctx)
-	logger.GetLogger().Info("shutting down...")
+
+	gamemanager.ShutdownGameManager()
+	access.ShutdownAccess()
+	logger.ShutdownLogger()
+
+	os.Exit(0)
 }
