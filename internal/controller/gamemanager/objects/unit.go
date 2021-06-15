@@ -20,6 +20,8 @@ type Unit interface {
 	GetUnitHP() int
 	// SetUnitHP sets the hp of the unit
 	SetUnitHP(hp int)
+	// GetMaxHP returns the maximum hp of the unit type
+	GetMaxHP() int
 	// GetWeight returns the weight characteristic of the unit type
 	GetWeight() int
 	// GetMoveType returns movement type of the unit type
@@ -32,6 +34,8 @@ type Unit interface {
 	GetAttackRange() int
 	// GetAttackPower returns attack power of the unit type, multiplied by 10
 	GetAttackPower() int
+	// GetCost returns value of the unit type.
+	GetCost() int
 	// StartTurn triggers start-of-turn effects
 	StartTurn()
 	// EndTurn ends the turn for the unit, reset states and trigger any end-of-turn effects
@@ -44,6 +48,14 @@ const (
 	UnitTypeQueen = 1
 	// UnitTypeInfantry defines the unit type number of Infantry
 	UnitTypeInfantry = 3
+)
+
+// max hp
+const (
+	// UnitMaxHPQueen defines the maximum hp for Queen
+	UnitMaxHPQueen = 10
+	// UnitMaxHPInfantry defines the maximum hp for Infantry
+	UnitMaxHPInfantry = 10
 )
 
 // move types
@@ -104,4 +116,12 @@ const (
 const (
 	// UnitStateBitMoved defines the bit in unit states that specifies moved state
 	UnitStateBitMoved = 1
+)
+
+// unit cost
+const (
+	// UnitCostQueen defines the cost of Queen
+	UnitCostQueen = 10000
+	// UnitCostInfantry defines the cost of Infantry
+	UnitCostInfantry = 300
 )

@@ -138,10 +138,9 @@ func (client *BotGameClient) scoreNearestQueen(y, x int) int {
 func (client *BotGameClient) scoreCombat(attacker, defender objects.Unit, dist int) int {
 	dmgAtk, dmgDef := combat.SimulateNormalCombat(attacker, defender, dist)
 	score := 0
-	// TODO: use actual unit value
 	// damage dealt
-	score += dmgDef
+	score += dmgDef * defender.GetCost() / defender.GetMaxHP()
 	// damage received
-	score -= dmgAtk
+	score -= dmgAtk * attacker.GetCost() / attacker.GetMaxHP()
 	return score
 }

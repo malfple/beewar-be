@@ -52,6 +52,11 @@ func (inf *Infantry) SetUnitHP(hp int) {
 	inf.HP = hp
 }
 
+// GetMaxHP see function from Unit
+func (inf *Infantry) GetMaxHP() int {
+	return UnitMaxHPInfantry
+}
+
 // GetWeight see function from Unit
 func (inf *Infantry) GetWeight() int {
 	return UnitWeightInfantry
@@ -80,6 +85,11 @@ func (inf *Infantry) GetAttackRange() int {
 // GetAttackPower see function from Unit
 func (inf *Infantry) GetAttackPower() int {
 	return UnitAttackPowerInfantry
+}
+
+// GetCost see function from Unit
+func (inf *Infantry) GetCost() int {
+	return UnitCostInfantry
 }
 
 // StartTurn see function from Unit

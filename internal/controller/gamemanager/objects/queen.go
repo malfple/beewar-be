@@ -52,6 +52,11 @@ func (queen *Queen) SetUnitHP(hp int) {
 	queen.HP = hp
 }
 
+// GetMaxHP see function from Unit
+func (queen *Queen) GetMaxHP() int {
+	return UnitMaxHPQueen
+}
+
 // GetWeight see function from Unit
 func (queen *Queen) GetWeight() int {
 	return UnitWeightQueen
@@ -80,6 +85,11 @@ func (queen *Queen) GetAttackRange() int {
 // GetAttackPower see function from Unit
 func (queen *Queen) GetAttackPower() int {
 	return UnitAttackPowerQueen
+}
+
+// GetCost see function from Unit
+func (queen *Queen) GetCost() int {
+	return UnitCostQueen
 }
 
 // StartTurn see function from Unit
