@@ -22,14 +22,14 @@ Provide the following fields (from map model):
 
 If password is provided, the game will be private (password-protected). Otherwise it will be public.
 */
-func CreateGameFromMap(mapModel *model.Map, password string) (uint64, error) {
+func CreateGameFromMap(mapModel *model.Map, name, password string, creatorUserID uint64) (uint64, error) {
 	const stmtCreateGame = `INSERT INTO game_tab
-(type, height, width, player_count, terrain_info, unit_info, map_id, password, time_created, time_modified)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
+(type, height, width, player_count, terrain_info, unit_info, map_id, name, password, creator_user_id, time_created, time_modified)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 
 	res, err := db.Exec(stmtCreateGame,
 		mapModel.Type, mapModel.Height, mapModel.Width, mapModel.PlayerCount, mapModel.TerrainInfo, mapModel.UnitInfo, mapModel.ID,
-		password)
+		name, password, creatorUserID)
 	if err != nil {
 		logger.GetLogger().Error("db: insert error", zap.String("table", "game_tab"), zap.Error(err))
 		return 0, err
@@ -109,7 +109,9 @@ func QueryGameByID(gameID uint64) *model.Game {
 		&game.TerrainInfo,
 		&game.UnitInfo,
 		&game.MapID,
+		&game.Name,
 		&game.Password,
+		&game.CreatorUserID,
 		&game.Status,
 		&game.TurnCount,
 		&game.TurnPlayer,
@@ -155,7 +157,9 @@ func QueryGamesByID(gameIDs []uint64) []*model.Game {
 			&game.TerrainInfo,
 			&game.UnitInfo,
 			&game.MapID,
+			&game.Name,
 			&game.Password,
+			&game.CreatorUserID,
 			&game.Status,
 			&game.TurnCount,
 			&game.TurnPlayer,
@@ -200,7 +204,9 @@ func QueryWaitingGames() []*model.Game {
 			&game.TerrainInfo,
 			&game.UnitInfo,
 			&game.MapID,
+			&game.Name,
 			&game.Password,
+			&game.CreatorUserID,
 			&game.Status,
 			&game.TurnCount,
 			&game.TurnPlayer,

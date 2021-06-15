@@ -13,7 +13,7 @@ import (
 // HandleGameCreate handles game creation
 func HandleGameCreate(w http.ResponseWriter, r *http.Request) {
 	accessToken := r.Header.Get(auth.AccessTokenHeaderName)
-	_, _, err := auth.ValidateJWT(accessToken)
+	userID, _, err := auth.ValidateJWT(accessToken)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -33,7 +33,7 @@ func HandleGameCreate(w http.ResponseWriter, r *http.Request) {
 
 	resp := &CreateResponse{}
 
-	gameID, err := gamemanager.CreateGame(req.MapID, req.Password)
+	gameID, err := gamemanager.CreateGame(req.MapID, req.Name, req.Password, userID)
 	if err != nil {
 		resp.ErrMsg = err.Error()
 	} else {
@@ -52,6 +52,7 @@ func HandleGameCreate(w http.ResponseWriter, r *http.Request) {
 // CreateRequest is a response struct
 type CreateRequest struct {
 	MapID    uint64 `json:"map_id"`
+	Name     string `json:"name"`
 	Password string `json:"password"`
 }
 
