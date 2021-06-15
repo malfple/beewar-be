@@ -100,10 +100,10 @@ func (ge *GridEngine) FillMoveGround(y, x, steps, owner, weight int) {
 				continue
 			}
 			if unit := (*ge.Units)[ty][tx]; unit != nil {
-				if unit.GetUnitOwner() != owner {
+				if unit.GetOwner() != owner {
 					continue
 				}
-				if unit.GetWeight()+weight > 1 {
+				if unit.UnitWeight()+weight > 1 {
 					continue
 				}
 			}
@@ -146,7 +146,7 @@ func (ge *GridEngine) FillMoveGroundReset(y, x int) {
 func (ge *GridEngine) ValidateMoveGround(y1, x1, y2, x2, steps int) bool {
 	var reach bool
 	self := (*ge.Units)[y1][x1]
-	ge.FillMoveGround(y1, x1, steps, self.GetUnitOwner(), self.GetWeight())
+	ge.FillMoveGround(y1, x1, steps, self.GetOwner(), self.UnitWeight())
 	reach = ge.Dist[y2][x2] != -1
 	ge.FillMoveGroundReset(y1, x1)
 	return reach
@@ -167,9 +167,9 @@ func (ge *GridEngine) ValidateMove(y1, x1, y2, x2 int) bool {
 		return false
 	}
 
-	switch unit := (*ge.Units)[y1][x1]; unit.GetMoveType() {
+	switch unit := (*ge.Units)[y1][x1]; unit.UnitMoveType() {
 	case objects.MoveTypeGround:
-		return ge.ValidateMoveGround(y1, x1, y2, x2, unit.GetMoveRange())
+		return ge.ValidateMoveGround(y1, x1, y2, x2, unit.UnitMoveRange())
 	default:
 		panic("panic validate move: unknown move type")
 	}
@@ -188,16 +188,16 @@ func (ge *GridEngine) ValidateAttack(y, x, yt, xt int, attacker objects.Unit) (b
 	if (*ge.Units)[yt][xt] == nil {
 		return false, -1
 	}
-	if attacker.GetUnitOwner() == (*ge.Units)[yt][xt].GetUnitOwner() {
+	if attacker.GetOwner() == (*ge.Units)[yt][xt].GetOwner() {
 		return false, -1
 	}
 
 	distBetween := utils.HexDistance(y, x, yt, xt)
-	switch attacker.GetAttackType() {
+	switch attacker.UnitAttackType() {
 	case objects.AttackTypeNone:
 		return false, -1
 	case objects.AttackTypeGround:
-		return distBetween <= attacker.GetAttackRange(), distBetween
+		return distBetween <= attacker.UnitAttackRange(), distBetween
 	default:
 		panic("panic validate attack: unknown attack type")
 	}

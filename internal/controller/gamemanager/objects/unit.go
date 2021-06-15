@@ -1,41 +1,43 @@
 package objects
 
-// Unit is an object that describes units on the map
-// to implement this interface, the basic fields that a unit struct should have are:
-// Owner (owner of this unit)
-// HP (health point)
-// State (state/flags), which can split into multiple fields, or renamed
+/*
+Unit is an object that describes units on the map.
+To implement this interface, the basic fields that a unit struct should have are:
+ - Owner (owner of this unit)
+ - HP (health point)
+ - State (state/flags), which can split into multiple fields, or renamed
+*/
 type Unit interface {
-	// GetUnitType gets the unit type of the current unit object
-	GetUnitType() int
-	// GetUnitOwner returns the owner of the unit
-	GetUnitOwner() int
-	// GetUnitState returns unit states
-	GetUnitState() int
-	// GetUnitStateBit returns one specified unit state bit as a bool (0 or 1)
-	GetUnitStateBit(bit int) bool
-	// ToggleUnitStateBit toggles state using the bit given. bit has to be one of the const below
-	ToggleUnitStateBit(bit int)
-	// GetUnitHP returns hp of the unit
-	GetUnitHP() int
-	// SetUnitHP sets the hp of the unit
-	SetUnitHP(hp int)
-	// GetMaxHP returns the maximum hp of the unit type
-	GetMaxHP() int
-	// GetWeight returns the weight characteristic of the unit type
-	GetWeight() int
-	// GetMoveType returns movement type of the unit type
-	GetMoveType() int
-	// GetMoveRange returns movement range of the unit type
-	GetMoveRange() int
-	// GetAttackType returns attack type of the unit type
-	GetAttackType() int
-	// GetAttackRange returns attack range of the unit type
-	GetAttackRange() int
-	// GetAttackPower returns attack power of the unit type, multiplied by 10
-	GetAttackPower() int
-	// GetCost returns value of the unit type.
-	GetCost() int
+	// UnitType gets the unit type of the current unit object
+	UnitType() int
+	// UnitMaxHP returns the maximum hp of the unit type
+	UnitMaxHP() int
+	// UnitWeight returns the weight characteristic of the unit type
+	UnitWeight() int
+	// UnitMoveType returns movement type of the unit type
+	UnitMoveType() int
+	// UnitMoveRange returns movement range of the unit type
+	UnitMoveRange() int
+	// UnitAttackType returns attack type of the unit type
+	UnitAttackType() int
+	// UnitAttackRange returns attack range of the unit type
+	UnitAttackRange() int
+	// UnitAttackPower returns attack power of the unit type, multiplied by 10
+	UnitAttackPower() int
+	// GetOwner returns the owner of the unit
+	GetOwner() int
+	// GetState returns unit states
+	GetState() int
+	// GetStateBit returns one specified unit state bit as a bool (0 or 1)
+	GetStateBit(bit int) bool
+	// ToggleStateBit toggles state using the bit given. bit has to be one of the const below
+	ToggleStateBit(bit int)
+	// GetHP returns hp of the unit
+	GetHP() int
+	// SetHP sets the hp of the unit
+	SetHP(hp int)
+	// UnitCost returns value of the unit type.
+	UnitCost() int
 	// StartTurn triggers start-of-turn effects
 	StartTurn()
 	// EndTurn ends the turn for the unit, reset states and trigger any end-of-turn effects

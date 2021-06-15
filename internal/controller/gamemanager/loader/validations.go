@@ -12,7 +12,7 @@ func (gl *GameLoader) validateUnitOwned(y, x int) string {
 		return errMsgInvalidPos
 	}
 	// player doesn't own the unit
-	if gl.TurnPlayer != gl.Units[y][x].GetUnitOwner() {
+	if gl.TurnPlayer != gl.Units[y][x].GetOwner() {
 		return errMsgUnitNotOwned
 	}
 

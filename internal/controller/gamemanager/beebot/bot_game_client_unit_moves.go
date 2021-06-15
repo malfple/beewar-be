@@ -22,7 +22,7 @@ func (client *BotGameClient) doNextUnitMove(y, x int, unit objects.Unit) *messag
 	})
 	scores = append(scores, client.scoreNearestQueen(y, x))
 
-	switch unit.GetUnitType() {
+	switch unit.UnitType() {
 	case objects.UnitTypeInfantry:
 		calcMoves, calcScores := client.calcUnitMove(y, x, unit)
 		moves = append(moves, calcMoves...)
@@ -54,9 +54,9 @@ func (client *BotGameClient) calcUnitMove(y, x int, unit objects.Unit) ([]*messa
 	var moves []*message.GameMessage
 	var scores []int
 
-	switch unit.GetMoveType() {
+	switch unit.UnitMoveType() {
 	case objects.MoveTypeGround:
-		ge.FillMoveGround(y, x, unit.GetMoveRange(), unit.GetUnitOwner(), unit.GetWeight())
+		ge.FillMoveGround(y, x, unit.UnitMoveRange(), unit.GetOwner(), unit.UnitWeight())
 		for i := 0; i < gameLoader.Height; i++ {
 			for j := 0; j < gameLoader.Width; j++ {
 				if ge.Dist[i][j] <= 0 {
@@ -81,8 +81,8 @@ func (client *BotGameClient) calcUnitMove(y, x int, unit objects.Unit) ([]*messa
 				scores = append(scores, moveScore)
 
 				// move and attack
-				if _, ok := cmdwhitelist.UnitMoveAndAttackMap[unit.GetUnitType()]; ok {
-					atkRange := unit.GetAttackRange()
+				if _, ok := cmdwhitelist.UnitMoveAndAttackMap[unit.UnitType()]; ok {
+					atkRange := unit.UnitAttackRange()
 					for ti := i - atkRange; ti <= i+atkRange; ti++ {
 						for tj := j - atkRange; tj <= j+atkRange; tj++ {
 							if ti < 0 || ti >= gameLoader.Height || tj < 0 || tj >= gameLoader.Width {
@@ -96,7 +96,7 @@ func (client *BotGameClient) calcUnitMove(y, x int, unit objects.Unit) ([]*messa
 							if targetUnit == nil {
 								continue
 							}
-							if targetUnit.GetUnitOwner() == client.PlayerOrder {
+							if targetUnit.GetOwner() == client.PlayerOrder {
 								continue // cannot attack friend
 							}
 							// ok, can attack target unit
@@ -139,8 +139,8 @@ func (client *BotGameClient) scoreCombat(attacker, defender objects.Unit, dist i
 	dmgAtk, dmgDef := combat.SimulateNormalCombat(attacker, defender, dist)
 	score := 0
 	// damage dealt
-	score += dmgDef * defender.GetCost() / defender.GetMaxHP()
+	score += dmgDef * defender.UnitCost() / defender.UnitMaxHP()
 	// damage received
-	score -= dmgAtk * attacker.GetCost() / attacker.GetMaxHP()
+	score -= dmgAtk * attacker.UnitCost() / attacker.UnitMaxHP()
 	return score
 }

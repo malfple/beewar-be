@@ -158,7 +158,7 @@ func (client *BotGameClient) startTurn() {
 			if unit == nil {
 				continue
 			}
-			if unit.GetUnitType() != objects.UnitTypeQueen || unit.GetUnitOwner() == client.PlayerOrder {
+			if unit.UnitType() != objects.UnitTypeQueen || unit.GetOwner() == client.PlayerOrder {
 				continue
 			}
 			// now only enemy queens are left
@@ -181,10 +181,10 @@ func (client *BotGameClient) doNextMove() {
 			if unit == nil {
 				continue
 			}
-			if unit.GetUnitOwner() != client.PlayerOrder {
+			if unit.GetOwner() != client.PlayerOrder {
 				continue
 			}
-			if unit.GetUnitStateBit(objects.UnitStateBitMoved) {
+			if unit.GetStateBit(objects.UnitStateBitMoved) {
 				continue
 			}
 			// do next unit move

@@ -242,14 +242,14 @@ func (gl *GameLoader) nextTurn() {
 			if gl.Units[i][j] == nil {
 				continue
 			}
-			if gl.Units[i][j].GetUnitOwner() == prevPlayer {
+			if gl.Units[i][j].GetOwner() == prevPlayer {
 				gl.Units[i][j].EndTurn()
-			} else if gl.Units[i][j].GetUnitOwner() == gl.TurnPlayer {
+			} else if gl.Units[i][j].GetOwner() == gl.TurnPlayer {
 				gl.Units[i][j].StartTurn()
 				// ice field terrain effect
 				if gl.Terrain[i][j] == objects.TerrainTypeIceField {
-					dmg := 1 + gl.Units[i][j].GetWeight()
-					gl.Units[i][j].SetUnitHP(utils.MaxInt(0, gl.Units[i][j].GetUnitHP()-dmg))
+					dmg := 1 + gl.Units[i][j].UnitWeight()
+					gl.Units[i][j].SetHP(utils.MaxInt(0, gl.Units[i][j].GetHP()-dmg))
 					gl.checkUnitAlive(i, j)
 				}
 			}
@@ -261,10 +261,10 @@ func (gl *GameLoader) nextTurn() {
 
 // check if a unit is still alive. Also checks player defeat condition. If you dies, you are defeated.
 func (gl *GameLoader) checkUnitAlive(y, x int) {
-	if gl.Units[y][x].GetUnitHP() == 0 {
-		if gl.Units[y][x].GetUnitType() == objects.UnitTypeQueen {
+	if gl.Units[y][x].GetHP() == 0 {
+		if gl.Units[y][x].UnitType() == objects.UnitTypeQueen {
 			// player is defeated -> assign rank and turns lasted
-			gl.assignPlayerRank(gl.Units[y][x].GetUnitOwner())
+			gl.assignPlayerRank(gl.Units[y][x].GetOwner())
 			// immediately check if game ends
 			gl.checkGameEnd()
 		}

@@ -113,13 +113,13 @@ func GameUnitToModel(height, width int, _units [][]objects.Unit) []byte {
 			}
 
 			unit := _units[i][j]
-			switch unit.GetUnitType() {
+			switch unit.UnitType() {
 			case objects.UnitTypeQueen:
 				queen := unit.(*objects.Queen)
-				unitInfo = append(unitInfo, byte(i), byte(j), byte(queen.Owner), byte(unit.GetUnitType()), byte(queen.HP), byte(unit.GetUnitState()))
+				unitInfo = append(unitInfo, byte(i), byte(j), byte(queen.Owner), byte(unit.UnitType()), byte(queen.HP), byte(unit.GetState()))
 			case objects.UnitTypeInfantry:
 				inf := unit.(*objects.Infantry)
-				unitInfo = append(unitInfo, byte(i), byte(j), byte(inf.Owner), byte(unit.GetUnitType()), byte(inf.HP), byte(unit.GetUnitState()))
+				unitInfo = append(unitInfo, byte(i), byte(j), byte(inf.Owner), byte(unit.UnitType()), byte(inf.HP), byte(unit.GetState()))
 			default:
 				panic("panic convert: unknown unit type from unit object")
 			}
