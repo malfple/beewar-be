@@ -13,7 +13,7 @@ import (
 // HandleGameBeebotJoin handles beebot join game request
 func HandleGameBeebotJoin(w http.ResponseWriter, r *http.Request) {
 	accessToken := r.Header.Get(auth.AccessTokenHeaderName)
-	_, _, err := auth.ValidateJWT(accessToken)
+	userID, _, err := auth.ValidateJWT(accessToken)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -33,7 +33,7 @@ func HandleGameBeebotJoin(w http.ResponseWriter, r *http.Request) {
 
 	resp := &BeebotJoinResponse{}
 
-	resp.ErrMsg = beebot.AskBeebotToJoinGame(req.GameID, req.PlayerOrder, req.Password)
+	resp.ErrMsg = beebot.AskBeebotToJoinGame(userID, req.GameID, req.PlayerOrder, req.Password)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

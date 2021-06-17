@@ -11,6 +11,7 @@ import (
 
 const (
 	errMsgBeebotUserMissing = "beebot user missing"
+	errMsgNotCreator        = "You are not the creator of this game. Only game creators can invite beebot to the game."
 )
 
 var beebotUser *model.User
@@ -36,9 +37,14 @@ func InitBeebotRoutines() {
 }
 
 // AskBeebotToJoinGame invites beebot to join a game
-func AskBeebotToJoinGame(gameID uint64, playerOrder uint8, password string) string {
+func AskBeebotToJoinGame(inviterUserID uint64, gameID uint64, playerOrder uint8, password string) string {
 	if beebotUser == nil {
 		return errMsgBeebotUserMissing
+	}
+	// validate game creator
+	gameModel := access.QueryGameByID(gameID)
+	if gameModel.CreatorUserID != inviterUserID {
+		return errMsgNotCreator
 	}
 
 	client := NewBotGameClient(beebotUser.ID, playerOrder)

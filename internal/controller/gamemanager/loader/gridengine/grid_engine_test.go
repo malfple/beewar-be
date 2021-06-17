@@ -67,7 +67,7 @@ func TestGridEngine_FillMoveGround(t *testing.T) {
 	ge := NewGridEngine(testHeight, testWidth, &testTerrain, &testUnits)
 
 	self := (*ge.Units)[3][1]
-	ge.FillMoveGround(3, 1, 100, self.GetUnitOwner(), self.GetWeight())
+	ge.FillMoveGround(3, 1, 100, self.GetOwner(), self.UnitWeight())
 	assert.Equal(t, expectedDist, ge.Dist)
 
 	ge.FillMoveGroundReset(3, 1)
@@ -79,7 +79,7 @@ func BenchmarkGridEngine_FillMoveGround(b *testing.B) {
 
 	self := (*ge.Units)[3][1]
 	for i := 0; i < b.N; i++ {
-		ge.FillMoveGround(3, 1, 100, self.GetUnitOwner(), self.GetWeight())
+		ge.FillMoveGround(3, 1, 100, self.GetOwner(), self.UnitWeight())
 		ge.FillMoveGroundReset(3, 1)
 	}
 }

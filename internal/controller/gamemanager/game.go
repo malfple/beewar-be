@@ -18,7 +18,7 @@ var (
 )
 
 // CreateGame creates a new game with the given map id. If password is provided, it will be bcrypt-ed
-func CreateGame(mapID uint64, password string) (uint64, error) {
+func CreateGame(mapID uint64, name, password string, creatorUserID uint64) (uint64, error) {
 	mapModel := access.QueryMapByID(mapID)
 	if mapModel == nil {
 		return 0, errMapDoesNotExist
@@ -35,7 +35,7 @@ func CreateGame(mapID uint64, password string) (uint64, error) {
 		}
 		passwordHash = string(passwordHashByte)
 	}
-	return access.CreateGameFromMap(mapModel, passwordHash)
+	return access.CreateGameFromMap(mapModel, name, passwordHash, creatorUserID)
 }
 
 // GetMyGames returns a list of games for a specified user

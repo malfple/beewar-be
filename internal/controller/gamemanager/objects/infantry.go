@@ -17,69 +17,79 @@ func NewInfantry(owner, hp, state int) *Infantry {
 	}
 }
 
-// GetUnitType see function from Unit
-func (inf *Infantry) GetUnitType() int {
+// UnitType see function from Unit
+func (inf *Infantry) UnitType() int {
 	return UnitTypeInfantry
 }
 
-// GetUnitOwner see function from Unit
-func (inf *Infantry) GetUnitOwner() int {
-	return inf.Owner
+// UnitMaxHP see function from Unit
+func (inf *Infantry) UnitMaxHP() int {
+	return UnitMaxHPInfantry
 }
 
-// GetUnitState see function from Unit
-func (inf *Infantry) GetUnitState() int {
-	return inf.State
-}
-
-// GetUnitStateBit see function from Unit
-func (inf *Infantry) GetUnitStateBit(bit int) bool {
-	return (inf.State & bit) != 0
-}
-
-// ToggleUnitStateBit see function from Unit
-func (inf *Infantry) ToggleUnitStateBit(bit int) {
-	inf.State ^= bit
-}
-
-// GetUnitHP see function from Unit
-func (inf *Infantry) GetUnitHP() int {
-	return inf.HP
-}
-
-// SetUnitHP see function from Unit
-func (inf *Infantry) SetUnitHP(hp int) {
-	inf.HP = hp
-}
-
-// GetWeight see function from Unit
-func (inf *Infantry) GetWeight() int {
+// UnitWeight see function from Unit
+func (inf *Infantry) UnitWeight() int {
 	return UnitWeightInfantry
 }
 
-// GetMoveType see function from Unit
-func (inf *Infantry) GetMoveType() int {
+// UnitMoveType see function from Unit
+func (inf *Infantry) UnitMoveType() int {
 	return MoveTypeGround
 }
 
-// GetMoveRange see function from Unit
-func (inf *Infantry) GetMoveRange() int {
+// UnitMoveRange see function from Unit
+func (inf *Infantry) UnitMoveRange() int {
 	return UnitMoveRangeInfantry
 }
 
-// GetAttackType see function from Unit
-func (inf *Infantry) GetAttackType() int {
+// UnitAttackType see function from Unit
+func (inf *Infantry) UnitAttackType() int {
 	return AttackTypeGround
 }
 
-// GetAttackRange see function frmo Unit
-func (inf *Infantry) GetAttackRange() int {
+// UnitAttackRange see function frmo Unit
+func (inf *Infantry) UnitAttackRange() int {
 	return UnitAttackRangeInfantry
 }
 
-// GetAttackPower see function from Unit
-func (inf *Infantry) GetAttackPower() int {
+// UnitAttackPower see function from Unit
+func (inf *Infantry) UnitAttackPower() int {
 	return UnitAttackPowerInfantry
+}
+
+// UnitCost see function from Unit
+func (inf *Infantry) UnitCost() int {
+	return UnitCostInfantry
+}
+
+// GetOwner see function from Unit
+func (inf *Infantry) GetOwner() int {
+	return inf.Owner
+}
+
+// GetState see function from Unit
+func (inf *Infantry) GetState() int {
+	return inf.State
+}
+
+// GetStateBit see function from Unit
+func (inf *Infantry) GetStateBit(bit int) bool {
+	return (inf.State & bit) != 0
+}
+
+// ToggleStateBit see function from Unit
+func (inf *Infantry) ToggleStateBit(bit int) {
+	inf.State ^= bit
+}
+
+// GetHP see function from Unit
+func (inf *Infantry) GetHP() int {
+	return inf.HP
+}
+
+// SetHP see function from Unit
+func (inf *Infantry) SetHP(hp int) {
+	inf.HP = hp
 }
 
 // StartTurn see function from Unit

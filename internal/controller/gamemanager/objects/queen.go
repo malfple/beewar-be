@@ -17,69 +17,79 @@ func NewQueen(owner, hp, state int) *Queen {
 	}
 }
 
-// GetUnitType see function from Unit
-func (queen *Queen) GetUnitType() int {
+// UnitType see function from Unit
+func (queen *Queen) UnitType() int {
 	return UnitTypeQueen
 }
 
-// GetUnitOwner see function from Unit
-func (queen *Queen) GetUnitOwner() int {
-	return queen.Owner
+// UnitMaxHP see function from Unit
+func (queen *Queen) UnitMaxHP() int {
+	return UnitMaxHPQueen
 }
 
-// GetUnitState see function from Unit
-func (queen *Queen) GetUnitState() int {
-	return queen.State
-}
-
-// GetUnitStateBit see function from Unit
-func (queen *Queen) GetUnitStateBit(bit int) bool {
-	return (queen.State & bit) != 0
-}
-
-// ToggleUnitStateBit see function from Unit
-func (queen *Queen) ToggleUnitStateBit(bit int) {
-	queen.State ^= bit
-}
-
-// GetUnitHP see function from Unit
-func (queen *Queen) GetUnitHP() int {
-	return queen.HP
-}
-
-// SetUnitHP see function from Unit
-func (queen *Queen) SetUnitHP(hp int) {
-	queen.HP = hp
-}
-
-// GetWeight see function from Unit
-func (queen *Queen) GetWeight() int {
+// UnitWeight see function from Unit
+func (queen *Queen) UnitWeight() int {
 	return UnitWeightQueen
 }
 
-// GetMoveType see function from Unit
-func (queen *Queen) GetMoveType() int {
+// UnitMoveType see function from Unit
+func (queen *Queen) UnitMoveType() int {
 	return MoveTypeGround
 }
 
-// GetMoveRange see function from Unit
-func (queen *Queen) GetMoveRange() int {
+// UnitMoveRange see function from Unit
+func (queen *Queen) UnitMoveRange() int {
 	return UnitMoveRangeQueen
 }
 
-// GetAttackType see function from Unit
-func (queen *Queen) GetAttackType() int {
+// UnitAttackType see function from Unit
+func (queen *Queen) UnitAttackType() int {
 	return AttackTypeNone
 }
 
-// GetAttackRange see function from Unit
-func (queen *Queen) GetAttackRange() int {
+// UnitAttackRange see function from Unit
+func (queen *Queen) UnitAttackRange() int {
 	return UnitAttackRangeQueen
 }
 
-// GetAttackPower see function from Unit
-func (queen *Queen) GetAttackPower() int {
+// UnitAttackPower see function from Unit
+func (queen *Queen) UnitAttackPower() int {
 	return UnitAttackPowerQueen
+}
+
+// UnitCost see function from Unit
+func (queen *Queen) UnitCost() int {
+	return UnitCostQueen
+}
+
+// GetOwner see function from Unit
+func (queen *Queen) GetOwner() int {
+	return queen.Owner
+}
+
+// GetState see function from Unit
+func (queen *Queen) GetState() int {
+	return queen.State
+}
+
+// GetStateBit see function from Unit
+func (queen *Queen) GetStateBit(bit int) bool {
+	return (queen.State & bit) != 0
+}
+
+// ToggleStateBit see function from Unit
+func (queen *Queen) ToggleStateBit(bit int) {
+	queen.State ^= bit
+}
+
+// GetHP see function from Unit
+func (queen *Queen) GetHP() int {
+	return queen.HP
+}
+
+// SetHP see function from Unit
+func (queen *Queen) SetHP(hp int) {
+	queen.HP = hp
 }
 
 // StartTurn see function from Unit
