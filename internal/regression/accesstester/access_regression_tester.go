@@ -47,11 +47,11 @@ func testExecWithTransaction() bool {
 		logger.GetLogger().Error("fail to create dummy gameuser")
 		return false
 	}
-	gu := access.QueryGameUsersByGameID(0)[0]
-	gu.PlayerOrder = 3
+	gus, _ := access.QueryGameUsersByGameID(0)
+	gus[0].PlayerOrder = 3
 	err = access.ExecWithTransaction(func(tx *sql.Tx) error {
 		// try update
-		err2 := access.UpdateGameUserUsingTx(tx, gu)
+		err2 := access.UpdateGameUserUsingTx(tx, gus[0])
 		if err2 != nil {
 			return err2
 		}
@@ -67,7 +67,7 @@ func testExecWithTransaction() bool {
 		return false
 	}
 	// check to see if it's rollback-ed
-	if gu2 := access.QueryGameUsersByGameID(0)[0]; gu2.PlayerOrder != 0 {
+	if gu2, _ := access.QueryGameUsersByGameID(0); gu2[0].PlayerOrder != 0 {
 		logger.GetLogger().Error("not rollback-ed")
 		return false
 	}

@@ -24,8 +24,13 @@ func HandleUserList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	users, err := access.QueryUsers(limit, offset)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	resp := ListResponse{
-		Users: access.QueryUsers(limit, offset),
+		Users: users,
 	}
 	for _, user := range resp.Users {
 		user.Password = "secret secreeeeet"

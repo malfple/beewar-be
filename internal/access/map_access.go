@@ -55,7 +55,7 @@ WHERE id=?`
 }
 
 // QueryMapByID gets a single map by id
-func QueryMapByID(mapID uint64) *model.Map {
+func QueryMapByID(mapID uint64) (*model.Map, error) {
 	row := db.QueryRow(`SELECT * FROM map_tab WHERE id=? LIMIT 1`, mapID)
 
 	mapp := &model.Map{}
@@ -75,10 +75,11 @@ func QueryMapByID(mapID uint64) *model.Map {
 	if err != nil {
 		if err != sql.ErrNoRows {
 			logger.GetLogger().Error("db: query error", zap.String("table", "map_tab"), zap.Error(err))
+			return nil, err
 		}
-		return nil
+		return nil, nil
 	}
-	return mapp
+	return mapp, nil
 }
 
 // all map batch queries/searches are returned in descending order of id
@@ -86,11 +87,11 @@ func QueryMapByID(mapID uint64) *model.Map {
 // feel free to speed this up
 
 // QueryMaps gets a list of maps
-func QueryMaps(limit, offset int) []*model.Map {
+func QueryMaps(limit, offset int) ([]*model.Map, error) {
 	rows, err := db.Query(`SELECT * FROM map_tab ORDER BY id DESC LIMIT ? OFFSET ?`, limit, offset)
 	if err != nil {
 		logger.GetLogger().Error("db: query error", zap.String("table", "map_tab"), zap.Error(err))
-		return nil
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -112,12 +113,13 @@ func QueryMaps(limit, offset int) []*model.Map {
 			&mapp.TimeModified)
 		if err != nil {
 			logger.GetLogger().Error("db: query error", zap.String("table", "map_tab"), zap.Error(err))
-		} else {
-			maps = append(maps, mapp)
+			return nil, err
 		}
+		maps = append(maps, mapp)
 	}
 	if err := rows.Err(); err != nil {
 		logger.GetLogger().Error("db: query error", zap.String("table", "map_tab"), zap.Error(err))
+		return nil, err
 	}
-	return maps
+	return maps, nil
 }

@@ -24,7 +24,10 @@ const (
 
 // Login authenticates the user and returns (refresh token, access token, http status code)
 func Login(username, password string) (string, string, int) {
-	user := access.QueryUserByUsername(username)
+	user, err := access.QueryUserByUsername(username)
+	if err != nil {
+		return "", "", http.StatusInternalServerError
+	}
 	if user == nil {
 		return "", "", http.StatusUnauthorized
 	}

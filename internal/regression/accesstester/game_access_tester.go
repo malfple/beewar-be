@@ -16,7 +16,10 @@ func TestGameAccess() bool {
 	if err != nil {
 		return false
 	}
-	mapModel := access.QueryMapByID(mapID)
+	mapModel, err := access.QueryMapByID(mapID)
+	if err != nil {
+		return false
+	}
 
 	terrain1 := make([]byte, 100)
 	for i := 0; i < 10; i++ {
@@ -32,15 +35,15 @@ func TestGameAccess() bool {
 	if err := access.CreateUser("player1@somemail.com", "player1", "password"); err != nil {
 		return false
 	}
-	user1 := access.QueryUserByUsername("player1")
-	if user1 == nil {
+	user1, err := access.QueryUserByUsername("player1")
+	if err != nil || user1 == nil {
 		return false
 	}
 	if err := access.CreateUser("player2@somemail.com", "player2", "password"); err != nil {
 		return false
 	}
-	user2 := access.QueryUserByUsername("player2")
-	if user2 == nil {
+	user2, err := access.QueryUserByUsername("player2")
+	if err != nil || user2 == nil {
 		return false
 	}
 
@@ -57,7 +60,10 @@ func TestGameAccess() bool {
 			return false
 		}
 	}
-	game := access.QueryGameByID(gameID)
+	game, err := access.QueryGameByID(gameID)
+	if err != nil {
+		return false
+	}
 	if game == nil {
 		logger.GetLogger().Error("game not found")
 		return false
@@ -71,7 +77,10 @@ func TestGameAccess() bool {
 		return false
 	}
 
-	games := access.QueryGamesByID([]uint64{gameID, 99999999})
+	games, err := access.QueryGamesByID([]uint64{gameID, 99999999})
+	if err != nil {
+		return false
+	}
 	if len(games) != 2 {
 		logger.GetLogger().Error("games should have length 2")
 		return false
@@ -86,31 +95,48 @@ func TestGameAccess() bool {
 	}
 
 	// game users
-	if access.QueryGameUsersByGameID(999999999) == nil {
+	gus, err := access.QueryGameUsersByGameID(999999999)
+	if err != nil {
+		return false
+	}
+	if gus == nil {
 		logger.GetLogger().Error("should be empty array, not nil")
 		return false
 	}
-	if access.QueryGameUsersByUserID(999999999) == nil {
+	gus, err = access.QueryGameUsersByUserID(999999999)
+	if err != nil {
+		return false
+	}
+	if gus == nil {
 		logger.GetLogger().Error("should be empty array, not nil")
 		return false
 	}
-	players := access.QueryGameUsersByGameID(gameID)
+	players, err := access.QueryGameUsersByGameID(gameID)
+	if err != nil {
+		return false
+	}
 	if len(players) != 2 || players[0].UserID != user2.ID || players[1].UserID != user1.ID {
 		logger.GetLogger().Error("error query users linked to game")
 		return false
 	}
-	games1 := access.QueryGameUsersByUserID(user1.ID)
-	games2 := access.QueryGameUsersByUserID(user1.ID)
+	games1, err := access.QueryGameUsersByUserID(user1.ID)
+	if err != nil {
+		return false
+	}
+	games2, err := access.QueryGameUsersByUserID(user1.ID)
+	if err != nil {
+		return false
+	}
 	if games1[0].GameID != gameID || games1[0].GameID != games2[0].GameID {
 		logger.GetLogger().Error("error query games linked to user")
 		return false
 	}
 
-	if gu := access.QueryGameUser(gameID, user1.ID); gu == nil {
+	if gu, _ := access.QueryGameUser(gameID, user1.ID); gu == nil {
 		logger.GetLogger().Error("game user should exist")
 		return false
 	}
-	if gu := access.QueryGameUser(gameID, 69696969); gu != nil {
+	if gu, _ := access.QueryGameUser(gameID, 69696969); gu != nil {
 		logger.GetLogger().Error("game user should not exist")
 		return false
 	}
@@ -148,7 +174,7 @@ func TestGameAccess() bool {
 	if err := access.UpdateGameUserUsingTx(nil, gameUserToUpdate); err != nil {
 		return false
 	}
-	games1again := access.QueryGameUsersByUserID(user1.ID)
+	games1again, _ := access.QueryGameUsersByUserID(user1.ID)
 	if games1again[0].FinalTurns != 69 || games1again[0].FinalRank != 1 {
 		logger.GetLogger().Error("mismatch update game user",
 			zap.Int32("actual final turns", games1again[0].FinalTurns),
@@ -156,14 +182,17 @@ func TestGameAccess() bool {
 	}
 
 	// combined updates
-	game = access.QueryGameByID(gameID)
-	players = access.QueryGameUsersByGameID(gameID)
+	game, _ = access.QueryGameByID(gameID)
+	players, _ = access.QueryGameUsersByGameID(gameID)
 	if err := access.UpdateGameAndGameUser(game, players); err != nil {
 		return false
 	}
 
 	// queries
-	_ = access.QueryWaitingGames()
+	_, err = access.QueryWaitingGames()
+	if err != nil {
+		return false
+	}
 
 	return true
 }

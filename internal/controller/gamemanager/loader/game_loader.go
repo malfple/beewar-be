@@ -73,7 +73,10 @@ type GameLoader struct {
 
 // NewGameLoader loads game by gameID and return the GameLoader object
 func NewGameLoader(gameID uint64) (*GameLoader, error) {
-	gameModel := access.QueryGameByID(gameID)
+	gameModel, err := access.QueryGameByID(gameID)
+	if err != nil {
+		return nil, err
+	}
 	if gameModel == nil {
 		return nil, errGameDoesNotExist
 	}
@@ -101,13 +104,19 @@ func NewGameLoader(gameID uint64) (*GameLoader, error) {
 		&gameLoader.Terrain,
 		&gameLoader.Units)
 	// load players
-	gameUsers := access.QueryGameUsersByGameID(gameID)
+	gameUsers, err := access.QueryGameUsersByGameID(gameID)
+	if err != nil {
+		return nil, err
+	}
 	gameLoader.GameUsers = padGameUsers(gameUsers, gameLoader.PlayerCount)
 	userIDs := make([]uint64, len(gameLoader.GameUsers))
 	for i, gu := range gameLoader.GameUsers {
 		userIDs[i] = gu.UserID
 	}
-	gameLoader.Users = access.QueryUsersByID(userIDs)
+	gameLoader.Users, err = access.QueryUsersByID(userIDs)
+	if err != nil {
+		return nil, err
+	}
 	for i := range gameLoader.Users {
 		if gameLoader.Users[i] != nil {
 			gameLoader.Users[i].Password = "nope."

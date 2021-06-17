@@ -53,11 +53,11 @@ WHERE id=?`
 }
 
 // QueryGameUsersByGameID return the game-user link information of a gameID
-func QueryGameUsersByGameID(gameID uint64) []*model.GameUser {
+func QueryGameUsersByGameID(gameID uint64) ([]*model.GameUser, error) {
 	rows, err := db.Query(`SELECT * FROM game_user_tab WHERE game_id=? ORDER BY player_order`, gameID)
 	if err != nil {
 		logger.GetLogger().Error("db: query error", zap.String("table", "game_user_tab"), zap.Error(err))
-		return nil
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -73,22 +73,23 @@ func QueryGameUsersByGameID(gameID uint64) []*model.GameUser {
 			&gameUser.FinalTurns)
 		if err != nil {
 			logger.GetLogger().Error("db: query error", zap.String("table", "game_user_tab"), zap.Error(err))
-		} else {
-			res = append(res, gameUser)
+			return nil, err
 		}
+		res = append(res, gameUser)
 	}
 	if err := rows.Err(); err != nil {
 		logger.GetLogger().Error("db: query error", zap.String("table", "game_user_tab"), zap.Error(err))
+		return nil, err
 	}
-	return res
+	return res, nil
 }
 
 // QueryGameUsersByUserID return the game-user link information of a userID
-func QueryGameUsersByUserID(userID uint64) []*model.GameUser {
+func QueryGameUsersByUserID(userID uint64) ([]*model.GameUser, error) {
 	rows, err := db.Query(`SELECT * FROM game_user_tab WHERE user_id=?`, userID)
 	if err != nil {
 		logger.GetLogger().Error("db: query error", zap.String("table", "game_user_tab"), zap.Error(err))
-		return nil
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -104,18 +105,19 @@ func QueryGameUsersByUserID(userID uint64) []*model.GameUser {
 			&gameUser.FinalTurns)
 		if err != nil {
 			logger.GetLogger().Error("db: query error", zap.String("table", "game_user_tab"), zap.Error(err))
-		} else {
-			res = append(res, gameUser)
+			return nil, err
 		}
+		res = append(res, gameUser)
 	}
 	if err := rows.Err(); err != nil {
 		logger.GetLogger().Error("db: query error", zap.String("table", "game_user_tab"), zap.Error(err))
+		return nil, err
 	}
-	return res
+	return res, nil
 }
 
 // QueryGameUser queries game user by (game_id, user_id)
-func QueryGameUser(gameID, userID uint64) *model.GameUser {
+func QueryGameUser(gameID, userID uint64) (*model.GameUser, error) {
 	row := db.QueryRow(`SELECT * FROM game_user_tab WHERE user_id=? AND game_id=? LIMIT 1`, userID, gameID)
 
 	gameUser := &model.GameUser{}
@@ -129,11 +131,12 @@ func QueryGameUser(gameID, userID uint64) *model.GameUser {
 	if err != nil {
 		if err != sql.ErrNoRows {
 			logger.GetLogger().Error("db: query error", zap.String("table", "game_user_tab"), zap.Error(err))
+			return nil, err
 		}
-		return nil
+		return nil, nil
 	}
 
-	return gameUser
+	return gameUser, nil
 }
 
 // IsExistGameUserByLink checks if a game user exists by (user_id, game_id) link,

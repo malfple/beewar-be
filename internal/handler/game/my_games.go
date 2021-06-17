@@ -19,7 +19,11 @@ func HandleMyGames(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gameUsers, games := gamemanager.GetMyGames(userID)
+	gameUsers, games, err := gamemanager.GetMyGames(userID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	resp := &MyGamesResponse{
 		GameUsers: gameUsers,
 		Games:     games,
