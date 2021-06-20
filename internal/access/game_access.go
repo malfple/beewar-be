@@ -96,7 +96,7 @@ func UpdateGameAndGameUser(game *model.Game, gameUsers []*model.GameUser) error 
 }
 
 // QueryGameByID gets a game from its id
-func QueryGameByID(gameID uint64) *model.Game {
+func QueryGameByID(gameID uint64) (*model.Game, error) {
 	row := db.QueryRow(`SELECT * FROM game_tab WHERE id=? LIMIT 1`, gameID)
 
 	game := &model.Game{}
@@ -120,28 +120,29 @@ func QueryGameByID(gameID uint64) *model.Game {
 	if err != nil {
 		if err != sql.ErrNoRows {
 			logger.GetLogger().Error("db: query error", zap.String("table", "game_tab"), zap.Error(err))
+			return nil, err
 		}
-		return nil
+		return nil, nil
 	}
 
-	return game
+	return game, nil
 }
 
 // QueryGamesByID gets a list of games by id.
 // The returned slice will always have the same length as the given game ids, and games are placed in the order given.
-func QueryGamesByID(gameIDs []uint64) []*model.Game {
+func QueryGamesByID(gameIDs []uint64) ([]*model.Game, error) {
 	if len(gameIDs) == 0 {
-		return make([]*model.Game, 0)
+		return make([]*model.Game, 0), nil
 	}
 	stmt, args, err := sqlx.In(`SELECT * FROM game_tab WHERE id IN (?)`, gameIDs)
 	if err != nil {
 		logger.GetLogger().Error("db: build sqlx query error", zap.String("table", "game_tab"), zap.Error(err))
-		return nil
+		return nil, err
 	}
 	rows, err := db.Query(stmt, args...)
 	if err != nil {
 		logger.GetLogger().Error("db: query error", zap.String("table", "game_tab"), zap.Error(err))
-		return nil
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -167,28 +168,29 @@ func QueryGamesByID(gameIDs []uint64) []*model.Game {
 			&game.TimeModified)
 		if err != nil {
 			logger.GetLogger().Error("db: query error", zap.String("table", "game_tab"), zap.Error(err))
-		} else {
-			// find index to insert
-			for i, id := range gameIDs {
-				if id == game.ID {
-					games[i] = game
-					break
-				}
+			return nil, err
+		}
+		// find index to insert
+		for i, id := range gameIDs {
+			if id == game.ID {
+				games[i] = game
+				break
 			}
 		}
 	}
 	if err := rows.Err(); err != nil {
 		logger.GetLogger().Error("db: query error", zap.String("table", "game_tab"), zap.Error(err))
+		return nil, err
 	}
-	return games
+	return games, nil
 }
 
 // QueryWaitingGames gets all games that are currently not yet started (status = 0)
-func QueryWaitingGames() []*model.Game {
+func QueryWaitingGames() ([]*model.Game, error) {
 	rows, err := db.Query(`SELECT * FROM game_tab WHERE status=0 ORDER BY time_created`)
 	if err != nil {
 		logger.GetLogger().Error("db: query error", zap.String("table", "game_tab"), zap.Error(err))
-		return nil
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -214,14 +216,14 @@ func QueryWaitingGames() []*model.Game {
 			&game.TimeModified)
 		if err != nil {
 			logger.GetLogger().Error("db: query error", zap.String("table", "game_tab"), zap.Error(err))
-		} else {
-			games = append(games, game)
+			return nil, err
 		}
+		games = append(games, game)
 	}
 	if err := rows.Err(); err != nil {
 		logger.GetLogger().Error("db: query error", zap.String("table", "game_tab"), zap.Error(err))
 	}
-	return games
+	return games, nil
 }
 
 // IsExistGameByID checks for gameID existence

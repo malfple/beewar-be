@@ -19,8 +19,13 @@ func HandleGameList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	games, err := access.QueryWaitingGames()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	resp := &ListResponse{
-		Games: access.QueryWaitingGames(),
+		Games: games,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

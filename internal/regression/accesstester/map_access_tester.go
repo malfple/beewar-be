@@ -34,7 +34,10 @@ func TestMapAccess() bool {
 		return false
 	}
 
-	mapp := access.QueryMapByID(mapID)
+	mapp, err := access.QueryMapByID(mapID)
+	if err != nil {
+		return false
+	}
 	if mapp == nil {
 		return false
 	}
@@ -56,12 +59,15 @@ func TestMapAccess() bool {
 // TestMapAccessQueryMaps tests access.QueryMaps
 func TestMapAccessQueryMaps() bool {
 	// query 0 maps, should not be null
-	if access.QueryMaps(0, 0) == nil {
+	if maps, _ := access.QueryMaps(0, 0); maps == nil {
 		logger.GetLogger().Error("maps should be empty array, not nil")
 		return false
 	}
 
-	maps := access.QueryMaps(2, 0)
+	maps, err := access.QueryMaps(2, 0)
+	if err != nil {
+		return false
+	}
 	if len(maps) != 2 {
 		logger.GetLogger().Error("mismatch number of maps", zap.Int("expected", 2), zap.Int("found", len(maps)))
 		return false
@@ -73,7 +79,10 @@ func TestMapAccessQueryMaps() bool {
 		logger.GetLogger().Error("mismatch map name", zap.String("expected", "map2"), zap.String("found", maps[1].Name))
 	}
 
-	maps = access.QueryMaps(10, 1)
+	maps, err = access.QueryMaps(10, 1)
+	if err != nil {
+		return false
+	}
 	if maps[0].Name != "map2" {
 		logger.GetLogger().Error("mismatch map name", zap.String("expected", "map2"), zap.String("found", maps[1].Name))
 	}
@@ -81,7 +90,10 @@ func TestMapAccessQueryMaps() bool {
 		logger.GetLogger().Error("mismatch map name", zap.String("expected", "aome updated map"), zap.String("found", maps[1].Name))
 	}
 
-	maps = access.QueryMaps(10, 10)
+	maps, err = access.QueryMaps(10, 10)
+	if err != nil {
+		return false
+	}
 	if len(maps) != 0 {
 		logger.GetLogger().Error("mismatch number of maps", zap.Int("expected", 0), zap.Int("found", len(maps)))
 		return false

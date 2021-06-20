@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	errDB            = errors.New("something is wrong with the database")
 	errMapNotFound   = errors.New("map not found")
 	errNotAuthor     = errors.New("only author can update map")
 	errMapWidth      = errors.New("width must be at least 1 and at most 50")
@@ -31,7 +32,10 @@ func CreateEmptyMap(userID uint64) (uint64, error) {
 
 // UpdateMap updates the map
 func UpdateMap(userID uint64, mapID uint64, mapType uint8, height, width int, name string, playerCount uint8, terrainInfo, unitInfo []byte) error {
-	mapModel := access.QueryMapByID(mapID)
+	mapModel, err := access.QueryMapByID(mapID)
+	if err != nil {
+		return errDB
+	}
 	if mapModel == nil {
 		return errMapNotFound
 	}

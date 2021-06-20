@@ -19,20 +19,26 @@ func TestUserAccess() bool {
 		return false
 	}
 	// test user query
-	user := access.QueryUserByUsername(username)
-	if user == nil {
+	user, err := access.QueryUserByUsername(username)
+	if user == nil || err != nil {
 		return false
 	}
-	user2 := access.QueryUserByUsername(username2)
-	if user2 == nil {
+	user2, err := access.QueryUserByUsername(username2)
+	if user2 == nil || err != nil {
 		return false
 	}
-	users := access.QueryUsersByID([]uint64{user2.ID, user.ID})
+	users, err := access.QueryUsersByID([]uint64{user2.ID, user.ID})
+	if err != nil {
+		return false
+	}
 	if len(users) != 2 {
 		logger.GetLogger().Error("expected 2 users", zap.Int("actual", len(users)))
 		return false
 	}
-	users2 := access.QueryUsers(10, 0)
+	users2, err := access.QueryUsers(10, 0)
+	if err != nil {
+		return false
+	}
 	if len(users2) != 2 {
 		logger.GetLogger().Error("expected 2 users", zap.Int("actual", len(users2)))
 		return false

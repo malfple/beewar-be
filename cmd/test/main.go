@@ -35,7 +35,7 @@ func main() {
 	//	}
 	//}
 
-	users := access.QueryUsersByID([]uint64{1, 4, 5, 3})
+	users, _ := access.QueryUsersByID([]uint64{1, 4, 5, 3})
 	for _, user := range users {
 		fmt.Println(user)
 	}

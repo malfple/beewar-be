@@ -21,7 +21,7 @@ func CreateUser(email, username, password string) error {
 }
 
 // QueryUserByUsername gets a single user by username
-func QueryUserByUsername(username string) *model.User {
+func QueryUserByUsername(username string) (*model.User, error) {
 	row := db.QueryRow(`SELECT * FROM user_tab WHERE username=? LIMIT 1`, username)
 
 	user := &model.User{}
@@ -37,27 +37,28 @@ func QueryUserByUsername(username string) *model.User {
 	if err != nil {
 		if err != sql.ErrNoRows {
 			logger.GetLogger().Error("db: query error", zap.String("table", "user_tab"), zap.Error(err))
+			return nil, err
 		}
-		return nil
+		return nil, nil
 	}
-	return user
+	return user, nil
 }
 
 // QueryUsersByID gets a list of users by id.
 // The returned slice will always have the same length as the given user ids, and users are placed in the order given.
-func QueryUsersByID(userIDs []uint64) []*model.User {
+func QueryUsersByID(userIDs []uint64) ([]*model.User, error) {
 	if len(userIDs) == 0 {
-		return make([]*model.User, 0)
+		return make([]*model.User, 0), nil
 	}
 	stmt, args, err := sqlx.In(`SELECT * FROM user_tab WHERE id IN (?)`, userIDs)
 	if err != nil {
 		logger.GetLogger().Error("db: build sqlx query error", zap.String("table", "user_tab"), zap.Error(err))
-		return nil
+		return nil, err
 	}
 	rows, err := db.Query(stmt, args...)
 	if err != nil {
 		logger.GetLogger().Error("db: query error", zap.String("table", "user_tab"), zap.Error(err))
-		return nil
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -75,28 +76,29 @@ func QueryUsersByID(userIDs []uint64) []*model.User {
 			&user.TimeCreated)
 		if err != nil {
 			logger.GetLogger().Error("db: query error", zap.String("table", "user_tab"), zap.Error(err))
-		} else {
-			// find index to insert
-			for i, id := range userIDs {
-				if id == user.ID {
-					users[i] = user
-					break
-				}
+			return nil, err
+		}
+		// find index to insert
+		for i, id := range userIDs {
+			if id == user.ID {
+				users[i] = user
+				break
 			}
 		}
 	}
 	if err := rows.Err(); err != nil {
 		logger.GetLogger().Error("db: query error", zap.String("table", "user_tab"), zap.Error(err))
+		return nil, err
 	}
-	return users
+	return users, nil
 }
 
 // QueryUsers gets a list of users (slow because of limit offset. feel free to optimize)
-func QueryUsers(limit, offset int) []*model.User {
+func QueryUsers(limit, offset int) ([]*model.User, error) {
 	rows, err := db.Query(`SELECT * FROM user_tab LIMIT ? OFFSET ?`, limit, offset)
 	if err != nil {
 		logger.GetLogger().Error("db: query error", zap.String("table", "user_tab"), zap.Error(err))
-		return nil
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -114,14 +116,15 @@ func QueryUsers(limit, offset int) []*model.User {
 			&user.TimeCreated)
 		if err != nil {
 			logger.GetLogger().Error("db: query error", zap.String("table", "user_tab"), zap.Error(err))
-		} else {
-			users = append(users, user)
+			return nil, err
 		}
+		users = append(users, user)
 	}
 	if err := rows.Err(); err != nil {
 		logger.GetLogger().Error("db: query error", zap.String("table", "user_tab"), zap.Error(err))
+		return nil, err
 	}
-	return users
+	return users, nil
 }
 
 // IsExistUserByID checks for userID existence

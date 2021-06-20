@@ -62,7 +62,7 @@ func main() {
 	_ = auth.Register("beebot", "beebot", "beebotbeebot")
 
 	// map 1
-	if access.QueryMapByID(1) == nil {
+	if mapp, err := access.QueryMapByID(1); err == nil && mapp == nil {
 		mapID, _ := mapmanager.CreateEmptyMap(1)
 		fmt.Printf("create map with id: %d\n", mapID)
 
@@ -96,7 +96,7 @@ func main() {
 	}
 
 	// map 2
-	if access.QueryMapByID(2) == nil {
+	if mapp, err := access.QueryMapByID(2); err == nil && mapp == nil {
 		mapID, _ := mapmanager.CreateEmptyMap(1)
 		fmt.Printf("create map with id: %d\n", mapID)
 

@@ -30,8 +30,9 @@ func (gl *GameLoader) handleJoin(msg *message.GameMessage) (*message.GameMessage
 	if err := access.CreateGameUser(gl.ID, msg.Sender, data.PlayerOrder); err != nil {
 		return message.GameErrorMessage(err.Error()), false
 	}
-	gl.GameUsers[data.PlayerOrder-1] = access.QueryGameUser(gl.ID, msg.Sender)
-	gl.Users[data.PlayerOrder-1] = access.QueryUsersByID([]uint64{msg.Sender})[0]
+	gl.GameUsers[data.PlayerOrder-1], _ = access.QueryGameUser(gl.ID, msg.Sender) // TODO: handle error
+	users, _ := access.QueryUsersByID([]uint64{msg.Sender})                       // TODO: handle error
+	gl.Users[data.PlayerOrder-1] = users[0]
 	gl.Users[data.PlayerOrder-1].Password = "nope..."
 	gl.UserIDToPlayerMap[msg.Sender] = int(data.PlayerOrder)
 	gl.checkGameStart()

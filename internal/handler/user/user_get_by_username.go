@@ -12,7 +12,11 @@ import (
 // HandleUserGetByUsername handles profile query
 func HandleUserGetByUsername(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
-	user := access.QueryUserByUsername(username)
+	user, err := access.QueryUserByUsername(username)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -23,7 +27,7 @@ func HandleUserGetByUsername(w http.ResponseWriter, r *http.Request) {
 		resp.User.Password = "it's a secret haha"
 	}
 
-	err := json.NewEncoder(w).Encode(resp)
+	err = json.NewEncoder(w).Encode(resp)
 	if err != nil {
 		logger.GetLogger().Error("error encode", zap.Error(err))
 	}

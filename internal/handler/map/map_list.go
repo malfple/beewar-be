@@ -24,8 +24,13 @@ func HandleMapList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	maps, err := access.QueryMaps(limit, offset)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	resp := &MapListResponse{
-		Maps: access.QueryMaps(limit, offset),
+		Maps: maps,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

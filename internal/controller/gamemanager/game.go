@@ -13,13 +13,17 @@ import (
 // this file is the controller layer for http entry points
 
 var (
+	errDB              = errors.New("someting is wrong with the database")
 	errMapDoesNotExist = errors.New("map does not exist")
 	errMapNotReady     = errors.New("the map is not ready to be played. add more units")
 )
 
 // CreateGame creates a new game with the given map id. If password is provided, it will be bcrypt-ed
 func CreateGame(mapID uint64, name, password string, creatorUserID uint64) (uint64, error) {
-	mapModel := access.QueryMapByID(mapID)
+	mapModel, err := access.QueryMapByID(mapID)
+	if err != nil {
+		return 0, errDB
+	}
 	if mapModel == nil {
 		return 0, errMapDoesNotExist
 	}
@@ -39,12 +43,18 @@ func CreateGame(mapID uint64, name, password string, creatorUserID uint64) (uint
 }
 
 // GetMyGames returns a list of games for a specified user
-func GetMyGames(userID uint64) ([]*model.GameUser, []*model.Game) {
-	gameUsers := access.QueryGameUsersByUserID(userID)
+func GetMyGames(userID uint64) ([]*model.GameUser, []*model.Game, error) {
+	gameUsers, err := access.QueryGameUsersByUserID(userID)
+	if err != nil {
+		return nil, nil, errDB
+	}
 	gameIDs := make([]uint64, len(gameUsers))
 	for i := range gameUsers {
 		gameIDs[i] = gameUsers[i].GameID
 	}
-	games := access.QueryGamesByID(gameIDs)
-	return gameUsers, games
+	games, err := access.QueryGamesByID(gameIDs)
+	if err != nil {
+		return nil, nil, errDB
+	}
+	return gameUsers, games, nil
 }

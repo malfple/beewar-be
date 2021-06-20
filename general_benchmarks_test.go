@@ -14,8 +14,8 @@ func BenchmarkGeneral(b *testing.B) {
 	access.InitAccess()
 	defer access.ShutdownAccess()
 
-	gameModel := access.QueryGameByID(1)
-	gameUsers := access.QueryGameUsersByGameID(1)
+	gameModel, _ := access.QueryGameByID(1)
+	gameUsers, _ := access.QueryGameUsersByGameID(1)
 
 	for i := 0; i < b.N; i++ {
 		// do something

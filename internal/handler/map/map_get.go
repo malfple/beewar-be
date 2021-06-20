@@ -16,7 +16,11 @@ func HandleMapGet(w http.ResponseWriter, r *http.Request) {
 
 	mapID, err := strconv.ParseInt(r.URL.Query().Get("id"), 10, 64)
 	if err == nil { // id has to be integer
-		mapp := access.QueryMapByID(uint64(mapID))
+		mapp, err := access.QueryMapByID(uint64(mapID))
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		resp.Map = mapp
 	}
 
