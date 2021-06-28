@@ -55,7 +55,7 @@ func UpdateMap(userID uint64, mapID uint64, mapType uint8, height, width int, na
 	if err := formatter.ValidateTerrainInfo(height, width, terrainInfo); err != nil {
 		return err
 	}
-	if err := formatter.ValidateUnitInfo(height, width, unitInfo); err != nil {
+	if err := formatter.ValidateUnitInfo(height, width, int(playerCount), unitInfo, false); err != nil {
 		return err
 	}
 

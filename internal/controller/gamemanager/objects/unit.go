@@ -18,12 +18,18 @@ type Unit interface {
 	UnitMoveType() int
 	// UnitMoveRange returns movement range of the unit type
 	UnitMoveRange() int
+	// UnitMoveRangeMin returns min movement range of the unit type (if exists)
+	UnitMoveRangeMin() int
 	// UnitAttackType returns attack type of the unit type
 	UnitAttackType() int
 	// UnitAttackRange returns attack range of the unit type
 	UnitAttackRange() int
+	// UnitAttackRangeMin returns min attack range of the unit type (if exists)
+	UnitAttackRangeMin() int
 	// UnitAttackPower returns attack power of the unit type, multiplied by 10
 	UnitAttackPower() int
+	// UnitCost returns value of the unit type.
+	UnitCost() int
 	// GetOwner returns the owner of the unit
 	GetOwner() int
 	// GetState returns unit states
@@ -36,56 +42,68 @@ type Unit interface {
 	GetHP() int
 	// SetHP sets the hp of the unit
 	SetHP(hp int)
-	// UnitCost returns value of the unit type.
-	UnitCost() int
 	// StartTurn triggers start-of-turn effects
 	StartTurn()
 	// EndTurn ends the turn for the unit, reset states and trigger any end-of-turn effects
 	EndTurn()
 }
 
-// these are the unit types
+// UnitType defines the unit type number for each unit
 const (
-	// UnitTypeQueen defines the unit type number of Queen
-	UnitTypeQueen = 1
-	// UnitTypeInfantry defines the unit type number of Infantry
+	UnitTypeQueen    = 1
 	UnitTypeInfantry = 3
+	UnitTypeJetCrew  = 4
+	UnitTypeWizard   = 5
+	UnitTypeTank     = 6
+	UnitTypeMortar   = 9
 )
 
-// max hp
+// UnitMaxHP defines the maximum hp for each unit
 const (
-	// UnitMaxHPQueen defines the maximum hp for Queen
-	UnitMaxHPQueen = 10
-	// UnitMaxHPInfantry defines the maximum hp for Infantry
+	UnitMaxHPQueen    = 10
 	UnitMaxHPInfantry = 10
+	UnitMaxHPJetCrew  = 8
+	UnitMaxHPWizard   = 10
+	UnitMaxHPTank     = 14
+	UnitMaxHPMortar   = 4
 )
 
 // move types
-// move types of a specific unit type defined in each unit file
+// move types of a specific unit type defined in each unit file.
 const (
 	// MoveTypeNone means the unit cannot move
 	MoveTypeNone = 0
 	// MoveTypeGround is a normal ground move. Shortest path can be used to check this
 	MoveTypeGround = 1
+	// MoveTypeBlink instantly teleports to any cell inside range without any movement penalty
+	MoveTypeBlink = 2
 )
 
 // unit weights
 // 0 = light. 1 = heavy. 2 = unpassable
 // weight is used to determine whether a unit can pass another unit.
 // 2 units can pass through each other if the sum of their weight <= 1 AND they have the same owner
+
+// UnitWeight defines the weight stat for each unit
 const (
-	// UnitWeightQueen defines weight stat of Queen
-	UnitWeightQueen = 0
-	// UnitWeightInfantry defines weight stat of Infantry
+	UnitWeightQueen    = 0
 	UnitWeightInfantry = 0
+	UnitWeightJetCrew  = 0
+	UnitWeightWizard   = 0
+	UnitWeightTank     = 1
+	UnitWeightMortar   = 0
 )
 
-// unit move range
+// UnitMoveRange defines the movement range for each unit.
+// When appended with Min or Max, it becomes the lower or upper limit of the movement range.
 const (
-	// UnitMoveRangeQueen defines movement range stat of Queen
-	UnitMoveRangeQueen = 1
-	// UnitMoveRangeInfantry defines movement range stat of Infantry
-	UnitMoveRangeInfantry = 3
+	UnitMoveRangeQueen     = 1
+	UnitMoveRangeInfantry  = 3
+	UnitMoveRangeJetCrew   = 6
+	UnitMoveRangeWizardMin = 2
+	UnitMoveRangeWizardMax = 3
+	UnitMoveRangeTank      = 4
+	UnitMoveRangeMortar    = 4
 )
 
 // unit attack types
@@ -95,23 +113,29 @@ const (
 	AttackTypeNone = 0
 	// AttackTypeGround is a normal melee attack
 	AttackTypeGround = 1
+	// AttackTypeAerial is a ranged aerial attack and can be mitigated with domes
+	AttackTypeAerial = 2
 )
 
-// unit attack range
+// UnitAttackRange defines the attack range stat of each unit.
+// When appended with Min or Max, it becomes the lower or upper limit of the attack range.
 const (
-	// UnitAttackRangeQueen defines attack range stat of Queen
-	UnitAttackRangeQueen = 0
-	// UnitAttackRangeInfantry defines attack range stat of Infantry
-	UnitAttackRangeInfantry = 1
+	UnitAttackRangeInfantry  = 1
+	UnitAttackRangeJetCrew   = 1
+	UnitAttackRangeWizard    = 2
+	UnitAttackRangeTank      = 1
+	UnitAttackRangeMortarMin = 2
+	UnitAttackRangeMortarMax = 3
 )
 
-// unit attack power
+// UnitAttackPower defines the attack power stat of each unit.
 // this is multiplied by 10 to avoid floating point. So 5 is actually 0.5
 const (
-	// UnitAttackPowerQueen doesn't mean anything because Queen cannot attack
-	UnitAttackPowerQueen = 0
-	// UnitAttackPowerInfantry defines attack power stat of Infantry
 	UnitAttackPowerInfantry = 5
+	UnitAttackPowerJetCrew  = 5
+	UnitAttackPowerWizard   = 5
+	UnitAttackPowerTank     = 5
+	UnitAttackPowerMortar   = 10
 )
 
 // state bit constants. always in the form of 2^n
@@ -120,10 +144,12 @@ const (
 	UnitStateBitMoved = 1
 )
 
-// unit cost
+// UnitCost defines the cost of each unit
 const (
-	// UnitCostQueen defines the cost of Queen
-	UnitCostQueen = 10000
-	// UnitCostInfantry defines the cost of Infantry
+	UnitCostQueen    = 10000
 	UnitCostInfantry = 300
+	UnitCostJetCrew  = 320
+	UnitCostWizard   = 500
+	UnitCostTank     = 700
+	UnitCostMortar   = 800
 )

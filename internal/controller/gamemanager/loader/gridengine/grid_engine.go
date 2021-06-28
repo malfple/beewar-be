@@ -141,7 +141,7 @@ func (ge *GridEngine) FillMoveGroundReset(y, x int) {
 	}
 }
 
-// ValidateMoveGround checks if a normal move from (y1, x1) to (y2, x2) with the required steps is valid
+// ValidateMoveGround checks if a normal move from (y1, x1) to (y2, x2) with the required steps is valid.
 // WARNING: does not validate positions or if a unit exists. Only validates move with FillMoveGround
 func (ge *GridEngine) ValidateMoveGround(y1, x1, y2, x2, steps int) bool {
 	var reach bool
@@ -150,6 +150,13 @@ func (ge *GridEngine) ValidateMoveGround(y1, x1, y2, x2, steps int) bool {
 	reach = ge.Dist[y2][x2] != -1
 	ge.FillMoveGroundReset(y1, x1)
 	return reach
+}
+
+// ValidateMoveBlink checks if a blink move from (y1, x1) to (y2, x2) with the required range is valid.
+// WARNING: does not validate positions or if a unit exists.
+func (ge *GridEngine) ValidateMoveBlink(y1, x1, y2, x2, rangeMin, rangeMax int) bool {
+	dist := utils.HexDistance(y1, x1, y2, x2)
+	return dist >= rangeMin && dist <= rangeMax
 }
 
 // ValidateMove checks if a unit move from (y1, x1) to (y2, x2) is valid
@@ -170,6 +177,8 @@ func (ge *GridEngine) ValidateMove(y1, x1, y2, x2 int) bool {
 	switch unit := (*ge.Units)[y1][x1]; unit.UnitMoveType() {
 	case objects.MoveTypeGround:
 		return ge.ValidateMoveGround(y1, x1, y2, x2, unit.UnitMoveRange())
+	case objects.MoveTypeBlink:
+		return ge.ValidateMoveBlink(y1, x1, y2, x2, unit.UnitMoveRangeMin(), unit.UnitMoveRange())
 	default:
 		panic("panic validate move: unknown move type")
 	}
@@ -198,6 +207,8 @@ func (ge *GridEngine) ValidateAttack(y, x, yt, xt int, attacker objects.Unit) (b
 		return false, -1
 	case objects.AttackTypeGround:
 		return distBetween <= attacker.UnitAttackRange(), distBetween
+	case objects.AttackTypeAerial:
+		return distBetween >= attacker.UnitAttackRangeMin() && distBetween <= attacker.UnitAttackRange(), distBetween
 	default:
 		panic("panic validate attack: unknown attack type")
 	}

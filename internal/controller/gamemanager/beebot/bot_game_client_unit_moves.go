@@ -136,7 +136,7 @@ func (client *BotGameClient) scoreNearestQueen(y, x int) int {
 }
 
 func (client *BotGameClient) scoreCombat(attacker, defender objects.Unit, dist int) int {
-	dmgAtk, dmgDef := combat.SimulateNormalCombat(attacker, defender, dist)
+	dmgAtk, dmgDef := combat.SimulateGroundCombat(attacker, defender, dist)
 	score := 0
 	// damage dealt
 	score += dmgDef * defender.UnitCost() / defender.UnitMaxHP()

@@ -10,7 +10,7 @@ import (
 const testHeight = 10
 const testWidth = 10
 
-// test case 1 -> normal map, validate the whole dist array
+// test case 1 -> normal map, validate the whole dist array and most move validations
 var testTerrain = formatter.ModelToGameTerrain(testHeight, testWidth, []byte{
 	1, 0, 1, 1, 1, 1, 1, 1, 0, 0,
 	1, 0, 1, 1, 1, 1, 1, 1, 1, 0,
@@ -35,6 +35,7 @@ var testUnits = formatter.ModelToGameUnit(testHeight, testWidth, []byte{
 	2, 8, 2, 3, 10, 0,
 	5, 8, 2, 3, 10, 0,
 	6, 8, 2, 3, 10, 0,
+	5, 0, 1, 5, 10, 0, // wizard
 })
 
 var expectedDist = [][]int{
@@ -84,6 +85,7 @@ func BenchmarkGridEngine_FillMoveGround(b *testing.B) {
 	}
 }
 
+// only validates the bfs
 func TestGridEngine_ValidateMoveGround(t *testing.T) {
 	ge := NewGridEngine(testHeight, testWidth, &testTerrain, &testUnits)
 
@@ -96,10 +98,15 @@ func TestGridEngine_ValidateMoveGround(t *testing.T) {
 func TestGridEngine_ValidateMove(t *testing.T) {
 	ge := NewGridEngine(testHeight, testWidth, &testTerrain, &testUnits)
 
+	// ground moves
 	assert.Equal(t, true, ge.ValidateMove(3, 1, 3, 4))
 	assert.Equal(t, false, ge.ValidateMove(3, 1, 3, 5))
 	assert.Equal(t, false, ge.ValidateMove(3, 1, 6, 1))
 	assert.Equal(t, true, ge.ValidateMove(3, 1, 6, 2))
+	// blink move
+	assert.Equal(t, true, ge.ValidateMove(5, 0, 5, 2))
+	assert.Equal(t, true, ge.ValidateMove(5, 0, 5, 3))
+	assert.Equal(t, false, ge.ValidateMove(5, 0, 5, 1))
 }
 
 // test case 2 -> tests hex distance, has to be equal to dist array

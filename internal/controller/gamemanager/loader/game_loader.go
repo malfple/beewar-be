@@ -99,8 +99,8 @@ func NewGameLoader(gameID uint64) (*GameLoader, error) {
 	}
 	// create grid engine
 	gameLoader.GridEngine = gridengine.NewGridEngine(
-		gameLoader.Width,
 		gameLoader.Height,
+		gameLoader.Width,
 		&gameLoader.Terrain,
 		&gameLoader.Units)
 	// load players
@@ -160,7 +160,7 @@ func (gl *GameLoader) ToModel() *model.Game {
 // SaveToDB saves the current game object to db
 func (gl *GameLoader) SaveToDB() error {
 	gameModel := gl.ToModel()
-	if err := formatter.ValidateUnitInfo(gameModel.Height, gameModel.Width, gameModel.UnitInfo); err != nil {
+	if err := formatter.ValidateUnitInfo(gameModel.Height, gameModel.Width, int(gameModel.PlayerCount), gameModel.UnitInfo, true); err != nil {
 		logger.GetLogger().Error("loader: fail unit info validation when saving", zap.Error(err))
 		return err
 	}

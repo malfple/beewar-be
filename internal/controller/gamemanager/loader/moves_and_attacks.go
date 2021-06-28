@@ -12,9 +12,6 @@ func (gl *GameLoader) handleUnitStay(msg *message.GameMessage) (*message.GameMes
 	if errMsg := gl.validateUnitOwned(data.Y1, data.X1); len(errMsg) > 0 {
 		return message.GameErrorMessage(errMsg), false
 	}
-	if _, ok := cmdwhitelist.UnitStayMap[gl.Units[data.Y1][data.X1].UnitType()]; !ok {
-		return message.GameErrorMessage(errMsgUnitCmdNotAllowed), false
-	}
 	if gl.Units[data.Y1][data.X1].GetStateBit(objects.UnitStateBitMoved) { // has this unit moved?
 		return message.GameErrorMessage(errMsgUnitAlreadyMoved), false
 	}
@@ -57,7 +54,7 @@ func (gl *GameLoader) handleUnitAttack(msg *message.GameMessage) (*message.GameM
 		return message.GameErrorMessage(errMsgInvalidAttack), false
 	}
 	gl.Units[data.Y1][data.X1].ToggleStateBit(objects.UnitStateBitMoved)
-	combat.NormalCombat(gl.Units[data.Y1][data.X1], gl.Units[data.YT][data.XT], distAtk)
+	combat.Combat(gl.Units[data.Y1][data.X1], gl.Units[data.YT][data.XT], distAtk, false)
 	replyMsg := &message.GameMessage{
 		Cmd:    msg.Cmd,
 		Sender: msg.Sender,
@@ -95,7 +92,7 @@ func (gl *GameLoader) handleUnitMoveAndAttack(msg *message.GameMessage) (*messag
 	}
 	gl.Units[data.Y2][data.X2], gl.Units[data.Y1][data.X1] = gl.Units[data.Y1][data.X1], gl.Units[data.Y2][data.X2]
 	gl.Units[data.Y2][data.X2].ToggleStateBit(objects.UnitStateBitMoved)
-	combat.NormalCombat(gl.Units[data.Y2][data.X2], gl.Units[data.YT][data.XT], distAtk)
+	combat.Combat(gl.Units[data.Y2][data.X2], gl.Units[data.YT][data.XT], distAtk, false)
 	replyMsg := &message.GameMessage{
 		Cmd:    msg.Cmd,
 		Sender: msg.Sender,

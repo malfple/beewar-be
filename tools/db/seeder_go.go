@@ -151,4 +151,36 @@ func main() {
 		_ = access.UpdateMap(2, 0, 15, 15, "cross", 4,
 			terrainInfo, unitInfo)
 	}
+
+	// map 3
+	if mapp, err := access.QueryMapByID(3); err == nil && mapp == nil {
+		mapID, _ := mapmanager.CreateEmptyMap(1)
+		fmt.Printf("create map with id: %d\n", mapID)
+
+		terrainInfo := []byte{
+			1, 1, 1, 1, 1, 1, 1, 5, 1, 4, 5, 3, 1, 5, 1, 1, 1, 1, 1, 1,
+			1, 1, 1, 1, 1, 1, 3, 5, 4, 3, 3, 1, 3, 4, 1, 1, 1, 1, 1, 1,
+			1, 1, 1, 1, 1, 1, 1, 3, 1, 5, 5, 4, 5, 3, 1, 1, 1, 1, 1, 1,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1, 1, 1, 1, 1,
+		}
+		unitInfo := []byte{
+			0, 0, 1, 1, 10, 0,
+			0, 1, 1, 9, 4, 0,
+			1, 1, 1, 9, 4, 0,
+			2, 1, 1, 5, 10, 0,
+			0, 2, 1, 3, 10, 0,
+			1, 2, 1, 4, 8, 0,
+			2, 2, 1, 6, 14, 0,
+			0, 19, 2, 1, 10, 0,
+			0, 18, 2, 9, 4, 0,
+			1, 18, 2, 9, 4, 0,
+			2, 18, 2, 5, 10, 0,
+			0, 17, 2, 3, 10, 0,
+			1, 17, 2, 4, 8, 0,
+			2, 17, 2, 6, 14, 0,
+		}
+
+		_ = access.UpdateMap(1, 0, 4, 20, "the line", 2,
+			terrainInfo, unitInfo)
+	}
 }

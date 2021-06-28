@@ -41,10 +41,16 @@ var (
 	ErrMapInvalidUnitInfo = errors.New("invalid unit info")
 	// ErrMapUnitSamePosition is returned when two units are in the same position
 	ErrMapUnitSamePosition = errors.New("no two units can share the same position")
+	// ErrMapPlayerQueen is returned when some queens are missing or duplicated
+	ErrMapPlayerQueen = errors.New("some player have missing or duplicated queen")
 )
 
-// ValidateUnitInfo validates whether unit info follows format
-func ValidateUnitInfo(height, width int, unitInfo []byte) error {
+// ValidateUnitInfo validates whether unit info follows format.
+// the `skipGameReadiness` param should be set to true when saving a game unit info, to disable validations for game-readiness
+// (like queen count and duplication)
+func ValidateUnitInfo(height, width, playerCount int, unitInfo []byte, skipGameReadiness bool) error {
+	queenExist := make([]bool, playerCount)
+	queenCount := 0
 	posMap := make(map[int]bool)
 	for i := 0; i < len(unitInfo); {
 		if i+5 >= len(unitInfo) { // the remaining length is less than 6 (the required minimum of a normal unit)
@@ -59,15 +65,34 @@ func ValidateUnitInfo(height, width int, unitInfo []byte) error {
 			return ErrMapUnitSamePosition
 		}
 		posMap[y*width+x] = true
+		p := unitInfo[i+2]
 		t := unitInfo[i+3]
 		switch t {
 		case objects.UnitTypeQueen:
+			if !skipGameReadiness {
+				if queenExist[p-1] {
+					return ErrMapPlayerQueen
+				}
+				queenExist[p-1] = true
+				queenCount++
+			}
 			i += 6
 		case objects.UnitTypeInfantry:
+			i += 6
+		case objects.UnitTypeJetCrew:
+			i += 6
+		case objects.UnitTypeWizard:
+			i += 6
+		case objects.UnitTypeTank:
+			i += 6
+		case objects.UnitTypeMortar:
 			i += 6
 		default:
 			return ErrMapInvalidUnitInfo
 		}
+	}
+	if !skipGameReadiness && playerCount != queenCount {
+		return ErrMapPlayerQueen
 	}
 	return nil
 }
@@ -96,6 +121,18 @@ func ModelToGameUnit(height, width int, unitInfo []byte) [][]objects.Unit {
 		case objects.UnitTypeInfantry:
 			_units[y][x] = objects.NewInfantry(p, hp, s)
 			i += 6
+		case objects.UnitTypeJetCrew:
+			_units[y][x] = objects.NewJetCrew(p, hp, s)
+			i += 6
+		case objects.UnitTypeWizard:
+			_units[y][x] = objects.NewWizard(p, hp, s)
+			i += 6
+		case objects.UnitTypeTank:
+			_units[y][x] = objects.NewTank(p, hp, s)
+			i += 6
+		case objects.UnitTypeMortar:
+			_units[y][x] = objects.NewMortar(p, hp, s)
+			i += 6
 		default:
 			panic("panic convert: unknown unit type from unit info")
 		}
@@ -114,12 +151,20 @@ func GameUnitToModel(height, width int, _units [][]objects.Unit) []byte {
 
 			unit := _units[i][j]
 			switch unit.UnitType() {
+			// most units have similar format
 			case objects.UnitTypeQueen:
-				queen := unit.(*objects.Queen)
-				unitInfo = append(unitInfo, byte(i), byte(j), byte(queen.Owner), byte(unit.UnitType()), byte(queen.HP), byte(unit.GetState()))
+				fallthrough
 			case objects.UnitTypeInfantry:
-				inf := unit.(*objects.Infantry)
-				unitInfo = append(unitInfo, byte(i), byte(j), byte(inf.Owner), byte(unit.UnitType()), byte(inf.HP), byte(unit.GetState()))
+				fallthrough
+			case objects.UnitTypeJetCrew:
+				fallthrough
+			case objects.UnitTypeWizard:
+				fallthrough
+			case objects.UnitTypeTank:
+				fallthrough
+			case objects.UnitTypeMortar:
+				unitInfo = append(unitInfo, byte(i), byte(j),
+					byte(unit.GetOwner()), byte(unit.UnitType()), byte(unit.GetHP()), byte(unit.GetState()))
 			default:
 				panic("panic convert: unknown unit type from unit object")
 			}

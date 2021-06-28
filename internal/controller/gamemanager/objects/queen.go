@@ -18,85 +18,87 @@ func NewQueen(owner, hp, state int) *Queen {
 }
 
 // UnitType see function from Unit
-func (queen *Queen) UnitType() int {
+func (u *Queen) UnitType() int {
 	return UnitTypeQueen
 }
 
 // UnitMaxHP see function from Unit
-func (queen *Queen) UnitMaxHP() int {
+func (u *Queen) UnitMaxHP() int {
 	return UnitMaxHPQueen
 }
 
 // UnitWeight see function from Unit
-func (queen *Queen) UnitWeight() int {
+func (u *Queen) UnitWeight() int {
 	return UnitWeightQueen
 }
 
 // UnitMoveType see function from Unit
-func (queen *Queen) UnitMoveType() int {
+func (u *Queen) UnitMoveType() int {
 	return MoveTypeGround
 }
 
 // UnitMoveRange see function from Unit
-func (queen *Queen) UnitMoveRange() int {
+func (u *Queen) UnitMoveRange() int {
 	return UnitMoveRangeQueen
 }
 
+// UnitMoveRangeMin see function from Unit
+func (u *Queen) UnitMoveRangeMin() int { return 0 }
+
 // UnitAttackType see function from Unit
-func (queen *Queen) UnitAttackType() int {
+func (u *Queen) UnitAttackType() int {
 	return AttackTypeNone
 }
 
 // UnitAttackRange see function from Unit
-func (queen *Queen) UnitAttackRange() int {
-	return UnitAttackRangeQueen
-}
+func (u *Queen) UnitAttackRange() int { return 0 }
+
+// UnitAttackRangeMin see function from Unit
+func (u *Queen) UnitAttackRangeMin() int { return 0 }
 
 // UnitAttackPower see function from Unit
-func (queen *Queen) UnitAttackPower() int {
-	return UnitAttackPowerQueen
-}
+func (u *Queen) UnitAttackPower() int { return 0 }
 
 // UnitCost see function from Unit
-func (queen *Queen) UnitCost() int {
+func (u *Queen) UnitCost() int {
 	return UnitCostQueen
 }
 
 // GetOwner see function from Unit
-func (queen *Queen) GetOwner() int {
-	return queen.Owner
+func (u *Queen) GetOwner() int {
+	return u.Owner
 }
 
 // GetState see function from Unit
-func (queen *Queen) GetState() int {
-	return queen.State
+func (u *Queen) GetState() int {
+	return u.State
 }
 
 // GetStateBit see function from Unit
-func (queen *Queen) GetStateBit(bit int) bool {
-	return (queen.State & bit) != 0
+func (u *Queen) GetStateBit(bit int) bool {
+	return (u.State & bit) != 0
 }
 
 // ToggleStateBit see function from Unit
-func (queen *Queen) ToggleStateBit(bit int) {
-	queen.State ^= bit
+func (u *Queen) ToggleStateBit(bit int) {
+	u.State ^= bit
 }
 
 // GetHP see function from Unit
-func (queen *Queen) GetHP() int {
-	return queen.HP
+func (u *Queen) GetHP() int {
+	return u.HP
 }
 
 // SetHP see function from Unit
-func (queen *Queen) SetHP(hp int) {
-	queen.HP = hp
+func (u *Queen) SetHP(hp int) {
+	u.HP = hp
 }
 
 // StartTurn see function from Unit
-func (queen *Queen) StartTurn() {}
+func (u *Queen) StartTurn() {}
 
 // EndTurn see function from Unit
-func (queen *Queen) EndTurn() {
+func (u *Queen) EndTurn() {
 	// turn off `moved` bit
-	queen.State &= ^UnitStateBitMoved
+	u.State &= ^UnitStateBitMoved
 }

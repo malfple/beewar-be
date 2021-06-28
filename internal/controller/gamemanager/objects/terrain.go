@@ -4,17 +4,12 @@ package objects
 This file only has terrain constants
 */
 
+// TerrainType defines the number for each terrain
 const (
-	// TerrainTypeVoid defines a terrain type
-	TerrainTypeVoid = 0
-	// TerrainTypePlains defines a terrain type
-	TerrainTypePlains = 1
-	// TerrainTypeWalls defines a terrain type
-	TerrainTypeWalls = 2
-	// TerrainTypeHoneyField defines a terrain type
+	TerrainTypeVoid       = 0
+	TerrainTypePlains     = 1
+	TerrainTypeWalls      = 2
 	TerrainTypeHoneyField = 3
-	// TerrainTypeWasteland defines a terrain type
-	TerrainTypeWasteland = 4
-	// TerrainTypeIceField defines a terrain type
-	TerrainTypeIceField = 5
+	TerrainTypeWasteland  = 4
+	TerrainTypeIceField   = 5
 )
