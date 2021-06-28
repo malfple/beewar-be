@@ -12,7 +12,24 @@ func Combat(attacker, defender objects.Unit, dist int, underDome bool) {
 		GroundCombat(attacker, defender, dist)
 	case objects.AttackTypeAerial:
 		AerialCombat(attacker, defender, underDome)
+	default:
+		panic("panic combat: unknown attack type")
 	}
+}
+
+// SimulateCombat simulates a combat depending on the attacker's attack type.
+// This function doesn't modify unit hp but return damage dealt instead.
+// Damage dealt is returned in this order (damage to attacker, damage to defender)
+func SimulateCombat(attacker, defender objects.Unit, dist int, underDome bool) (int, int) {
+	switch attacker.UnitAttackType() {
+	case objects.AttackTypeGround:
+		return SimulateGroundCombat(attacker, defender, dist)
+	case objects.AttackTypeAerial:
+		return 0, AerialAttack(attacker, defender, underDome)
+	default:
+		panic("panic combat: unknown attack type")
+	}
+	return 0, 0
 }
 
 // GroundCombat does a normal combat (1 attack, 1 counter-attack) and modifies the given attacker and defender units' hp

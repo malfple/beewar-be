@@ -20,11 +20,21 @@ func (client *BotGameClient) doNextUnitMove(y, x int, unit objects.Unit) *messag
 			X1: x,
 		},
 	})
-	scores = append(scores, client.scoreNearestQueen(y, x))
+	scores = append(scores, client.scorePosition(y, x))
 
+	// move + move and attack
 	switch unit.UnitType() {
-	case objects.UnitTypeInfantry:
+	case objects.UnitTypeQueen:
+		// queen doesn't move
+	default:
 		calcMoves, calcScores := client.calcUnitMove(y, x, unit)
+		moves = append(moves, calcMoves...)
+		scores = append(scores, calcScores...)
+	}
+
+	// indirect attackers
+	if unit.UnitType() == objects.UnitTypeWizard || unit.UnitType() == objects.UnitTypeMortar {
+		calcMoves, calcScores := client.calcUnitAttack(y, x, unit)
 		moves = append(moves, calcMoves...)
 		scores = append(scores, calcScores...)
 	}
@@ -77,7 +87,7 @@ func (client *BotGameClient) calcUnitMove(y, x int, unit objects.Unit) ([]*messa
 						X2: j,
 					},
 				})
-				moveScore := client.scoreNearestQueen(i, j)
+				moveScore := client.scorePosition(i, j)
 				scores = append(scores, moveScore)
 
 				// move and attack
@@ -85,20 +95,11 @@ func (client *BotGameClient) calcUnitMove(y, x int, unit objects.Unit) ([]*messa
 					atkRange := unit.UnitAttackRange()
 					for ti := i - atkRange; ti <= i+atkRange; ti++ {
 						for tj := j - atkRange; tj <= j+atkRange; tj++ {
-							if ti < 0 || ti >= gameLoader.Height || tj < 0 || tj >= gameLoader.Width {
-								continue
-							}
-							atkDist := utils.HexDistance(i, j, ti, tj)
-							if atkDist > atkRange {
+							var atkDist int
+							if ok, atkDist = ge.ValidateAttack(i, j, ti, tj, unit); !ok {
 								continue
 							}
 							targetUnit := gameLoader.Units[ti][tj]
-							if targetUnit == nil {
-								continue
-							}
-							if targetUnit.GetOwner() == client.PlayerOrder {
-								continue // cannot attack friend
-							}
 							// ok, can attack target unit
 							moves = append(moves, &message.GameMessage{
 								Cmd:    message.CmdUnitMoveAndAttack,
@@ -120,6 +121,64 @@ func (client *BotGameClient) calcUnitMove(y, x int, unit objects.Unit) ([]*messa
 			}
 		}
 		ge.FillMoveGroundReset(y, x)
+	case objects.MoveTypeBlink:
+		for i := y - unit.UnitMoveRange(); i <= y+unit.UnitMoveRange(); i++ {
+			for j := x - unit.UnitMoveRange(); j <= x+unit.UnitMoveRange(); j++ {
+				if !ge.ValidateMove(y, x, i, j) {
+					continue
+				}
+				// move only
+				moves = append(moves, &message.GameMessage{
+					Cmd:    message.CmdUnitMove,
+					Sender: client.UserID,
+					Data: &message.UnitMoveMessageData{
+						Y1: y,
+						X1: x,
+						Y2: i,
+						X2: j,
+					},
+				})
+				moveScore := client.scorePosition(i, j)
+				scores = append(scores, moveScore)
+			}
+		}
+	}
+
+	return moves, scores
+}
+
+// calc for UNIT_ATTACK
+func (client *BotGameClient) calcUnitAttack(y, x int, unit objects.Unit) ([]*message.GameMessage, []int) {
+	gameLoader := client.Hub.GameLoader
+	ge := gameLoader.GridEngine
+	var moves []*message.GameMessage
+	var scores []int
+
+	if _, ok := cmdwhitelist.UnitAttackMap[unit.UnitType()]; ok {
+		moveScore := client.scorePosition(y, x)
+		atkRange := unit.UnitAttackRange()
+		for i := y - atkRange; i <= y+atkRange; i++ {
+			for j := x - atkRange; j <= x+atkRange; j++ {
+				var atkDist int
+				if ok, atkDist = ge.ValidateAttack(y, x, i, j, unit); !ok {
+					continue
+				}
+				targetUnit := gameLoader.Units[i][j]
+				// ok, can attack target unit
+				moves = append(moves, &message.GameMessage{
+					Cmd:    message.CmdUnitAttack,
+					Sender: client.UserID,
+					Data: &message.UnitAttackMessageData{
+						Y1: y,
+						X1: x,
+						YT: i,
+						XT: j,
+					},
+				})
+				moveAndAttackScore := moveScore + client.scoreCombat(unit, targetUnit, atkDist)
+				scores = append(scores, moveAndAttackScore)
+			}
+		}
 	}
 
 	return moves, scores
@@ -127,16 +186,19 @@ func (client *BotGameClient) calcUnitMove(y, x int, unit objects.Unit) ([]*messa
 
 // move scorers
 
-func (client *BotGameClient) scoreNearestQueen(y, x int) int {
+func (client *BotGameClient) scorePosition(y, x int) int {
+	score := 0
+	// nearest queen
 	distQueen := 1000000000
 	for _, queenPos := range client.otherQueenPositions {
 		distQueen = utils.MinInt(distQueen, utils.HexDistance(y, x, queenPos.Y, queenPos.X))
 	}
-	return -distQueen
+	score -= distQueen
+	return score
 }
 
 func (client *BotGameClient) scoreCombat(attacker, defender objects.Unit, dist int) int {
-	dmgAtk, dmgDef := combat.SimulateGroundCombat(attacker, defender, dist)
+	dmgAtk, dmgDef := combat.SimulateCombat(attacker, defender, dist, false)
 	score := 0
 	// damage dealt
 	score += dmgDef * defender.UnitCost() / defender.UnitMaxHP()
