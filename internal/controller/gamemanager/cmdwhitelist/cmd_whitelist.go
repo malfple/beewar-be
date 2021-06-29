@@ -29,3 +29,8 @@ var UnitMoveAndAttackMap = map[int]bool{
 	objects.UnitTypeJetCrew:  true,
 	objects.UnitTypeTank:     true,
 }
+
+// UnitSwapMap indicates which unit types can use message.CmdUnitSwap
+var UnitSwapMap = map[int]bool{
+	objects.UnitTypeWizard: true,
+}

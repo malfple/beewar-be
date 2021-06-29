@@ -214,3 +214,28 @@ func (ge *GridEngine) ValidateAttack(y, x, yt, xt int, attacker objects.Unit) (b
 	}
 	return false, -1
 }
+
+// ValidateSwap checks if a swap move from (y1, x1) to (y2, x2) is valid.
+// Movement range is used as swap range.
+// WARNING: does not check if the unit at (y1, x1) is allowed to do the swap.
+func (ge *GridEngine) ValidateSwap(y1, x1, y2, x2 int) bool {
+	if !ge.insideMap(y1, x1) {
+		return false
+	}
+	unit := (*ge.Units)[y1][x1]
+	if unit == nil {
+		return false
+	}
+	if !ge.insideMap(y2, x2) {
+		return false
+	}
+	if (*ge.Units)[y2][x2] == nil { // target
+		return false
+	}
+	if unit.GetOwner() != (*ge.Units)[y2][x2].GetOwner() { // swapped units have to belong to the same player
+		return false
+	}
+
+	dist := utils.HexDistance(y1, x1, y2, x2)
+	return dist >= unit.UnitMoveRangeMin() && dist <= unit.UnitMoveRange()
+}

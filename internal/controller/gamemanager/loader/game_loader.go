@@ -323,6 +323,8 @@ func (gl *GameLoader) HandleMessage(msg *message.GameMessage) (*message.GameMess
 		return gl.handleUnitAttack(msg)
 	case message.CmdUnitMoveAndAttack:
 		return gl.handleUnitMoveAndAttack(msg)
+	case message.CmdUnitSwap:
+		return gl.handleUnitSwap(msg)
 	case message.CmdEndTurn:
 		gl.nextTurn()
 		return msg, true
