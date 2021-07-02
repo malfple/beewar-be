@@ -180,7 +180,7 @@ func main() {
 			2, 17, 2, 6, 14, 0,
 		}
 
-		_ = access.UpdateMap(1, 0, 4, 20, "the line", 2,
+		_ = access.UpdateMap(3, 0, 4, 20, "the line", 2,
 			terrainInfo, unitInfo)
 	}
 }
