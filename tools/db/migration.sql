@@ -8,7 +8,7 @@ CREATE TABLE user_tab(
     email VARCHAR(255) NOT NULL,
     username VARCHAR(255) NOT NULL,
     password VARCHAR(64) NOT NULL,
-    rating SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    rating INT UNSIGNED NOT NULL DEFAULT 0,
     moves_made BIGINT UNSIGNED NOT NULL DEFAULT 0,
     games_played INT UNSIGNED NOT NULL DEFAULT 0,
     time_created BIGINT NOT NULL,
@@ -62,6 +62,7 @@ CREATE TABLE game_user_tab(
     player_order TINYINT UNSIGNED NOT NULL,
     final_rank TINYINT UNSIGNED NOT NULL DEFAULT 0,
     final_turns INT NOT NULL DEFAULT 0,
+    moves_made INT UNSIGNED NOT NULL DEFAULT 0,
     PRIMARY KEY (id),
     INDEX idx_game_id (game_id, player_order),
     INDEX idx_user_game_id (user_id, game_id)

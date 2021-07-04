@@ -53,6 +53,19 @@ func TestUserAccess() bool {
 	if access.IsExistUserByID(0) {
 		return false
 	}
+	// update user
+	user.MovesMade = 5
+	user.GamesPlayed = 1
+	if err := access.UpdateUser(user); err != nil {
+		return false
+	}
+	userAgain, _ := access.QueryUserByUsername(user.Username)
+	if userAgain.MovesMade != 5 || userAgain.GamesPlayed != 1 {
+		logger.GetLogger().Error("mismatch update user",
+			zap.Uint64("actual moves made", userAgain.MovesMade),
+			zap.Uint32("actual games played", userAgain.GamesPlayed))
+	}
+	// delete
 	if rowsAffected := access.DeleteUserByUsername(username); rowsAffected != 1 {
 		return false
 	}

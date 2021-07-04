@@ -171,14 +171,16 @@ func TestGameAccess() bool {
 	gameUserToUpdate := games1[0]
 	gameUserToUpdate.FinalTurns = 69
 	gameUserToUpdate.FinalRank = 1
+	gameUserToUpdate.MovesMade = 3
 	if err := access.UpdateGameUserUsingTx(nil, gameUserToUpdate); err != nil {
 		return false
 	}
 	games1again, _ := access.QueryGameUsersByUserID(user1.ID)
-	if games1again[0].FinalTurns != 69 || games1again[0].FinalRank != 1 {
+	if games1again[0].FinalTurns != 69 || games1again[0].FinalRank != 1 || games1again[0].MovesMade != 3 {
 		logger.GetLogger().Error("mismatch update game user",
 			zap.Int32("actual final turns", games1again[0].FinalTurns),
-			zap.Uint8("actual final rank", games1again[0].FinalRank))
+			zap.Uint8("actual final rank", games1again[0].FinalRank),
+			zap.Uint32("actual moves made", games1again[0].MovesMade))
 	}
 
 	// combined updates

@@ -8,4 +8,5 @@ type GameUser struct {
 	PlayerOrder uint8  `json:"player_order"`
 	FinalRank   uint8  `json:"final_rank"`
 	FinalTurns  int32  `json:"final_turns"`
+	MovesMade   uint32 `json:"moves_made"`
 }

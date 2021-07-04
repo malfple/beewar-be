@@ -29,20 +29,21 @@ UpdateGameUserUsingTx saves a gameUser model to db. If given transaction is nil,
 only updates updatable fields:
  - final_rank
  - final_turns
+ - moves_made
 */
 func UpdateGameUserUsingTx(tx *sql.Tx, gameUser *model.GameUser) error {
 	const stmtUpdateGameUser = `UPDATE game_user_tab
-SET final_rank=?, final_turns=?
+SET final_rank=?, final_turns=?, moves_made=?
 WHERE id=?`
 
 	var err error
 	if tx == nil {
 		_, err = db.Exec(stmtUpdateGameUser,
-			gameUser.FinalRank, gameUser.FinalTurns,
+			gameUser.FinalRank, gameUser.FinalTurns, gameUser.MovesMade,
 			gameUser.ID)
 	} else {
 		_, err = tx.Exec(stmtUpdateGameUser,
-			gameUser.FinalRank, gameUser.FinalTurns,
+			gameUser.FinalRank, gameUser.FinalTurns, gameUser.MovesMade,
 			gameUser.ID)
 	}
 	if err != nil {
@@ -70,7 +71,8 @@ func QueryGameUsersByGameID(gameID uint64) ([]*model.GameUser, error) {
 			&gameUser.UserID,
 			&gameUser.PlayerOrder,
 			&gameUser.FinalRank,
-			&gameUser.FinalTurns)
+			&gameUser.FinalTurns,
+			&gameUser.MovesMade)
 		if err != nil {
 			logger.GetLogger().Error("db: query error", zap.String("table", "game_user_tab"), zap.Error(err))
 			return nil, err
@@ -102,7 +104,8 @@ func QueryGameUsersByUserID(userID uint64) ([]*model.GameUser, error) {
 			&gameUser.UserID,
 			&gameUser.PlayerOrder,
 			&gameUser.FinalRank,
-			&gameUser.FinalTurns)
+			&gameUser.FinalTurns,
+			&gameUser.MovesMade)
 		if err != nil {
 			logger.GetLogger().Error("db: query error", zap.String("table", "game_user_tab"), zap.Error(err))
 			return nil, err
@@ -127,7 +130,8 @@ func QueryGameUser(gameID, userID uint64) (*model.GameUser, error) {
 		&gameUser.UserID,
 		&gameUser.PlayerOrder,
 		&gameUser.FinalRank,
-		&gameUser.FinalTurns)
+		&gameUser.FinalTurns,
+		&gameUser.MovesMade)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			logger.GetLogger().Error("db: query error", zap.String("table", "game_user_tab"), zap.Error(err))

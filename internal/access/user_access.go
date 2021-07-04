@@ -20,6 +20,28 @@ func CreateUser(email, username, password string) error {
 	return nil
 }
 
+/*
+UpdateUser updates a user.
+
+Only updates updatable fields:
+ - moves_made
+ - games_played
+*/
+func UpdateUser(user *model.User) error {
+	const stmtUpdateUser = `UPDATE user_tab
+SET moves_made=?, games_played=?
+WHERE id=?`
+	_, err := db.Exec(stmtUpdateUser,
+		user.MovesMade, user.GamesPlayed,
+		user.ID)
+	if err != nil {
+		logger.GetLogger().Error("db: update error", zap.String("table", "user_tab"), zap.Error(err))
+		return err
+	}
+
+	return nil
+}
+
 // QueryUserByUsername gets a single user by username
 func QueryUserByUsername(username string) (*model.User, error) {
 	row := db.QueryRow(`SELECT * FROM user_tab WHERE username=? LIMIT 1`, username)

@@ -80,6 +80,7 @@ only updates updatable fields (game):
 only updates updatable fields (game user):
  - final_rank
  - final_turns
+ - moves_made
 */
 func UpdateGameAndGameUser(game *model.Game, gameUsers []*model.GameUser) error {
 	return ExecWithTransaction(func(tx *sql.Tx) error {

@@ -91,7 +91,7 @@ func main() {
 			6, 8, 2, 3, 10, 0,
 		}
 
-		_ = access.UpdateMap(1, 0, 10, 10, "some updated seeded map", 2,
+		_ = access.UpdateMap(1, 0, 10, 10, "Test Map 1: Donut", 2,
 			terrainInfo, unitInfo)
 	}
 
@@ -148,7 +148,7 @@ func main() {
 			14, 7, 4, 3, 10, 0,
 		}
 
-		_ = access.UpdateMap(2, 0, 15, 15, "cross", 4,
+		_ = access.UpdateMap(2, 0, 15, 15, "Test Map 2: Cross", 4,
 			terrainInfo, unitInfo)
 	}
 
@@ -180,7 +180,7 @@ func main() {
 			2, 17, 2, 6, 14, 0,
 		}
 
-		_ = access.UpdateMap(3, 0, 4, 20, "the line", 2,
+		_ = access.UpdateMap(3, 0, 4, 20, "Test Map 3: Line", 2,
 			terrainInfo, unitInfo)
 	}
 }
