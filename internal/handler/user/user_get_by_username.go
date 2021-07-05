@@ -21,7 +21,7 @@ func HandleUserGetByUsername(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	resp := &GetResponse{User: nil}
+	resp := &GetByUsernameResponse{User: nil}
 	if user != nil {
 		resp.User = user
 		resp.User.Password = "it's a secret haha"
@@ -33,7 +33,7 @@ func HandleUserGetByUsername(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetResponse is a response for user get handler
-type GetResponse struct {
+// GetByUsernameResponse is a response for user get handler
+type GetByUsernameResponse struct {
 	User *model.User `json:"user"`
 }
