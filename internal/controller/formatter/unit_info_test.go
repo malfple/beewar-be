@@ -24,6 +24,15 @@ var testUnitInfo2 = []byte{
 var testUnitInfo3 = []byte{
 	0, 0, 1, 1, 10, 0,
 }
+var testUnitInfo4 = []byte{
+	100, 100, 1, 1, 10, 0,
+}
+var testUnitInfo5 = []byte{
+	0, 0, 3, 1, 10, 0,
+}
+var testUnitInfo6 = []byte{
+	0, 0, 1, 1, 10, 0, 0,
+}
 var testUnitQueen = objects.NewQueen(1, 10, 0)
 var testUnitQueen2 = objects.NewQueen(2, 10, 0)
 var testUnitInfantry = objects.NewInfantry(1, 8, 1)
@@ -54,6 +63,12 @@ func TestValidateUnitInfo(t *testing.T) {
 	assert.Equal(t, ErrMapPlayerQueen, err)
 	err = ValidateUnitInfo(testHeight, testWidth, 2, testUnitInfo3, true)
 	assert.Equal(t, nil, err)
+	err = ValidateUnitInfo(testHeight, testWidth, 2, testUnitInfo4, true)
+	assert.Equal(t, ErrMapUnitOutsideMap, err)
+	err = ValidateUnitInfo(testHeight, testWidth, 2, testUnitInfo5, true)
+	assert.Equal(t, ErrMapPlayerNotExist, err)
+	err = ValidateUnitInfo(testHeight, testWidth, 2, testUnitInfo6, true)
+	assert.Equal(t, ErrMapInvalidUnitInfo, err)
 }
 
 func TestConvertUnit(t *testing.T) {

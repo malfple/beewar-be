@@ -39,10 +39,14 @@ unit type information is available in `units` package
 var (
 	// ErrMapInvalidUnitInfo is returned when unit info does not follow format
 	ErrMapInvalidUnitInfo = errors.New("invalid unit info")
+	// ErrMapUnitOutsideMap is returned when some units are outside map
+	ErrMapUnitOutsideMap = errors.New("unit outside map")
 	// ErrMapUnitSamePosition is returned when two units are in the same position
 	ErrMapUnitSamePosition = errors.New("no two units can share the same position")
+	// ErrMapPlayerNotExist is returned when a unit is owned by a player with number greater than the player count
+	ErrMapPlayerNotExist = errors.New("some units belong to non-existent player. raise player count to fix this")
 	// ErrMapPlayerQueen is returned when some queens are missing or duplicated
-	ErrMapPlayerQueen = errors.New("some player have missing or duplicated queen")
+	ErrMapPlayerQueen = errors.New("queen count has to match player count, some player have missing or duplicated queen")
 )
 
 // ValidateUnitInfo validates whether unit info follows format.
@@ -59,7 +63,7 @@ func ValidateUnitInfo(height, width, playerCount int, unitInfo []byte, skipGameR
 		y := int(unitInfo[i])
 		x := int(unitInfo[i+1])
 		if y < 0 || y >= height || x < 0 || x >= width {
-			return ErrMapInvalidUnitInfo
+			return ErrMapUnitOutsideMap
 		}
 		if _, ok := posMap[y*width+x]; ok { // 2 unit in the same pos
 			return ErrMapUnitSamePosition
@@ -67,6 +71,9 @@ func ValidateUnitInfo(height, width, playerCount int, unitInfo []byte, skipGameR
 		posMap[y*width+x] = true
 		p := unitInfo[i+2]
 		t := unitInfo[i+3]
+		if int(p) > playerCount {
+			return ErrMapPlayerNotExist
+		}
 		switch t {
 		case objects.UnitTypeQueen:
 			if !skipGameReadiness {

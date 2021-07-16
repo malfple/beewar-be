@@ -17,7 +17,7 @@ func CreateEmptyMap(mapType uint8, height, width int, name string, authorUserID 
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 
 	res, err := db.Exec(stmtCreateEmptyMap,
-		mapType, height, width, name, 1, terrainInfo, unitInfo, authorUserID)
+		mapType, height, width, name, 0, terrainInfo, unitInfo, authorUserID)
 	if err != nil {
 		logger.GetLogger().Error("db: insert error", zap.String("table", "map_tab"), zap.Error(err))
 		return 0, err
