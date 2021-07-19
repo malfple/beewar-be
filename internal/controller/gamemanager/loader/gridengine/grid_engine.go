@@ -155,6 +155,9 @@ func (ge *GridEngine) ValidateMoveGround(y1, x1, y2, x2, steps int) bool {
 // ValidateMoveBlink checks if a blink move from (y1, x1) to (y2, x2) with the required range is valid.
 // WARNING: does not validate positions or if a unit exists.
 func (ge *GridEngine) ValidateMoveBlink(y1, x1, y2, x2, rangeMin, rangeMax int) bool {
+	if (*ge.Terrain)[y2][x2] == objects.TerrainTypeVoid {
+		return false
+	}
 	dist := utils.HexDistance(y1, x1, y2, x2)
 	return dist >= rangeMin && dist <= rangeMax
 }
