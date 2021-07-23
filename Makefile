@@ -12,6 +12,8 @@ run: ## run server for local test
 	@go run cmd/main/main.go
 runregress: ## run regression test
 	@go run cmd/regression/main.go
+runseeder: ## run seeder
+	@go run cmd/seeder/main.go
 lint:
 	@golint -set_exit_status ${PKG_LIST}
 fmt:

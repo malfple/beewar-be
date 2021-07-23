@@ -105,7 +105,7 @@ func TestGridEngine_ValidateMove(t *testing.T) {
 	assert.Equal(t, true, ge.ValidateMove(3, 1, 6, 2))
 	// blink move
 	assert.Equal(t, true, ge.ValidateMove(5, 0, 5, 2))
-	assert.Equal(t, true, ge.ValidateMove(5, 0, 5, 3))
+	assert.Equal(t, false, ge.ValidateMove(5, 0, 5, 3)) // blink to void
 	assert.Equal(t, false, ge.ValidateMove(5, 0, 5, 1))
 }
 
