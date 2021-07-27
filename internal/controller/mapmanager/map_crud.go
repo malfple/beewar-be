@@ -23,7 +23,7 @@ const (
 
 // CreateEmptyMap creates an empty map of fixed size and name
 func CreateEmptyMap(userID uint64) (uint64, error) {
-	mapID, err := access.CreateEmptyMap(0, 10, 10, "Untitled", userID)
+	mapID, err := access.CreateEmptyMap(0, 10, 10, "Untitled", userID, false)
 	if err != nil {
 		return 0, err
 	}

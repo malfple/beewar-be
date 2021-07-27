@@ -8,16 +8,16 @@ import (
 )
 
 // CreateEmptyMap creates an empty map with the specified type and size, and returns the id
-func CreateEmptyMap(mapType uint8, height, width int, name string, authorUserID uint64) (uint64, error) {
+func CreateEmptyMap(mapType uint8, height, width int, name string, authorUserID uint64, isCampaign bool) (uint64, error) {
 	terrainInfo := make([]byte, width*height)
 	unitInfo := make([]byte, 0)
 
 	const stmtCreateEmptyMap = `INSERT INTO map_tab
-(type, height, width, name, player_count, terrain_info, unit_info, author_user_id, time_created, time_modified)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
+(type, height, width, name, player_count, terrain_info, unit_info, author_user_id, is_campaign, time_created, time_modified)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 
 	res, err := db.Exec(stmtCreateEmptyMap,
-		mapType, height, width, name, 0, terrainInfo, unitInfo, authorUserID)
+		mapType, height, width, name, 0, terrainInfo, unitInfo, authorUserID, isCampaign)
 	if err != nil {
 		logger.GetLogger().Error("db: insert error", zap.String("table", "map_tab"), zap.Error(err))
 		return 0, err
@@ -69,6 +69,7 @@ func QueryMapByID(mapID uint64) (*model.Map, error) {
 		&mapp.TerrainInfo,
 		&mapp.UnitInfo,
 		&mapp.AuthorUserID,
+		&mapp.IsCampaign,
 		&mapp.StatPlayCount,
 		&mapp.TimeCreated,
 		&mapp.TimeModified)
@@ -108,6 +109,46 @@ func QueryMaps(limit, offset int) ([]*model.Map, error) {
 			&mapp.TerrainInfo,
 			&mapp.UnitInfo,
 			&mapp.AuthorUserID,
+			&mapp.IsCampaign,
+			&mapp.StatPlayCount,
+			&mapp.TimeCreated,
+			&mapp.TimeModified)
+		if err != nil {
+			logger.GetLogger().Error("db: query error", zap.String("table", "map_tab"), zap.Error(err))
+			return nil, err
+		}
+		maps = append(maps, mapp)
+	}
+	if err := rows.Err(); err != nil {
+		logger.GetLogger().Error("db: query error", zap.String("table", "map_tab"), zap.Error(err))
+		return nil, err
+	}
+	return maps, nil
+}
+
+// QueryCampaignMaps returns campaign maps from db
+func QueryCampaignMaps() ([]*model.Map, error) {
+	rows, err := db.Query(`SELECT * FROM map_tab WHERE is_campaign=1 ORDER BY id ASC`)
+	if err != nil {
+		logger.GetLogger().Error("db: query error", zap.String("table", "map_tab"), zap.Error(err))
+		return nil, err
+	}
+	defer rows.Close()
+
+	maps := make([]*model.Map, 0)
+	for rows.Next() {
+		mapp := &model.Map{}
+		err := rows.Scan(
+			&mapp.ID,
+			&mapp.Type,
+			&mapp.Height,
+			&mapp.Width,
+			&mapp.Name,
+			&mapp.PlayerCount,
+			&mapp.TerrainInfo,
+			&mapp.UnitInfo,
+			&mapp.AuthorUserID,
+			&mapp.IsCampaign,
 			&mapp.StatPlayCount,
 			&mapp.TimeCreated,
 			&mapp.TimeModified)

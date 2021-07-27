@@ -11,6 +11,7 @@ type Map struct {
 	TerrainInfo   []byte `json:"terrain_info"`
 	UnitInfo      []byte `json:"unit_info"`
 	AuthorUserID  uint64 `json:"author_user_id"`
+	IsCampaign    bool   `json:"is_campaign"`
 	StatPlayCount uint32 `json:"stat_play_count"`
 	TimeCreated   int64  `json:"time_created"`
 	TimeModified  int64  `json:"time_modified"`

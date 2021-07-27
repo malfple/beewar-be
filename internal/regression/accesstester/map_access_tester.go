@@ -11,15 +11,15 @@ import (
 func TestMapAccess() bool {
 	logger.GetLogger().Info("map access tester")
 
-	mapID, err := access.CreateEmptyMap(0, 2, 3, "some_map", 1)
+	mapID, err := access.CreateEmptyMap(0, 2, 3, "some_map", 1, false)
 	if err != nil {
 		return false
 	}
-	_, err = access.CreateEmptyMap(0, 3, 2, "map2", 1)
+	mapID2, err := access.CreateEmptyMap(0, 3, 2, "map2", 1, true)
 	if err != nil {
 		return false
 	}
-	_, err = access.CreateEmptyMap(0, 5, 5, "map3", 1)
+	_, err = access.CreateEmptyMap(0, 5, 5, "map3", 1, true)
 	if err != nil {
 		return false
 	}
@@ -45,6 +45,17 @@ func TestMapAccess() bool {
 		return false
 	}
 	if mapp.Width*mapp.Height != 100 {
+		return false
+	}
+	if mapp.IsCampaign != false {
+		return false
+	}
+
+	mapp2, err := access.QueryMapByID(mapID2)
+	if err != nil {
+		return false
+	}
+	if mapp2.IsCampaign != true {
 		return false
 	}
 
@@ -96,6 +107,20 @@ func TestMapAccessQueryMaps() bool {
 	}
 	if len(maps) != 0 {
 		logger.GetLogger().Error("mismatch number of maps", zap.Int("expected", 0), zap.Int("found", len(maps)))
+		return false
+	}
+
+	// query campaign maps -> only made 1
+	maps, err = access.QueryCampaignMaps()
+	if err != nil {
+		return false
+	}
+	if len(maps) != 2 {
+		logger.GetLogger().Error("mismatch number of maps", zap.Int("expected", 2), zap.Int("found", len(maps)))
+		return false
+	}
+	if maps[0].ID > maps[1].ID {
+		logger.GetLogger().Error("campaign maps not ordered")
 		return false
 	}
 

@@ -8,9 +8,10 @@ CREATE TABLE user_tab(
     email VARCHAR(255) NOT NULL,
     username VARCHAR(255) NOT NULL,
     password VARCHAR(64) NOT NULL,
-    rating INT UNSIGNED NOT NULL DEFAULT 0,
+    rating INT NOT NULL DEFAULT 0,
     moves_made BIGINT UNSIGNED NOT NULL DEFAULT 0,
     games_played INT UNSIGNED NOT NULL DEFAULT 0,
+    highest_campaign INT NOT NULL DEFAULT 0,
     time_created BIGINT NOT NULL,
     PRIMARY KEY (id),
     UNIQUE INDEX unq_email (email),
@@ -27,11 +28,13 @@ CREATE TABLE map_tab(
     terrain_info BLOB,
     unit_info BLOB,
     author_user_id BIGINT UNSIGNED NOT NULL,
+    is_campaign BOOLEAN NOT NULL DEFAULT FALSE,
     stat_play_count INT UNSIGNED NOT NULL DEFAULT 0,
     time_created BIGINT NOT NULL,
     time_modified BIGINT NOT NULL,
     PRIMARY KEY (id),
-    INDEX idx_author_user_id (author_user_id)
+    INDEX idx_author_user_id (author_user_id),
+    INDEX idx_is_campaign (is_campaign, id)
 );
 
 CREATE TABLE game_tab(

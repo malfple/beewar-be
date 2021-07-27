@@ -12,7 +12,7 @@ func TestGameAccess() bool {
 	logger.GetLogger().Info("game access tester")
 
 	// create map first
-	mapID, err := access.CreateEmptyMap(0, 2, 3, "some_map", 1)
+	mapID, err := access.CreateEmptyMap(0, 2, 3, "some_map", 1, false)
 	if err != nil {
 		return false
 	}
