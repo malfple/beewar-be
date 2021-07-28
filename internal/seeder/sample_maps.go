@@ -7,12 +7,19 @@ import (
 )
 
 // SeedSampleMaps inserts sample maps
-func SeedSampleMaps() {
+func SeedSampleMaps() bool {
 	var terrainInfo, unitInfo []byte
 
 	// map 1
-	if mapp, err := access.QueryMapByID(1); err == nil && mapp == nil {
-		mapID, _ := mapmanager.CreateEmptyMap(1)
+	mapp, err := access.QueryMapByID(1)
+	if err != nil {
+		return false
+	}
+	if mapp == nil {
+		mapID, err := mapmanager.CreateEmptyMap(1)
+		if err != nil {
+			return false
+		}
 		fmt.Printf("create map with id: %d\n", mapID)
 	}
 
@@ -40,13 +47,22 @@ func SeedSampleMaps() {
 		5, 8, 2, 3, 10, 0,
 		6, 8, 2, 3, 10, 0,
 	}
-	_ = access.UpdateMap(1, 0, 10, 10, "Test Map 1: Donut", 2,
-		terrainInfo, unitInfo)
+	if err = access.UpdateMap(1, 0, 10, 10, "Test Map 1: Donut", 2,
+		terrainInfo, unitInfo); err != nil {
+		return false
+	}
 	fmt.Println("update map 1")
 
 	// map 2
-	if mapp, err := access.QueryMapByID(2); err == nil && mapp == nil {
-		mapID, _ := mapmanager.CreateEmptyMap(1)
+	mapp, err = access.QueryMapByID(2)
+	if err != nil {
+		return false
+	}
+	if mapp == nil {
+		mapID, err := mapmanager.CreateEmptyMap(1)
+		if err != nil {
+			return false
+		}
 		fmt.Printf("create map with id: %d\n", mapID)
 	}
 
@@ -97,13 +113,22 @@ func SeedSampleMaps() {
 		14, 6, 4, 3, 10, 0,
 		14, 7, 4, 3, 10, 0,
 	}
-	_ = access.UpdateMap(2, 0, 15, 15, "Test Map 2: Cross", 4,
-		terrainInfo, unitInfo)
+	if err = access.UpdateMap(2, 0, 15, 15, "Test Map 2: Cross", 4,
+		terrainInfo, unitInfo); err != nil {
+		return false
+	}
 	fmt.Println("update map 2")
 
 	// map 3
-	if mapp, err := access.QueryMapByID(3); err == nil && mapp == nil {
-		mapID, _ := mapmanager.CreateEmptyMap(1)
+	mapp, err = access.QueryMapByID(3)
+	if err != nil {
+		return false
+	}
+	if mapp == nil {
+		mapID, err := mapmanager.CreateEmptyMap(1)
+		if err != nil {
+			return false
+		}
 		fmt.Printf("create map with id: %d\n", mapID)
 	}
 
@@ -129,7 +154,11 @@ func SeedSampleMaps() {
 		1, 17, 2, 4, 8, 0,
 		2, 17, 2, 6, 14, 0,
 	}
-	_ = access.UpdateMap(3, 0, 4, 20, "Test Map 3: Line", 2,
-		terrainInfo, unitInfo)
+	if err = access.UpdateMap(3, 0, 4, 20, "Test Map 3: Line", 2,
+		terrainInfo, unitInfo); err != nil {
+		return false
+	}
 	fmt.Println("update map 3")
+
+	return true
 }

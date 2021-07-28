@@ -4,6 +4,7 @@ import (
 	"context"
 	"gitlab.com/beewar/beewar-be/configs"
 	"gitlab.com/beewar/beewar-be/internal/access"
+	"gitlab.com/beewar/beewar-be/internal/controller/campaign"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/beebot"
 	"gitlab.com/beewar/beewar-be/internal/handler"
@@ -22,6 +23,7 @@ func main() {
 	access.InitAccess()
 	gamemanager.InitGameManager()
 	beebot.InitBeebotRoutines()
+	campaign.InitCampaign()
 
 	server := &http.Server{
 		Addr:         configs.GetServerAddress(),

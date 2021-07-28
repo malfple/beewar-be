@@ -102,7 +102,8 @@ func (client *BotGameClient) Listen() {
 			} else if msg.Cmd == message.CmdError {
 				errMsg := msg.Data.(string)
 				logger.GetLogger().Error("beebot error from hub", zap.String("error", errMsg))
-				// bot will stall
+				// if error is result from an action, bot will stall
+				// if error after game ended, all is well
 			} else if client.nextTrigger == "" {
 				// it's currently not my turn
 				if msg.Cmd == message.CmdJoin || msg.Cmd == message.CmdEndTurn {

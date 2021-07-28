@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"gitlab.com/beewar/beewar-be/configs"
 	"gitlab.com/beewar/beewar-be/internal/access"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 )
 
 func main() {
 	logger.InitLogger()
+	configs.InitConfigs()
 	access.InitAccess()
 
 	fmt.Println("oye testing")
@@ -38,6 +40,21 @@ func main() {
 	users, _ := access.QueryUsersByID([]uint64{1, 4, 5, 3})
 	for _, user := range users {
 		fmt.Println(user)
+	}
+
+	// extract map
+	mapp, _ := access.QueryMapByID(4)
+	for i, v := range mapp.TerrainInfo {
+		fmt.Printf("%v, ", v)
+		if i%10 == 9 {
+			fmt.Println("")
+		}
+	}
+	for i, v := range mapp.UnitInfo {
+		fmt.Printf("%v, ", v)
+		if i%6 == 5 {
+			fmt.Println("")
+		}
 	}
 
 	access.ShutdownAccess()

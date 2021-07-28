@@ -7,9 +7,10 @@ import (
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"gitlab.com/beewar/beewar-be/internal/regression"
 	"gitlab.com/beewar/beewar-be/internal/seeder"
+	"os"
 )
 
-func main() {
+func prepareAndSeed() int {
 	logger.InitLogger()
 	defer logger.ShutdownLogger()
 	configs.InitConfigs()
@@ -20,15 +21,29 @@ func main() {
 	var response string
 	if _, err := fmt.Scanln(&response); err != nil {
 		fmt.Println(err)
-		return
+		return 1
 	}
 	if response == "y" {
 		if !regression.RunMigration() {
-			return
+			return 1
 		}
 	}
 
-	seeder.SeedUsers()
+	if !seeder.SeedUsers() {
+		return 1
+	}
+	if !seeder.SeedSampleMaps() {
+		return 1
+	}
+	if !seeder.SeedCampaignMaps() {
+		return 1
+	}
 
-	seeder.SeedSampleMaps()
+	logger.GetLogger().Info("seeder finished successfully")
+
+	return 0
+}
+
+func main() {
+	os.Exit(prepareAndSeed())
 }
