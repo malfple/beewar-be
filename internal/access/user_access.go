@@ -27,13 +27,14 @@ Only updates updatable fields:
  - moves_made
  - games_played
  - highest_campaign
+ - curr_campaign_game_id
 */
 func UpdateUser(user *model.User) error {
 	const stmtUpdateUser = `UPDATE user_tab
-SET moves_made=?, games_played=?, highest_campaign=?
+SET moves_made=?, games_played=?, highest_campaign=?, curr_campaign_game_id=?
 WHERE id=?`
 	_, err := db.Exec(stmtUpdateUser,
-		user.MovesMade, user.GamesPlayed, user.HighestCampaign,
+		user.MovesMade, user.GamesPlayed, user.HighestCampaign, user.CurrCampaignGameID,
 		user.ID)
 	if err != nil {
 		logger.GetLogger().Error("db: update error", zap.String("table", "user_tab"), zap.Error(err))
@@ -57,6 +58,7 @@ func QueryUserByUsername(username string) (*model.User, error) {
 		&user.MovesMade,
 		&user.GamesPlayed,
 		&user.HighestCampaign,
+		&user.CurrCampaignGameID,
 		&user.TimeCreated)
 	if err != nil {
 		if err != sql.ErrNoRows {
@@ -98,6 +100,7 @@ func QueryUsersByID(userIDs []uint64) ([]*model.User, error) {
 			&user.MovesMade,
 			&user.GamesPlayed,
 			&user.HighestCampaign,
+			&user.CurrCampaignGameID,
 			&user.TimeCreated)
 		if err != nil {
 			logger.GetLogger().Error("db: query error", zap.String("table", "user_tab"), zap.Error(err))
@@ -139,6 +142,7 @@ func QueryUsers(limit, offset int) ([]*model.User, error) {
 			&user.MovesMade,
 			&user.GamesPlayed,
 			&user.HighestCampaign,
+			&user.CurrCampaignGameID,
 			&user.TimeCreated)
 		if err != nil {
 			logger.GetLogger().Error("db: query error", zap.String("table", "user_tab"), zap.Error(err))

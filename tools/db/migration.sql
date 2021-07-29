@@ -12,6 +12,7 @@ CREATE TABLE user_tab(
     moves_made BIGINT UNSIGNED NOT NULL DEFAULT 0,
     games_played INT UNSIGNED NOT NULL DEFAULT 0,
     highest_campaign INT NOT NULL DEFAULT 0,
+    curr_campaign_game_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
     time_created BIGINT NOT NULL,
     PRIMARY KEY (id),
     UNIQUE INDEX unq_email (email),
