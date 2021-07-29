@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gorilla/mux"
 	"gitlab.com/beewar/beewar-be/internal/handler/auth"
+	"gitlab.com/beewar/beewar-be/internal/handler/campaign"
 	"gitlab.com/beewar/beewar-be/internal/handler/game"
 	_map "gitlab.com/beewar/beewar-be/internal/handler/map"
 	"gitlab.com/beewar/beewar-be/internal/handler/user"
@@ -23,6 +24,7 @@ func RootRouter() *mux.Router {
 
 	_map.RegisterMapRouter(apiRouter.PathPrefix("/map").Subrouter())
 	game.RegisterGameRouter(apiRouter.PathPrefix("/game").Subrouter())
+	campaign.RegisterCampaignRouter(apiRouter.PathPrefix("/campaign").Subrouter())
 
 	apiRouter.HandleFunc("/server_stats", HandleServerStats).Methods("GET")
 

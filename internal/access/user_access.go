@@ -21,7 +21,7 @@ func CreateUser(email, username, password string) error {
 }
 
 /*
-UpdateUser updates a user.
+UpdateUserUsingTx updates a user.
 
 Only updates updatable fields:
  - moves_made
@@ -29,13 +29,20 @@ Only updates updatable fields:
  - highest_campaign
  - curr_campaign_game_id
 */
-func UpdateUser(user *model.User) error {
+func UpdateUserUsingTx(tx *sql.Tx, user *model.User) error {
 	const stmtUpdateUser = `UPDATE user_tab
 SET moves_made=?, games_played=?, highest_campaign=?, curr_campaign_game_id=?
 WHERE id=?`
-	_, err := db.Exec(stmtUpdateUser,
-		user.MovesMade, user.GamesPlayed, user.HighestCampaign, user.CurrCampaignGameID,
-		user.ID)
+	var err error
+	if tx == nil {
+		_, err = db.Exec(stmtUpdateUser,
+			user.MovesMade, user.GamesPlayed, user.HighestCampaign, user.CurrCampaignGameID,
+			user.ID)
+	} else {
+		_, err = tx.Exec(stmtUpdateUser,
+			user.MovesMade, user.GamesPlayed, user.HighestCampaign, user.CurrCampaignGameID,
+			user.ID)
+	}
 	if err != nil {
 		logger.GetLogger().Error("db: update error", zap.String("table", "user_tab"), zap.Error(err))
 		return err
@@ -47,6 +54,32 @@ WHERE id=?`
 // QueryUserByUsername gets a single user by username
 func QueryUserByUsername(username string) (*model.User, error) {
 	row := db.QueryRow(`SELECT * FROM user_tab WHERE username=? LIMIT 1`, username)
+
+	user := &model.User{}
+	err := row.Scan(
+		&user.ID,
+		&user.Email,
+		&user.Username,
+		&user.Password,
+		&user.Rating,
+		&user.MovesMade,
+		&user.GamesPlayed,
+		&user.HighestCampaign,
+		&user.CurrCampaignGameID,
+		&user.TimeCreated)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			logger.GetLogger().Error("db: query error", zap.String("table", "user_tab"), zap.Error(err))
+			return nil, err
+		}
+		return nil, nil
+	}
+	return user, nil
+}
+
+// QueryUserByID gets a single user by id
+func QueryUserByID(userID uint64) (*model.User, error) {
+	row := db.QueryRow(`SELECT * FROM user_tab WHERE id=? LIMIT 1`, userID)
 
 	user := &model.User{}
 	err := row.Scan(

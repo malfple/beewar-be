@@ -42,8 +42,13 @@ func InitBeebotRoutines() {
 			continue
 		}
 		// start for existing games.
-		go startBeebotRoutine(gu.GameID, gu.PlayerOrder)
+		go RunBeebotRoutine(gu.GameID, gu.PlayerOrder)
 	}
+}
+
+// GetBeebotUserID returns the beebot user id
+func GetBeebotUserID() uint64 {
+	return beebotUser.ID
 }
 
 // AskBeebotToJoinGame invites beebot to join a game
@@ -91,13 +96,13 @@ func AskBeebotToJoinGame(inviterUserID uint64, gameID uint64, playerOrder uint8,
 	}
 
 	// otherwise, start a goroutine
-	go startBeebotRoutine(gameID, playerOrder)
+	go RunBeebotRoutine(gameID, playerOrder)
 
 	return ""
 }
 
-// This function setups the client and starts session.
-func startBeebotRoutine(gameID uint64, playerOrder uint8) {
+// RunBeebotRoutine the beebot client and starts session. This function is blocking, run it on its own goroutine
+func RunBeebotRoutine(gameID uint64, playerOrder uint8) {
 	if beebotUser == nil {
 		return
 	}

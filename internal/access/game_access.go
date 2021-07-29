@@ -9,7 +9,7 @@ import (
 )
 
 /*
-CreateGameFromMap initializes a game from a map model, and returns the id.
+CreateGameFromMapUsingTx initializes a game from a map model, and returns the id.
 
 Provide the following fields (from map model):
  - id
@@ -22,14 +22,24 @@ Provide the following fields (from map model):
 
 If password is provided, the game will be private (password-protected). Otherwise it will be public.
 */
-func CreateGameFromMap(mapModel *model.Map, name, password string, creatorUserID uint64) (uint64, error) {
+func CreateGameFromMapUsingTx(tx *sql.Tx, mapModel *model.Map, name, password string, creatorUserID uint64) (uint64, error) {
 	const stmtCreateGame = `INSERT INTO game_tab
 (type, height, width, player_count, terrain_info, unit_info, map_id, name, password, creator_user_id, time_created, time_modified)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`
 
-	res, err := db.Exec(stmtCreateGame,
-		mapModel.Type, mapModel.Height, mapModel.Width, mapModel.PlayerCount, mapModel.TerrainInfo, mapModel.UnitInfo, mapModel.ID,
-		name, password, creatorUserID)
+	var res sql.Result
+	var err error
+	if tx == nil {
+		res, err = db.Exec(stmtCreateGame,
+			mapModel.Type, mapModel.Height, mapModel.Width, mapModel.PlayerCount,
+			mapModel.TerrainInfo, mapModel.UnitInfo, mapModel.ID,
+			name, password, creatorUserID)
+	} else {
+		res, err = tx.Exec(stmtCreateGame,
+			mapModel.Type, mapModel.Height, mapModel.Width, mapModel.PlayerCount,
+			mapModel.TerrainInfo, mapModel.UnitInfo, mapModel.ID,
+			name, password, creatorUserID)
+	}
 	if err != nil {
 		logger.GetLogger().Error("db: insert error", zap.String("table", "game_tab"), zap.Error(err))
 		return 0, err

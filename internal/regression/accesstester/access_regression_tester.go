@@ -43,7 +43,7 @@ func testExecWithTransaction() bool {
 	}
 
 	// test failure
-	if err = access.CreateGameUser(0, 0, 0); err != nil {
+	if err = access.CreateGameUserUsingTx(nil, 0, 0, 0); err != nil {
 		logger.GetLogger().Error("fail to create dummy gameuser")
 		return false
 	}

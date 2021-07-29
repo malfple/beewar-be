@@ -27,7 +27,7 @@ func (gl *GameLoader) handleJoin(msg *message.GameMessage) (*message.GameMessage
 		}
 	}
 	// pass join validation
-	if err := access.CreateGameUser(gl.ID, msg.Sender, data.PlayerOrder); err != nil {
+	if err := access.CreateGameUserUsingTx(nil, gl.ID, msg.Sender, data.PlayerOrder); err != nil {
 		return message.GameErrorMessage(err.Error()), false
 	}
 	gl.GameUsers[data.PlayerOrder-1], _ = access.QueryGameUser(gl.ID, msg.Sender) // TODO: handle error

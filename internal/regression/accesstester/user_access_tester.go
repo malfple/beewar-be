@@ -27,6 +27,14 @@ func TestUserAccess() bool {
 	if user2 == nil || err != nil {
 		return false
 	}
+	userAgain, err := access.QueryUserByID(user.ID)
+	if userAgain == nil || err != nil {
+		return false
+	}
+	if userAgain.Username != user.Username {
+		logger.GetLogger().Error("query user by id mismatch")
+		return false
+	}
 	users, err := access.QueryUsersByID([]uint64{user2.ID, user.ID})
 	if err != nil {
 		return false
@@ -56,10 +64,10 @@ func TestUserAccess() bool {
 	// update user
 	user.MovesMade = 5
 	user.GamesPlayed = 1
-	if err := access.UpdateUser(user); err != nil {
+	if err := access.UpdateUserUsingTx(nil, user); err != nil {
 		return false
 	}
-	userAgain, _ := access.QueryUserByUsername(user.Username)
+	userAgain, _ = access.QueryUserByUsername(user.Username)
 	if userAgain.MovesMade != 5 || userAgain.GamesPlayed != 1 {
 		logger.GetLogger().Error("mismatch update user",
 			zap.Uint64("actual moves made", userAgain.MovesMade),

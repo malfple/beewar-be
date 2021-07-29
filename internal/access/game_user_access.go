@@ -7,15 +7,21 @@ import (
 	"go.uber.org/zap"
 )
 
-// CreateGameUser creates a game - user link.
-func CreateGameUser(gameID, userID uint64, playerOrder uint8) error {
+// CreateGameUserUsingTx creates a game - user link.
+func CreateGameUserUsingTx(tx *sql.Tx, gameID, userID uint64, playerOrder uint8) error {
 	// player order defines the player number of user `userID` in game `gameID`
 	const stmtLinkGameToUser = `INSERT INTO game_user_tab
 (game_id, user_id, player_order)
 VALUES (?, ?, ?)`
 
-	_, err := db.Exec(stmtLinkGameToUser,
-		gameID, userID, playerOrder)
+	var err error
+	if tx == nil {
+		_, err = db.Exec(stmtLinkGameToUser,
+			gameID, userID, playerOrder)
+	} else {
+		_, err = tx.Exec(stmtLinkGameToUser,
+			gameID, userID, playerOrder)
+	}
 	if err != nil {
 		logger.GetLogger().Error("db: insert error", zap.String("table", "game_user_tab"), zap.Error(err))
 		return err

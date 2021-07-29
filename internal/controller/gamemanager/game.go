@@ -38,7 +38,7 @@ func CreateGame(mapID uint64, name, password string, creatorUserID uint64) (uint
 		}
 		passwordHash = string(passwordHashByte)
 	}
-	return access.CreateGameFromMap(mapModel, name, passwordHash, creatorUserID)
+	return access.CreateGameFromMapUsingTx(nil, mapModel, name, passwordHash, creatorUserID)
 }
 
 // GetMyGames returns a list of games for a specified user
