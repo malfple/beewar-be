@@ -17,5 +17,8 @@ func SeedCampaignMaps() bool {
 	if !seedCampaignMap1(existingMaps) {
 		return false
 	}
+	if !seedCampaignMap2(existingMaps) {
+		return false
+	}
 	return true
 }
