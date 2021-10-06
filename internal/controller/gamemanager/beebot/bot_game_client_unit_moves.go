@@ -11,16 +11,6 @@ import (
 func (client *BotGameClient) doNextUnitMove(y, x int, unit objects.Unit) *message.GameMessage {
 	var moves []*message.GameMessage
 	var scores []int
-	// by default, doesn't do anything
-	moves = append(moves, &message.GameMessage{
-		Cmd:    message.CmdUnitStay,
-		Sender: client.UserID,
-		Data: &message.UnitStayMessageData{
-			Y1: y,
-			X1: x,
-		},
-	})
-	scores = append(scores, client.scorePosition(y, x))
 
 	// move + move and attack
 	switch unit.UnitType() {
@@ -38,6 +28,17 @@ func (client *BotGameClient) doNextUnitMove(y, x int, unit objects.Unit) *messag
 		moves = append(moves, calcMoves...)
 		scores = append(scores, calcScores...)
 	}
+
+	// by default, doesn't do anything. Staying is prioritized the least
+	moves = append(moves, &message.GameMessage{
+		Cmd:    message.CmdUnitStay,
+		Sender: client.UserID,
+		Data: &message.UnitStayMessageData{
+			Y1: y,
+			X1: x,
+		},
+	})
+	scores = append(scores, client.scorePosition(y, x))
 
 	var bestMove *message.GameMessage
 	var bestScore = -1000000000
