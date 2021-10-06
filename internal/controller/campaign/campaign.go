@@ -62,9 +62,16 @@ func getCurrentCampaignAndUpdateUser(user *model.User) (uint64, error) {
 		return game.ID, nil // game found
 	}
 	// game already ended, update user
-	if level, ok := campaignMapIDToLevelMap[game.MapID]; ok {
-		if level > int(user.HighestCampaign) {
-			user.HighestCampaign = int32(level)
+	// check if the user actually won
+	gameUser, err := access.QueryGameUser(game.ID, user.ID)
+	if err != nil {
+		return 0, err
+	}
+	if gameUser.FinalRank == 1 { // user won
+		if level, ok := campaignMapIDToLevelMap[game.MapID]; ok {
+			if level > int(user.HighestCampaign) {
+				user.HighestCampaign = int32(level)
+			}
 		}
 	}
 	user.CurrCampaignGameID = 0
