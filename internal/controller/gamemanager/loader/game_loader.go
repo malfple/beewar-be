@@ -59,7 +59,9 @@ type GameLoader struct {
 	Terrain           [][]int
 	Units             [][]objects.Unit
 	MapID             uint64
+	Name              string
 	Password          string
+	CreatorUserID     uint64
 	Status            int8  // indicates game status
 	TurnCount         int32 // turns start from 1, defined in migration
 	TurnPlayer        int   // players are numbered 1..PlayerCount.
@@ -82,20 +84,22 @@ func NewGameLoader(gameID uint64) (*GameLoader, error) {
 	}
 	// load main fields from game model
 	gameLoader := &GameLoader{
-		ID:           gameModel.ID,
-		Type:         gameModel.Type,
-		Height:       gameModel.Height,
-		Width:        gameModel.Width,
-		PlayerCount:  int(gameModel.PlayerCount),
-		Terrain:      formatter.ModelToGameTerrain(gameModel.Height, gameModel.Width, gameModel.TerrainInfo),
-		Units:        formatter.ModelToGameUnit(gameModel.Height, gameModel.Width, gameModel.UnitInfo),
-		MapID:        gameModel.MapID,
-		Password:     gameModel.Password,
-		Status:       gameModel.Status,
-		TurnCount:    gameModel.TurnCount,
-		TurnPlayer:   int(gameModel.TurnPlayer),
-		TimeCreated:  gameModel.TimeCreated,
-		TimeModified: gameModel.TimeModified,
+		ID:            gameModel.ID,
+		Type:          gameModel.Type,
+		Height:        gameModel.Height,
+		Width:         gameModel.Width,
+		PlayerCount:   int(gameModel.PlayerCount),
+		Terrain:       formatter.ModelToGameTerrain(gameModel.Height, gameModel.Width, gameModel.TerrainInfo),
+		Units:         formatter.ModelToGameUnit(gameModel.Height, gameModel.Width, gameModel.UnitInfo),
+		MapID:         gameModel.MapID,
+		Name:          gameModel.Name,
+		Password:      gameModel.Password,
+		CreatorUserID: gameModel.CreatorUserID,
+		Status:        gameModel.Status,
+		TurnCount:     gameModel.TurnCount,
+		TurnPlayer:    int(gameModel.TurnPlayer),
+		TimeCreated:   gameModel.TimeCreated,
+		TimeModified:  gameModel.TimeModified,
 	}
 	// create grid engine
 	gameLoader.GridEngine = gridengine.NewGridEngine(
@@ -136,20 +140,22 @@ func NewGameLoader(gameID uint64) (*GameLoader, error) {
 // ToModel converts the current game object into a model.Game db model
 func (gl *GameLoader) ToModel() *model.Game {
 	game := &model.Game{
-		ID:           gl.ID,
-		Type:         gl.Type,
-		Height:       gl.Height,
-		Width:        gl.Width,
-		PlayerCount:  uint8(gl.PlayerCount),
-		TerrainInfo:  formatter.GameTerrainToModel(gl.Height, gl.Width, gl.Terrain),
-		UnitInfo:     formatter.GameUnitToModel(gl.Height, gl.Width, gl.Units),
-		MapID:        gl.MapID,
-		Password:     gl.Password,
-		Status:       gl.Status,
-		TurnCount:    gl.TurnCount,
-		TurnPlayer:   int8(gl.TurnPlayer),
-		TimeCreated:  gl.TimeCreated,
-		TimeModified: gl.TimeModified,
+		ID:            gl.ID,
+		Type:          gl.Type,
+		Height:        gl.Height,
+		Width:         gl.Width,
+		PlayerCount:   uint8(gl.PlayerCount),
+		TerrainInfo:   formatter.GameTerrainToModel(gl.Height, gl.Width, gl.Terrain),
+		UnitInfo:      formatter.GameUnitToModel(gl.Height, gl.Width, gl.Units),
+		MapID:         gl.MapID,
+		Name:          gl.Name,
+		Password:      gl.Password,
+		CreatorUserID: gl.CreatorUserID,
+		Status:        gl.Status,
+		TurnCount:     gl.TurnCount,
+		TurnPlayer:    int8(gl.TurnPlayer),
+		TimeCreated:   gl.TimeCreated,
+		TimeModified:  gl.TimeModified,
 	}
 	if game.Password != "" { // only mask if password exists
 		game.Password = "masked haha" // doesn't matter even on db save because cannot update password anyway
