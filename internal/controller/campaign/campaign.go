@@ -48,24 +48,24 @@ func GetCampaignList() []*model.Map {
 
 // Checks current campaign, and update user if possible (if game already ended).
 // This function does not touch db, only updates the user model.
-// Then it returns the game id if it exists and is ongoing.
-func getCurrentCampaignAndUpdateUser(user *model.User) (uint64, error) {
+// Then it returns the game if it exists and is ongoing.
+func getCurrentCampaignAndUpdateUser(user *model.User) (*model.Game, error) {
 	if user.CurrCampaignGameID == 0 {
-		return 0, nil
+		return nil, nil
 	}
 
 	game, err := access.QueryGameByID(user.CurrCampaignGameID)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	if game.Status != loader.GameStatusEnded {
-		return game.ID, nil // game found
+		return game, nil // game found
 	}
 	// game already ended, update user
 	// check if the user actually won
 	gameUser, err := access.QueryGameUser(game.ID, user.ID)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	if gameUser.FinalRank == 1 { // user won
 		if level, ok := campaignMapIDToLevelMap[game.MapID]; ok {
@@ -76,7 +76,7 @@ func getCurrentCampaignAndUpdateUser(user *model.User) (uint64, error) {
 	}
 	user.CurrCampaignGameID = 0
 	// does not touch db
-	return 0, nil
+	return nil, nil
 }
 
 // StartNewCampaign starts a new campaign for the user.
@@ -91,11 +91,11 @@ func StartNewCampaign(userID uint64, campaignLevel int) (uint64, error) {
 		return 0, errCampaignNotExist
 	}
 	{
-		gameID, err := getCurrentCampaignAndUpdateUser(user)
+		game, err := getCurrentCampaignAndUpdateUser(user)
 		if err != nil {
 			return 0, nil
 		}
-		if gameID != 0 {
+		if game != nil {
 			return 0, errOngoingCampaign
 		}
 	}
@@ -137,20 +137,20 @@ func StartNewCampaign(userID uint64, campaignLevel int) (uint64, error) {
 	return gameID, nil
 }
 
-// GetCurrentCampaign returns the current campaign game (game_id) by a user.
+// GetCurrentCampaign returns the current campaign game (game_id, campaign_level) by a user.
 // returns game_id = 0 if no game found.
-func GetCurrentCampaign(userID uint64) (uint64, error) {
+func GetCurrentCampaign(userID uint64) (uint64, int32, error) {
 	user, err := access.QueryUserByID(userID)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
-	gameID, err := getCurrentCampaignAndUpdateUser(user)
+	game, err := getCurrentCampaignAndUpdateUser(user)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
-	if gameID != 0 {
-		return gameID, nil // game exists
+	if game != nil {
+		return game.ID, int32(campaignMapIDToLevelMap[game.MapID]), nil // game exists
 	}
 	_ = access.UpdateUserUsingTx(nil, user) // fail silently
-	return 0, nil
+	return 0, 0, nil
 }

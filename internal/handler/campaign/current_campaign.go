@@ -18,10 +18,11 @@ func HandleCurrentCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gameID, err := campaign.GetCurrentCampaign(userID)
+	gameID, campaignLevel, err := campaign.GetCurrentCampaign(userID)
 
 	resp := &CurrentCampaignResponse{
-		GameID: gameID,
+		GameID:        gameID,
+		CampaignLevel: campaignLevel,
 	}
 	if err != nil {
 		resp.ErrMsg = err.Error()
@@ -38,6 +39,7 @@ func HandleCurrentCampaign(w http.ResponseWriter, r *http.Request) {
 
 // CurrentCampaignResponse is a response schema
 type CurrentCampaignResponse struct {
-	GameID uint64 `json:"game_id"`
-	ErrMsg string `json:"err_msg"`
+	GameID        uint64 `json:"game_id"`
+	CampaignLevel int32  `json:"campaign_level"`
+	ErrMsg        string `json:"err_msg"`
 }
