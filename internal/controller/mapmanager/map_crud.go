@@ -43,6 +43,9 @@ func UpdateMap(userID uint64, mapID uint64, mapType uint8, height, width int, na
 		return errNotAuthor
 	}
 
+	if err := validateMapType(mapType, playerCount); err != nil {
+		return err
+	}
 	if height < 1 || height > mapMaxHeight {
 		return errMapHeight
 	}

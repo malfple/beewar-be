@@ -17,6 +17,9 @@ var (
 	errOngoingCampaign       = errors.New("there is already an ongoing campaign")
 )
 
+// Campaign map level is determined by the order in the db (sorted by id)
+// The seeder is responsible for keeping this order
+
 // 0-based. campaignMapList[0] is first campaign
 var campaignMapList []*model.Map
 var campaignMapIDToLevelMap map[uint64]int

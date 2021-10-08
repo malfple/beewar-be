@@ -1,6 +1,9 @@
 package formatter
 
-import "errors"
+import (
+	"errors"
+	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/objects"
+)
 
 /*
 terrain info and map info format
@@ -30,13 +33,28 @@ and for a cell in odd rows,
 
 */
 
-// ErrMapInvalidTerrainInfo is returned when terrain info does not match map size
-var ErrMapInvalidTerrainInfo = errors.New("invalid terrain info")
+var (
+	errMapInvalidTerrainInfo = errors.New("invalid terrain info, maybe the map size does not match the contents")
+	errMapUnknownTerrainType = errors.New("unknown terrain type")
+)
 
 // ValidateTerrainInfo validates whether a terrain info follows format
 func ValidateTerrainInfo(height, width int, terrainInfo []byte) error {
 	if len(terrainInfo) != height*width {
-		return ErrMapInvalidTerrainInfo
+		return errMapInvalidTerrainInfo
+	}
+	for _, terrainType := range terrainInfo {
+		switch terrainType {
+		case objects.TerrainTypeVoid:
+		case objects.TerrainTypePlains:
+		case objects.TerrainTypeWalls:
+		case objects.TerrainTypeHoneyField:
+		case objects.TerrainTypeWasteland:
+		case objects.TerrainTypeIceField:
+			continue
+		default:
+			return errMapUnknownTerrainType
+		}
 	}
 	return nil
 }
