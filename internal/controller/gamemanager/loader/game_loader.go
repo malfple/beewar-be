@@ -8,6 +8,7 @@ import (
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/loader/gridengine"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/message"
 	"gitlab.com/beewar/beewar-be/internal/controller/gamemanager/objects"
+	"gitlab.com/beewar/beewar-be/internal/controller/mapmanager"
 	"gitlab.com/beewar/beewar-be/internal/logger"
 	"gitlab.com/beewar/beewar-be/internal/utils"
 	"go.uber.org/zap"
@@ -71,6 +72,7 @@ type GameLoader struct {
 	GameUsers         []*model.GameUser
 	Users             []*model.User
 	UserIDToPlayerMap map[uint64]int
+	rankTaken         []bool
 }
 
 // NewGameLoader loads game by gameID and return the GameLoader object
@@ -100,6 +102,7 @@ func NewGameLoader(gameID uint64) (*GameLoader, error) {
 		TurnPlayer:    int(gameModel.TurnPlayer),
 		TimeCreated:   gameModel.TimeCreated,
 		TimeModified:  gameModel.TimeModified,
+		rankTaken:     make([]bool, gameModel.PlayerCount+1),
 	}
 	// create grid engine
 	gameLoader.GridEngine = gridengine.NewGridEngine(
@@ -228,7 +231,7 @@ func (gl *GameLoader) checkGameEnd() {
 	if playersLeft <= 1 {
 		// game ended
 		for i := range gl.GameUsers {
-			gl.assignPlayerRank(i + 1)
+			gl.assignPlayerRank(i+1, true)
 		}
 		logger.GetLogger().Debug("loader: game ended", zap.Uint64("game_id", gl.ID))
 		gl.Status = GameStatusEnded
@@ -279,7 +282,7 @@ func (gl *GameLoader) checkUnitAlive(y, x int) {
 	if gl.Units[y][x].GetHP() == 0 {
 		if gl.Units[y][x].UnitType() == objects.UnitTypeQueen {
 			// player is defeated -> assign rank and turns lasted
-			gl.assignPlayerRank(gl.Units[y][x].GetOwner())
+			gl.assignPlayerRank(gl.Units[y][x].GetOwner(), false)
 			// immediately check if game ends
 			gl.checkGameEnd()
 		}
@@ -287,14 +290,44 @@ func (gl *GameLoader) checkUnitAlive(y, x int) {
 	}
 }
 
-// done when player is defeated or when game is finished
-func (gl *GameLoader) assignPlayerRank(player int) {
+// checks if someone's queen reaches the throne
+func (gl *GameLoader) checkQueenOnThrone(y, x int) {
+	if gl.Type == mapmanager.MapTypeEscape {
+		if gl.Terrain[y][x] == objects.TerrainTypeThrone {
+			if gl.Units[y][x].UnitType() == objects.UnitTypeQueen {
+				// queen reaches throne
+				gl.assignPlayerRank(gl.Units[y][x].GetOwner(), true)
+				// remove queen
+				gl.Units[y][x] = nil
+				// immediately check if game ends
+				gl.checkGameEnd()
+			}
+		}
+	}
+}
+
+// done when player is defeated or when game is finished.
+// provide win = true if assign player as winner (1st assign gets 1st place, 2nd gets 2nd, and so on), or
+// win = false if assign player as loser (1st assign gets last place, 2nd gets 2nd last, and so on)
+func (gl *GameLoader) assignPlayerRank(player int, win bool) {
 	if gl.GameUsers[player-1].FinalTurns != 0 {
 		return
 	}
+	// re-set rankTaken
 	for _, gu := range gl.GameUsers {
-		if gu.FinalTurns == 0 { // player not yet defeated
+		if gu.FinalTurns != 0 { // player already ranked
+			gl.rankTaken[gu.FinalRank] = true
+		}
+	}
+	if win {
+		gl.GameUsers[player-1].FinalRank = 1
+		for gl.rankTaken[gl.GameUsers[player-1].FinalRank] {
 			gl.GameUsers[player-1].FinalRank++
+		}
+	} else {
+		gl.GameUsers[player-1].FinalRank = uint8(gl.PlayerCount)
+		for gl.rankTaken[gl.GameUsers[player-1].FinalRank] {
+			gl.GameUsers[player-1].FinalRank--
 		}
 	}
 	gl.GameUsers[player-1].FinalTurns = gl.TurnCount

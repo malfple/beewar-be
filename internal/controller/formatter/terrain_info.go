@@ -36,13 +36,15 @@ and for a cell in odd rows,
 var (
 	errMapInvalidTerrainInfo = errors.New("invalid terrain info, maybe the map size does not match the contents")
 	errMapUnknownTerrainType = errors.New("unknown terrain type")
+	errThroneCount           = errors.New("throne terrain count does not match")
 )
 
 // ValidateTerrainInfo validates whether a terrain info follows format
-func ValidateTerrainInfo(height, width int, terrainInfo []byte) error {
+func ValidateTerrainInfo(height, width int, terrainInfo []byte, expectedThroneCount int) error {
 	if len(terrainInfo) != height*width {
 		return errMapInvalidTerrainInfo
 	}
+	throneCount := 0
 	for _, terrainType := range terrainInfo {
 		switch terrainType {
 		case objects.TerrainTypeVoid:
@@ -51,10 +53,14 @@ func ValidateTerrainInfo(height, width int, terrainInfo []byte) error {
 		case objects.TerrainTypeHoneyField:
 		case objects.TerrainTypeWasteland:
 		case objects.TerrainTypeIceField:
-			continue
+		case objects.TerrainTypeThrone:
+			throneCount++
 		default:
 			return errMapUnknownTerrainType
 		}
+	}
+	if expectedThroneCount != -1 && throneCount != expectedThroneCount {
+		return errThroneCount
 	}
 	return nil
 }

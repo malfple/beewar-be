@@ -17,6 +17,8 @@ func CalcMoveCost(terrainType int, unitWeight int) int {
 		return 1 + unitWeight
 	case objects.TerrainTypeIceField:
 		return 2
+	case objects.TerrainTypeThrone:
+		return 1
 	}
 	return 999999
 }

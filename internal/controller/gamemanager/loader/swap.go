@@ -22,5 +22,6 @@ func (gl *GameLoader) handleUnitSwap(msg *message.GameMessage) (*message.GameMes
 	}
 	gl.Units[data.Y2][data.X2], gl.Units[data.Y1][data.X1] = gl.Units[data.Y1][data.X1], gl.Units[data.Y2][data.X2]
 	gl.Units[data.Y2][data.X2].ToggleStateBit(objects.UnitStateBitMoved)
+	gl.checkQueenOnThrone(data.Y1, data.X1) // the swapped unit might be a queen
 	return msg, true
 }

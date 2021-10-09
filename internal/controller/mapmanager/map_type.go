@@ -10,8 +10,9 @@ const (
 )
 
 var (
-	errMapTypeFFAPlayerCount = errors.New("FFA need 2+ players")
-	errMapTypeInvalid = errors.New("invalid map type")
+	errMapTypeFFAPlayerCount    = errors.New("FFA need 2+ players")
+	errMapTypeEscapePlayerCount = errors.New("escape mission needs exactly 2 players")
+	errMapTypeInvalid           = errors.New("invalid map type")
 )
 
 func validateMapType(mapType, playerCount uint8) error {
@@ -21,6 +22,21 @@ func validateMapType(mapType, playerCount uint8) error {
 			return errMapTypeFFAPlayerCount
 		}
 		return nil
+	case MapTypeEscape:
+		if playerCount != 2 {
+			return errMapTypeEscapePlayerCount
+		}
+		return nil
 	}
 	return errMapTypeInvalid
+}
+
+// returns -1 if there is no limit
+func calcExpectedThroneCount(mapType uint8) int {
+	switch mapType {
+	case MapTypeEscape:
+		return 1
+	default:
+		return -1
+	}
 }

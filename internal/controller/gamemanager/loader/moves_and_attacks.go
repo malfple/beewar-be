@@ -35,6 +35,7 @@ func (gl *GameLoader) handleUnitMove(msg *message.GameMessage) (*message.GameMes
 	}
 	gl.Units[data.Y2][data.X2], gl.Units[data.Y1][data.X1] = gl.Units[data.Y1][data.X1], gl.Units[data.Y2][data.X2]
 	gl.Units[data.Y2][data.X2].ToggleStateBit(objects.UnitStateBitMoved)
+	gl.checkQueenOnThrone(data.Y2, data.X2)
 	return msg, true
 }
 

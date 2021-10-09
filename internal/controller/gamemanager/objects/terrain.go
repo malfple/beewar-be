@@ -12,4 +12,6 @@ const (
 	TerrainTypeHoneyField = 3
 	TerrainTypeWasteland  = 4
 	TerrainTypeIceField   = 5
+
+	TerrainTypeThrone = 100
 )
